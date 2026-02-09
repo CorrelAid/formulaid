@@ -316,6 +316,7 @@
         <strong>Imprint & Liability:</strong> This is a client-side only application. 
         Your API key is never sent to our servers. Use this tool at your own risk and liability. 
         We assume no responsibility for any costs incurred or data handled through your OpenRouter account.
+        The app is open source and available at <a href="https://github.com/CorrelAid/formulaid" target="_blank" rel="noopener">GitHub</a>.
       </p>
       <p class="credits">
         A project by <a href="https://correlaid.org" target="_blank" rel="noopener">CorrelAid</a>.
@@ -575,13 +576,13 @@
     line-height: 1.4;
   }
 
-  .credits a {
+  .imprint a, .credits a {
     color: var(--color-secondary);
     text-decoration: underline;
     font-weight: var(--font-weight-bold);
   }
 
-  .credits a:hover {
-    text-decoration: underline;
+  .imprint a:hover, .credits a:hover {
+    opacity: 0.8;
   }
 </style>
