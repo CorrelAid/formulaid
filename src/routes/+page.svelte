@@ -62,7 +62,21 @@
           Authorization: `Bearer ${keyToUse}`
         }
       });
-      const data = await response.json();
+      
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`API Key validation failed: ${response.status} ${response.statusText}. ${text.slice(0, 100)}`);
+      }
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        const text = await response.clone().text();
+        console.error('Failed to parse API key response as JSON:', jsonErr, 'Raw response:', text);
+        throw new Error('API Key validation failed: Server returned an invalid response format.');
+      }
+
       if (data.data) {
         const limit = data.data.limit;
         
