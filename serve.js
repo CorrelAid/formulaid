@@ -27,6 +27,22 @@ const server = Bun.serve({
 
     console.log(`[${new Date().toISOString()}] ${req.method} ${pathname}`);
 
+    // Proxy API requests to OpenRouter
+    if (pathname.startsWith("/api/v1/")) {
+      const targetUrl = `https://openrouter.ai${pathname}${url.search}`;
+      console.log(`  → Proxying to: ${targetUrl}`);
+      
+      const proxyHeaders = new Headers(req.headers);
+      proxyHeaders.set("Host", "openrouter.ai");
+
+      return fetch(targetUrl, {
+        method: req.method,
+        headers: proxyHeaders,
+        body: req.body,
+        redirect: "follow",
+      });
+    }
+
     // Default to index.html for directory requests
     if (pathname.endsWith("/")) {
       pathname += "index.html";
@@ -41,7 +57,6 @@ const server = Bun.serve({
       return new Response(file);
     }
 
-    // Try with /index.html for clean URLs (e.g., /survey_tools -> /survey_tools/index.html)
     if (!pathname.endsWith(".html") && !pathname.endsWith("/")) {
       const dirIndexFile = Bun.file(`./dist${pathname}/index.html`);
       if (await dirIndexFile.exists()) {
