@@ -1,0 +1,185 @@
+{
+  "version": "2.0",
+  "bestScore": 1,
+  "stats": {
+    "totalExamples": 2,
+    "totalRounds": 1,
+    "totalTime": 0
+  },
+  "instruction": "Improve a single survey question and its answer choices. Ensure the wording is clear, unbiased, and follows best practices for survey design based on the question type.",
+  "signature": "questionLabel:string, questionType:string, choices?:string, context?:string -> reasoning:string, improvedLabel:string, improvedChoices:json",
+  "demos": [
+    {
+      "traces": [
+        {
+          "questionLabel": "Do you like our service and the price?",
+          "questionType": "select_one",
+          "choices": "[{\"label\": \"Yes\", \"name\": \"yes\"}, {\"label\": \"No\", \"name\": \"no\"}]",
+          "context": "Customer satisfaction",
+          "reasoning": "The question combines two distinct aspects (service quality and pricing) into one, which can lead to ambiguous responses. It also lacks a neutral option, which is important for capturing mixed or uncertain feedback. The phrasing is subjective (\"like\") and could be reworded to focus on satisfaction and value perception more objectively.",
+          "improvedLabel": "How satisfied are you with our service and its value for the price paid?",
+          "improvedChoices": [
+            {
+              "label": "Very satisfied",
+              "name": "very_satisfied"
+            },
+            {
+              "label": "Somewhat satisfied",
+              "name": "somewhat_satisfied"
+            },
+            {
+              "label": "Neutral",
+              "name": "neutral"
+            },
+            {
+              "label": "Somewhat dissatisfied",
+              "name": "somewhat_dissatisfied"
+            },
+            {
+              "label": "Very dissatisfied",
+              "name": "very_dissatisfied"
+            }
+          ]
+        },
+        {
+          "questionLabel": "How old are you?",
+          "questionType": "integer",
+          "choices": "",
+          "context": "Health survey for seniors",
+          "reasoning": "The question is clear and neutral, but its phrasing might unintentionally exclude non-senior respondents or feel intrusive in a health survey setting. Since the context specifies a *health survey for seniors*, it’s better to frame the question as age-related screening rather than general profiling. I’ll refine the wording to align with ethical survey practices and provide an inclusive range for self-reporting.",
+          "improvedLabel": "Which age group best describes you?",
+          "improvedChoices": [
+            {
+              "label": "65-69",
+              "name": "65-69"
+            },
+            {
+              "label": "70-74",
+              "name": "70-74"
+            },
+            {
+              "label": "75-79",
+              "name": "75-79"
+            },
+            {
+              "label": "80+",
+              "name": "80+"
+            },
+            {
+              "label": "I prefer not to say",
+              "name": "prefer_not_to_say"
+            }
+          ]
+        },
+        {
+          "questionLabel": "How old are you?",
+          "questionType": "integer",
+          "choices": "",
+          "context": "Health survey for seniors",
+          "reasoning": "The question is clear but may not be the most appropriate or respectful phrasing for a survey targeting seniors. It is better to frame this question neutrally and inclusively while ensuring it is relevant to the purpose of the survey.",
+          "improvedLabel": "What is your age?",
+          "improvedChoices": [
+            {
+              "label": "60-64",
+              "name": "age_60_64"
+            },
+            {
+              "label": "65-69",
+              "name": "age_65_69"
+            },
+            {
+              "label": "70-74",
+              "name": "age_70_74"
+            },
+            {
+              "label": "75-79",
+              "name": "age_75_79"
+            },
+            {
+              "label": "80-84",
+              "name": "age_80_84"
+            },
+            {
+              "label": "85+",
+              "name": "age_85plus"
+            },
+            {
+              "label": "Prefer not to say",
+              "name": "prefer_not_to_say"
+            }
+          ]
+        },
+        {
+          "questionLabel": "Do you like our service and the price?",
+          "questionType": "select_one",
+          "choices": "[{\"label\": \"Yes\", \"name\": \"yes\"}, {\"label\": \"No\", \"name\": \"no\"}]",
+          "context": "Customer satisfaction",
+          "reasoning": "The original question combines two distinct aspects (service quality and pricing) into one, which may lead to unclear or mixed responses. It also lacks a neutral or nuanced option, which could be important for customer feedback. The question should be split or rephrased to capture specific insights while avoiding bias or forced choices.",
+          "improvedLabel": "How satisfied are you with our service and pricing?",
+          "improvedChoices": [
+            {
+              "label": "Very satisfied with both",
+              "name": "very_satisfied_both"
+            },
+            {
+              "label": "Satisfied with the service but not the price",
+              "name": "satisfied_service_not_price"
+            },
+            {
+              "label": "Satisfied with the price but not the service",
+              "name": "satisfied_price_not_service"
+            },
+            {
+              "label": "Neither satisfied with the service nor the price",
+              "name": "dissatisfied_both"
+            },
+            {
+              "label": "No opinion",
+              "name": "no_opinion"
+            }
+          ]
+        },
+        {
+          "questionLabel": "How old are you?",
+          "questionType": "integer",
+          "choices": "",
+          "context": "Health survey for seniors",
+          "reasoning": "The question is clear but lacks inclusivity for seniors who may not wish to disclose their exact age. For a health survey, age ranges are often more appropriate and less intrusive. I will refine it to use broader categories while ensuring relevance to seniors.",
+          "improvedLabel": "What is your age range?",
+          "improvedChoices": [
+            {
+              "label": "65–69",
+              "name": "65_69"
+            },
+            {
+              "label": "70–74",
+              "name": "70_74"
+            },
+            {
+              "label": "75–79",
+              "name": "75_79"
+            },
+            {
+              "label": "80–84",
+              "name": "80_84"
+            },
+            {
+              "label": "85+",
+              "name": "85_plus"
+            },
+            {
+              "label": "Prefer not to say",
+              "name": "prefer_not_to_say"
+            }
+          ]
+        }
+      ],
+      "programId": "4605ac47"
+    }
+  ],
+  "modelConfig": {
+    "temperature": 0.1
+  },
+  "optimizerType": "bootstrap_few_shot",
+  "timestamp": "2026-02-16T14:15:38.761Z"
+}

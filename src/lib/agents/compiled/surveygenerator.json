@@ -1,0 +1,393 @@
+{
+  "version": "2.0",
+  "bestScore": 1,
+  "stats": {
+    "totalExamples": 1,
+    "totalRounds": 1,
+    "totalTime": 0
+  },
+  "instruction": "Generate a comprehensive survey based on a research goal. Use the context questions as inspiration for style and formulation.",
+  "signature": "researchQuestion:string, language:string, demographics?:string, contextQuestions?:string -> reasoning:string, generatedQuestions:json",
+  "demos": [
+    {
+      "traces": [
+        {
+          "researchQuestion": "Employee satisfaction in remote teams",
+          "language": "informal",
+          "demographics": "department, years_of_experience",
+          "contextQuestions": "[]",
+          "reasoning": "To assess **employee satisfaction in remote teams**, the survey should explore both the quantitative and qualitative aspects of their experience. Key areas to address include overall job satisfaction, factors influencing it (such as communication, flexibility, and workload), challenges faced by remote workers, and perceptions of team cohesion and company support. The survey will also include demographic questions to analyze potential differences across departments and experience levels. Given the informal tone, questions should be conversational and easy to answer, avoiding overly technical or jargon-heavy phrasing.\n\n---",
+          "generatedQuestions": {
+            "questions": [
+              {
+                "question": "How satisfied are you with your current job on a scale of 1 to 10, where 1 is 'Not at all satisfied' and 10 is 'Extremely satisfied'?",
+                "type": "scale",
+                "scale_options": [
+                  "1",
+                  "2",
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "10"
+                ]
+              },
+              {
+                "question": "What’s the biggest perk of working remotely for you?",
+                "type": "open-ended"
+              },
+              {
+                "question": "Do you feel your job expectations are clear while working remotely? (e.g., deadlines, quality standards, and communication)",
+                "type": "multiple-choice",
+                "options": [
+                  "Yes, very clear",
+                  "Mostly clear, but I have some questions",
+                  "A bit unclear, I need more guidance",
+                  "Not clear at all"
+                ]
+              },
+              {
+                "question": "How often do you feel disconnected from your team?",
+                "type": "scale",
+                "scale_options": [
+                  "Never",
+                  "Rarely",
+                  "Sometimes",
+                  "Often",
+                  "Always"
+                ],
+                "description": "This could be due to lack of communication, team activities, or feeling out of the loop."
+              },
+              {
+                "question": "Do you have the tools and resources you need to do your job effectively while working remotely?",
+                "type": "multiple-choice",
+                "options": [
+                  "Yes, everything is perfect",
+                  "Mostly yes, but a few things are missing",
+                  "No, I lack some important tools/resources"
+                ]
+              },
+              {
+                "question": "How flexible is your work schedule compared to pre-remote work?",
+                "type": "scale",
+                "scale_options": [
+                  "Much less flexible",
+                  "Slightly less flexible",
+                  "About the same",
+                  "Slightly more flexible",
+                  "Much more flexible"
+                ]
+              },
+              {
+                "question": "Which of the following challenges does remote work pose for you? (Select all that apply)",
+                "type": "multiple-choice-multi",
+                "options": [
+                  "Difficulty communicating with team members",
+                  "Blurred line between work and personal life",
+                  "Harder to stay motivated",
+                  "Lack of visibility in my achievements",
+                  "No challenges, remote work is smooth sailing",
+                  "Other (please specify)"
+                ]
+              },
+              {
+                "question": "Do you feel your performance is better, worse, or the same since working remotely?",
+                "type": "multiple-choice",
+                "options": [
+                  "Much better",
+                  "Slightly better",
+                  "About the same",
+                  "Slightly worse",
+                  "Much worse"
+                ]
+              },
+              {
+                "question": "How often do you participate in virtual team activities or meetings that help you bond with your colleagues?",
+                "type": "scale",
+                "scale_options": [
+                  "Never",
+                  "Rarely",
+                  "Sometimes",
+                  "Often",
+                  "Always"
+                ]
+              },
+              {
+                "question": "Does your company provide enough support for remote employees? For example, mental health resources, tech troubleshooting, or career development opportunities.",
+                "type": "scale",
+                "scale_options": [
+                  "Strongly disagree",
+                  "Disagree",
+                  "Neutral",
+                  "Agree",
+                  "Strongly agree"
+                ]
+              },
+              {
+                "question": "What’s one thing your company could do to improve your remote work experience?",
+                "type": "open-ended"
+              },
+              {
+                "question": "How do you prefer to communicate with your team while working remotely?",
+                "type": "multiple-choice-multi",
+                "options": [
+                  "Email",
+                  "Instant messaging (e.g., Slack, Microsoft Teams)",
+                  "Video calls (e.g., Zoom, Google Meet)",
+                  "Project management tools (e.g., Trello, Asana)",
+                  "In-person meetings (if applicable)",
+                  "Other (please specify)"
+                ]
+              },
+              {
+                "question": "Which department are you part of?",
+                "type": "multiple-choice",
+                "options": [
+                  "HR",
+                  "Finance",
+                  "Marketing",
+                  "Engineering",
+                  "Sales",
+                  "Product",
+                  "Operations",
+                  "Support",
+                  "Other (please specify)"
+                ]
+              },
+              {
+                "question": "How many years of experience do you have in your current role?",
+                "type": "multiple-choice",
+                "options": [
+                  "Less than 1 year",
+                  "1-2 years",
+                  "3-5 years",
+                  "6-10 years",
+                  "More than 10 years"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "researchQuestion": "Employee satisfaction in remote teams",
+          "language": "informal",
+          "demographics": "department, years_of_experience",
+          "contextQuestions": "[]",
+          "reasoning": "To assess employee satisfaction in remote teams, the survey should focus on key aspects such as work-life balance, communication effectiveness, leadership support, collaboration, productivity, and overall engagement. Given the informal language and the inclusion of department and years of experience as demographics, the questions should be conversational, relatable, and designed to uncover nuanced insights across different roles and experience levels. The survey should balance quantitative (e.g., Likert scales) and qualitative (open-ended) questions to capture both broad trends and specific feedback. Demographic filters will help analyze responses by department or tenure, identifying patterns or challenges unique to certain groups.",
+          "generatedQuestions": [
+            {
+              "question": "How often do you feel like your work-life balance is well-maintained while working remotely?",
+              "type": "Likert",
+              "options": [
+                "Never",
+                "Rarely",
+                "Sometimes",
+                "Often",
+                "Always"
+              ],
+              "demographics": [
+                "department",
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "Do you feel like you have the tools and resources you need to do your job effectively from home?",
+              "type": "Multiple Choice",
+              "options": [
+                "Not at all",
+                "Somewhat, but there’s room for improvement",
+                "Pretty much",
+                "Completely"
+              ],
+              "demographics": [
+                "department",
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "How would you rate your overall communication with your team since transitioning to remote work?",
+              "type": "Likert",
+              "options": [
+                "Very poor",
+                "Poor",
+                "Neutral",
+                "Good",
+                "Very good"
+              ],
+              "demographics": [
+                "department",
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "Do you feel supported by your manager or leadership in a remote setting?",
+              "type": "Multiple Choice",
+              "options": [
+                "No, not really",
+                "Somewhat, but I wish they could do more",
+                "Yes, they’re very supportive",
+                "I don’t interact much with my manager/leader"
+              ],
+              "demographics": [
+                "department"
+              ]
+            },
+            {
+              "question": "What’s the biggest challenge you face when working collaboratively in a remote team?",
+              "type": "Open-ended",
+              "demographics": [
+                "department"
+              ]
+            },
+            {
+              "question": "On a scale of 1-10, how productive do you feel you are while working remotely? (10 being the most productive)",
+              "type": "Scale",
+              "options": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "demographics": [
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "Do you feel like remote work has helped you focus better on your tasks?",
+              "type": "Yes/No",
+              "follow_up": {
+                "question": "In what ways has remote work improved or hindered your focus? (Optional)",
+                "type": "Open-ended"
+              },
+              "demographics": [
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "What’s one thing your company could do to make remote work feel more like an in-office experience?",
+              "type": "Open-ended",
+              "demographics": []
+            },
+            {
+              "question": "How often do you feel connected to the company culture while working remotely?",
+              "type": "Likert",
+              "options": [
+                "Never",
+                "Rarely",
+                "Sometimes",
+                "Often",
+                "Always"
+              ],
+              "demographics": [
+                "department"
+              ]
+            },
+            {
+              "question": "What’s the most frustrating part of remote work for you?",
+              "type": "Open-ended",
+              "demographics": []
+            },
+            {
+              "question": "If you could change one thing about how your team collaborates remotely, what would it be?",
+              "type": "Open-ended",
+              "demographics": [
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "How often do you miss in-person interactions with your team?",
+              "type": "Likert",
+              "options": [
+                "Never",
+                "Rarely",
+                "Sometimes",
+                "Often",
+                "Always"
+              ],
+              "demographics": [
+                "department"
+              ]
+            },
+            {
+              "question": "Do you feel like your performance is recognized or rewarded fairly when working remotely?",
+              "type": "Multiple Choice",
+              "options": [
+                "No, not at all",
+                "It’s inconsistent",
+                "Yes, pretty fairly",
+                "I haven’t noticed"
+              ],
+              "demographics": [
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "What’s one thing your company does really well to support remote employees?",
+              "type": "Open-ended",
+              "demographics": []
+            },
+            {
+              "question": "How often do you feel like you’re missing out on important information because you’re remote?",
+              "type": "Likert",
+              "options": [
+                "Never",
+                "Rarely",
+                "Sometimes",
+                "Often",
+                "Always"
+              ],
+              "demographics": [
+                "department"
+              ]
+            },
+            {
+              "question": "Do you feel like remote work has given you more flexibility in your schedule?",
+              "type": "Yes/No",
+              "follow_up": {
+                "question": "How has this flexibility affected your job satisfaction? (Optional)",
+                "type": "Open-ended"
+              },
+              "demographics": [
+                "years_of_experience"
+              ]
+            },
+            {
+              "question": "On a scale of 1-10, how satisfied are you with your current remote setup? (10 being the most satisfied)",
+              "type": "Scale",
+              "options": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "demographics": [
+                "department"
+              ]
+            }
+          ]
+        }
+      ],
+      "programId": "5b62a32f"
+    }
+  ],
+  "modelConfig": {
+    "temperature": 0.1
+  },
+  "optimizerType": "bootstrap_few_shot",
+  "timestamp": "2026-02-16T13:37:09.738Z"
+}

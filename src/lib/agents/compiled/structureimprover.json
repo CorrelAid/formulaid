@@ -1,0 +1,50 @@
+{
+  "version": "2.0",
+  "bestScore": 1,
+  "stats": {
+    "totalExamples": 1,
+    "totalRounds": 1,
+    "totalTime": 0
+  },
+  "instruction": "Organize survey questions into a logical sequence. Group related topics and ensure smooth transitions.",
+  "signature": "researchQuestion:string, questions:string -> reasoning:string, organizedQuestions:json",
+  "demos": [
+    {
+      "traces": [
+        {
+          "researchQuestion": "Sustainability habits",
+          "questions": "[{\"label\": \"Do you recycle?\", \"name\": \"q2\"}, {\"label\": \"What is your name?\", \"name\": \"name\"}, {\"label\": \"How often do you buy organic?\", \"name\": \"q1\"}]",
+          "reasoning": "The research question focuses on **sustainability habits**, so questions unrelated to this topic (e.g., \"What is your name?\") should be excluded. The remaining questions should be logically grouped to assess different dimensions of sustainability behavior—**waste reduction (recycling)** and **consumption choices (organic purchases)**. The order should flow from general habits to specific actions for clarity.",
+          "organizedQuestions": {
+            "section1": {
+              "title": "General Sustainability Habits",
+              "description": "Questions about common practices to reduce environmental impact.",
+              "questions": [
+                {
+                  "label": "Do you recycle?",
+                  "name": "q2"
+                }
+              ]
+            },
+            "section2": {
+              "title": "Consumption Choices",
+              "description": "Questions about purchasing decisions that support sustainability.",
+              "questions": [
+                {
+                  "label": "How often do you buy organic?",
+                  "name": "q1"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "programId": "7575ba4d"
+    }
+  ],
+  "modelConfig": {
+    "temperature": 0.1
+  },
+  "optimizerType": "bootstrap_few_shot",
+  "timestamp": "2026-02-16T13:37:16.911Z"
+}
