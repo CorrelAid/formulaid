@@ -96,6 +96,10 @@ const server = Bun.serve({
       console.log(`  → Serving: ${filePath}`);
       const response = new Response(file);
       
+      // Add cross-origin isolation headers for SharedArrayBuffer support (DuckDB-Wasm)
+      response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+      response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+
       // Add content-type based on extension
       if (pathname.endsWith('.js')) response.headers.set('Content-Type', 'application/javascript; charset=utf-8');
       if (pathname.endsWith('.css')) response.headers.set('Content-Type', 'text/css; charset=utf-8');
@@ -104,6 +108,7 @@ const server = Bun.serve({
       if (pathname.endsWith('.svg')) response.headers.set('Content-Type', 'image/svg+xml');
       if (pathname.endsWith('.otf')) response.headers.set('Content-Type', 'font/otf');
       if (pathname.endsWith('.ttf')) response.headers.set('Content-Type', 'font/ttf');
+      if (pathname.endsWith('.wasm')) response.headers.set('Content-Type', 'application/wasm');
       
       return response;
     }
@@ -113,7 +118,11 @@ const server = Bun.serve({
       if (await dirIndexFile.exists()) {
         console.log(`  → Serving: ./dist${pathname}/index.html`);
         return new Response(dirIndexFile, {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
+          headers: { 
+            "Content-Type": "text/html; charset=utf-8",
+            "Cross-Origin-Embedder-Policy": "require-corp",
+            "Cross-Origin-Opener-Policy": "same-origin"
+          }
         });
       }
     }
@@ -124,7 +133,11 @@ const server = Bun.serve({
       if (await htmlFile.exists()) {
         console.log(`  → Serving: ${filePath}.html`);
         return new Response(htmlFile, {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
+          headers: { 
+            "Content-Type": "text/html; charset=utf-8",
+            "Cross-Origin-Embedder-Policy": "require-corp",
+            "Cross-Origin-Opener-Policy": "same-origin"
+          }
         });
       }
     }
