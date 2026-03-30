@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
 	import TraceList from './TraceList.svelte';
+	import { t } from '$lib/i18n';
 
-	let { 
-		aiLoading, 
-		aiStatus, 
-		traces, 
-		onGenerate, 
+	let {
+		aiLoading,
+		aiStatus,
+		traces,
+		onGenerate,
 		onDownload,
 		onReset,
 		generatedFile
@@ -22,34 +22,32 @@
 </script>
 
 <section class="results-section">
-	<h2>4. Generierung & Export</h2>
-	
 	<div class="actions">
 		{#if generatedFile}
 			<button class="secondary-btn" onclick={onReset} disabled={aiLoading}>
-				Neu generieren
+				{$t('wizard.generateNew')}
 			</button>
-			<button 
-				class="primary-btn" 
+			<button
+				class="primary-btn"
 				onclick={onDownload}
 				disabled={aiLoading}
 			>
-				Datei herunterladen
+				{$t('wizard.downloadFile')}
 			</button>
 		{:else}
-			<button 
-				class="primary-btn" 
+			<button
+				class="primary-btn"
 				onclick={onGenerate}
 				disabled={aiLoading}
 			>
-				{aiLoading ? aiStatus : 'Umfrage mit KI generieren'}
+				{aiLoading ? aiStatus : $t('wizard.generateBtn')}
 			</button>
 		{/if}
 	</div>
 
 	{#if generatedFile}
-		<div class="success-alert" in:fade>
-			<p>✅ <strong>Umfrage verarbeitet!</strong> Die XLSForm wurde generiert.</p>
+		<div class="success-alert">
+			<p>{$t('wizard.generated')}</p>
 		</div>
 	{/if}
 
@@ -58,42 +56,43 @@
 
 <style>
 	.results-section {
-		margin-top: 3rem;
-		padding-top: 2rem;
-		border-top: 2px solid var(--color-tertiary);
-	}
-
-	h2 {
-		color: var(--color-text-primary, #333);
-		font-size: 1.5rem;
-		margin-bottom: 1.5rem;
+		background: var(--color-white);
+		border: var(--dimension-border-width) solid var(--color-text-primary);
+		border-radius: var(--radius-lg);
+		padding: var(--spacing-lg);
 	}
 
 	.actions {
 		display: flex;
-		gap: 1rem;
-		margin-bottom: 1.5rem;
+		gap: var(--spacing-sm);
 	}
 
 	.primary-btn, .secondary-btn {
-		padding: 0.75rem 1.5rem;
-		border-radius: 0.75rem;
-		font-weight: 600;
+		padding: 0.75rem var(--spacing-lg);
+		border-radius: var(--radius-md);
+		font-weight: var(--font-weight-semibold);
 		cursor: pointer;
 		transition: opacity 0.2s;
-		border: none;
+		border: var(--dimension-border-width) solid var(--color-text-primary);
 		flex-grow: 1;
 	}
 
 	.primary-btn {
-		background: var(--color-secondary, #5b92f6);
-		color: white;
+		background: var(--color-text-primary);
+		color: var(--color-text-secondary);
+	}
+
+	.primary-btn:hover:not(:disabled) {
+		opacity: 0.9;
 	}
 
 	.secondary-btn {
-		background: #f0f0f0;
-		color: #333;
-		border: 1px solid #ddd;
+		background: var(--color-white);
+		color: var(--color-text-primary);
+	}
+
+	.secondary-btn:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-tertiary) 30%, white);
 	}
 
 	.primary-btn:disabled, .secondary-btn:disabled {
@@ -102,16 +101,15 @@
 	}
 
 	.success-alert {
-		background: #f0fff4;
-		border: 1px solid #68d391;
-		padding: 1rem;
-		border-radius: 0.75rem;
-		margin-bottom: 1.5rem;
-		text-align: center;
+		background: var(--color-tertiary);
+		padding: var(--spacing-sm) var(--spacing-base);
+		border-radius: var(--radius-md);
+		margin-top: var(--spacing-sm);
 	}
 
 	.success-alert p {
 		margin: 0;
-		color: #2f855a;
+		color: var(--color-text-primary);
+		font-weight: var(--font-weight-medium);
 	}
 </style>

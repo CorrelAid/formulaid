@@ -1,24 +1,31 @@
-export const demographicVariables = [
-	{ name: 'Geschlecht', question_name: 'sex' },
-	{ name: 'Alter', question_name: 'age' },
-	{ name: 'Staatsangehörigkeit', question_name: 'citizenship' },
-	{ name: 'Arbeitserlaubnis', question_name: 'work_permit' },
-	{ name: 'Geburtsland', question_name: 'country_of_birth' },
-	{ name: 'Zuzugsjahr', question_name: 'year_of_arrival' },
-	{ name: 'Familienstand', question_name: 'marital_status' },
-	{ name: 'Schulabschluss', question_name: 'school_education' },
-	{ name: 'Berufsabschluss', question_name: 'vocational_training' },
-	{ name: 'Erwerbssituation', question_name: 'main_activity' },
-	{ name: 'Anzahl Beschäftigungsverhältnisse', question_name: 'employment_status' },
-	{ name: 'Berufliche Tätigkeit', question_name: 'occupation' },
-	{ name: 'Berufliche Stellung', question_name: 'occupational_position' },
-	{ name: 'Internetnutzung', question_name: 'communication_usage' },
-	{ name: 'Haushaltsgröße', question_name: 'household_size' },
-	{ name: 'Haushaltsnettoeinkommen', question_name: 'household_income' }
-];
-
 export const SESSION_KEY = 'formulaid_api_key';
 
-export const EMBEDDING_MODEL = 'mistralai/mistral-embed-2312';
+export const CHAT_MODEL = 'mistralai/mistral-small-2603';
 
-export const CHAT_MODEL = 'mistralai/ministral-14b-2512';
+export interface DemographicVariable {
+	name: string;
+	question_name: string;
+	question_id: string;
+	question_text: string;
+	question_type: string;
+	answer_options_text: string;
+}
+
+export const demographicVariables: DemographicVariable[] = [
+	{ name: 'Geschlecht', question_name: 'sex', question_id: '6c19ba5f8ce9', question_text: 'Welches Geschlecht haben Sie?', question_type: 'select_one', answer_options_text: 'Männlich\nWeiblich\nDivers' },
+	{ name: 'Alter', question_name: 'age', question_id: 'bda5c010ec81', question_text: 'Wann sind Sie geboren?', question_type: 'date', answer_options_text: '' },
+	{ name: 'Staatsangehörigkeit', question_name: 'citizenship', question_id: '342695749d3a', question_text: 'Haben Sie die deutsche Staatsangehörigkeit?', question_type: 'select_one', answer_options_text: 'Ja\nNein' },
+	{ name: 'Arbeitserlaubnis', question_name: 'work_permit', question_id: '59ce4a2b4a55', question_text: 'Haben Sie eine Arbeitserlaubnis?', question_type: 'select_one', answer_options_text: 'Ja\nNein' },
+	{ name: 'Geburtsland', question_name: 'country_of_birth', question_id: '2de46741bd8b', question_text: 'Sind Sie in Deutschland geboren worden?', question_type: 'select_one', answer_options_text: 'Ja\nNein' },
+	{ name: 'Zuzugsjahr', question_name: 'year_of_arrival', question_id: 'c9b4739380d4', question_text: 'In welchem Jahr sind Sie nach Deutschland gezogen?', question_type: 'integer', answer_options_text: '' },
+	{ name: 'Familienstand', question_name: 'marital_status', question_id: '7a867899d3dd', question_text: 'Welchen Familienstand haben Sie?', question_type: 'select_one', answer_options_text: 'ledig, war noch nie verheiratet\nverheiratet oder Eingetragene Lebenspartnerschaft, zusammenlebend\nverheiratet oder Eingetragene Lebenspartnerschaft, aber in Trennung lebend\ngeschieden, Eingetragene Lebenspartnerschaft aufgehoben\nverwitwet, Eingetragene*r Lebenspartner*in verstorben' },
+	{ name: 'Schulabschluss', question_name: 'school_education', question_id: 'bdc227e9ee17', question_text: 'Welchen höchsten allgemeinbildenden Schulabschluss haben Sie?', question_type: 'select_one', answer_options_text: 'Schüler*in, besuche eine allgemeinbildende Vollzeitschule\nVon der Schule abgegangen ohne Schulabschluss\nHauptschulabschluss, Volksschulabschluss oder vergleichbarer Abschluss\nPolytechnische Oberschule der DDR mit Abschluss der 8. oder 9. Klasse\nRealschulabschluss, Mittlere Reife oder vergleichbarer Abschluss\nPolytechnische Oberschule der DDR mit Abschluss der 10. Klasse\nFachhochschulreife\nAbitur, Allgemeine oder Fachgebundene Hochschulreife, Gymnasium bzw. EOS, auch EOS mit Lehre.\neinen anderen Schulabschluss in einem anderen Land gemacht' },
+	{ name: 'Berufsabschluss', question_name: 'vocational_training', question_id: '34b71e2fa146', question_text: 'Welchen höchsten beruflichen Ausbildungsabschluss haben Sie?', question_type: 'select_one', answer_options_text: 'noch in Ausbildung oder Studium (auch Berufsvorbereitungsjahr, Praktikum, (Berufs-) Fachschule oder Ähnliches)\nkein beruflicher Abschluss und nicht in beruflicher Ausbildung\nAbschluss einer beruflich-betrieblichen Berufsausbildung, Lehre\nberufsqualifizierender Abschluss einer beruflich-schulischen Ausbildung z.B. an einer Berufsfachschule oder einer Kollegschule\nAbschluss einer Fach-, Meister-, Technikerschule, Verwaltungs- und Wirtschaftsakademie, Berufs- oder Fachakademie\nBachelor, Diplom (FH) Verwaltungsfachhochschule\nMaster, Diplom (Uni), Magister, Staatsexamen, Promotion\neinen anderen beruflichen Abschluss in einem anderen Land gemacht' },
+	{ name: 'Erwerbssituation', question_name: 'main_activity', question_id: '8fe79bab1520', question_text: 'Welche Erwerbssituation passt für Sie?', question_type: 'select_one', answer_options_text: 'Vollzeiterwerbstätig gemäß den branchenüblichen oder betrieblichen Regeln\nTeilzeiterwerbstätig, auch Midijob, aber kein Minijob\nGeringfügig, gelegentlich, kurzfristig oder unregelmäßig beschäftigt (520-Euro-Job, Minijob, Ein-Euro-Job, Saisonarbeit)\nAltersteilzeit, unabhängig davon, ob in der Arbeits- oder Freistellungsphase befindlich\nin einer beruflichen Ausbildung\nin Umschulung\nFreiwilliger Wehrdienst\nBundesfreiwilligendienst, freiwilliges soziales oder ökologisches Jahr\nErwerbsunterbrechung wegen Mutterschutz, Elternzeit, Pflegezeit oder Familienpflegezeit\nNicht erwerbstätig' },
+	{ name: 'Beschäftigungsverhältnisse', question_name: 'employment_status', question_id: '9ad82ae1a74b', question_text: 'Wie viele Beschäftigungsverhältnisse in abhängiger Beschäftigung haben Sie?', question_type: 'select_one', answer_options_text: 'Eins\nZwei\nDrei oder mehr\nNicht abhängig beschäftigt, ausschließlich selbständig oder freiberuflich tätig' },
+	{ name: 'Berufliche Tätigkeit', question_name: 'occupation', question_id: '857077d129f6', question_text: 'Welche berufliche Tätigkeit üben sie aus?', question_type: 'text', answer_options_text: '' },
+	{ name: 'Berufliche Stellung', question_name: 'occupational_position', question_id: 'd36947bca847', question_text: 'Welche berufliche Stellung haben oder hatten Sie in ihrer hauptsächlich ausgeübten Erwerbstätigkeit?', question_type: 'select_one', answer_options_text: 'Selbständige*r Landwirt*in oder Genossenschaftsbauer\nSelbständige*r, Freiberufler*in ohne Beschäftigte\nSelbständige*r, Freiberufler*in mit Beschäftigten\nAkademiker*in in Freiem Beruf (Arzt/Ärztin, Rechtsanwalt/Rechtsanwältin, Steuerberater*in und Ähnliches)\nSelbständig im Handel, Im Gastgewerbe, im Handwerk, in der Industrie, in der Dienstleistung, auch Ich-AG oder PGH-Mitglied\nBeamtenanwärter*in\nBeamter/Beamtin, Richter*in, Berufssoldat*in\nAngestellte*r\nArbeiter*in\nin einer beruflichen Ausbildung/Lehre\nMithelfende*r Familienangehörige*r' },
+	{ name: 'Internetnutzung', question_name: 'communication_usage', question_id: '1cda9ca4813b', question_text: 'Wie häufig nutzen Sie das Internet?', question_type: 'select_one', answer_options_text: 'täglich\nmehrmals die Woche\neinmal die Woche\nseltener\nnie' },
+	{ name: 'Haushaltsgröße', question_name: 'household_size', question_id: '0392a1503e37', question_text: 'Wie viele Personen leben ständig in Ihrem Haushalt?', question_type: 'integer', answer_options_text: '' },
+	{ name: 'Haushaltsnettoeinkommen', question_name: 'household_income', question_id: '7ece34c1e38c', question_text: 'Wie hoch ist das monatliche Haushaltsnettoeinkommen?', question_type: 'select_one', answer_options_text: 'unter 500 Euro\n500 bis unter 750 Euro\n750 bis unter 1.000 Euro\n1.000 bis unter 1.250 Euro\n1.250 bis unter 1.500 Euro\n1.500 bis unter 1.750 Euro\n1.750 bis unter 2.000 Euro\n2.000 bis unter 2.250 Euro\n2.250 bis unter 2.500 Euro\n2.500 bis unter 2.750 Euro\n2.750 bis unter 3.000 Euro\n3.000 bis unter 3.250 Euro\n3.250 bis unter 3.500 Euro\n3.500 bis unter 4.000 Euro\n4.000 bis unter 4.500 Euro\n4.500 bis unter 5.000 Euro\n5.000 bis unter 6.000 Euro\n6.000 bis unter 7.000 Euro\n7.000 bis unter 8.000 Euro\n8.000 bis unter 10.000 Euro\n10.000 bis unter 15.000 Euro\n15.000 bis unter 25.000 Euro\n25.000 Euro und mehr' }
+];

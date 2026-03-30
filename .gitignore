@@ -2,6 +2,7 @@ node_modules
 
 # Output
 .output
+scripts/test_output/
 .vercel
 .netlify
 .wrangler

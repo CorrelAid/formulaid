@@ -23,6 +23,8 @@ export interface Survey {
 
 export interface AgentInput {
 	researchQuestion: string;
+	targetGroup?: string;
+	useOfResults?: string;
 	language: 'formal' | 'informal';
 	selectedDemographics: string[];
 	demographicQuestions: Question[];

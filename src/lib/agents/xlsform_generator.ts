@@ -3,17 +3,18 @@ import * as XLSX from 'xlsx';
 
 export class XLSFormGenerator {
 	generate(survey: Survey): Uint8Array {
-		const surveyData = [['type', 'name', 'label', 'hint', 'required']];
-		const choicesData = [['list_name', 'name', 'label']];
+		const surveyData = [['type', 'name', 'label', 'hint', 'required', 'relevant']];
+		const choicesData = [['list_name', 'name', 'label', 'exclusive']];
 
 		for (const q of survey.questions) {
 			let rowType: string = q.type;
-			if ((q.type === 'select_one' || q.type === 'select_multiple') && q.choices && q.choices.length > 0) {
-				const listName = `${q.name}_list`;
-				rowType = `${q.type} ${listName}`;
-				
+			const baseType = q.type.split(' ')[0];
+			const embeddedList = q.type.split(' ')[1]; // e.g. "skala5" from "select_one skala5"
+			if ((baseType === 'select_one' || baseType === 'select_multiple') && q.choices && q.choices.length > 0) {
+				const listName = embeddedList ?? `${q.name}_list`;
+				rowType = `${baseType} ${listName}`;
 				for (const choice of q.choices) {
-					choicesData.push([listName, choice.name, choice.label]);
+					choicesData.push([listName, choice.name, choice.label, (choice as any).exclusive ? 'yes' : '']);
 				}
 			}
 
@@ -22,7 +23,8 @@ export class XLSFormGenerator {
 				q.name,
 				q.label,
 				q.hint || '',
-				q.required ? 'yes' : 'no'
+				q.required ? 'yes' : 'no',
+				(q as any).relevant ?? (q as any).relevance ?? ''
 			]);
 		}
 

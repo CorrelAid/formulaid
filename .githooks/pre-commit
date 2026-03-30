@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Rebuild the xlsform skill with fresh content from external sources,
+# then stage the result so it's included in the commit.
+
+echo "🔧 Rebuilding xlsform skill..."
+bash scripts/build_skill.sh
