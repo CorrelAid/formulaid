@@ -4,24 +4,24 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async ({ request }) => {
 	const { apiKey, model: modelName, ...input } = await request.json();
 
-	if (!apiKey) {
-		return new Response(JSON.stringify({ error: 'API key not provided' }), { 
+	const isFreeModel = (modelName as string)?.endsWith(':free');
+	if (!apiKey && !isFreeModel) {
+		return new Response(JSON.stringify({ error: 'API key not provided' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		});
 	}
 
+	let closed = false;
 	const stream = new ReadableStream({
 		async start(controller) {
 			const encoder = new TextEncoder();
-			let closed = false;
 
 			const send = (data: any) => {
 				if (closed) return;
 				try {
 					controller.enqueue(encoder.encode(JSON.stringify(data) + '\n'));
-				} catch (e) {
-					console.error('Failed to enqueue data:', e);
+				} catch {
 					closed = true;
 				}
 			};
@@ -62,7 +62,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 		},
 		cancel() {
-			// Handle client disconnect
+			closed = true;
 		}
 	});
 

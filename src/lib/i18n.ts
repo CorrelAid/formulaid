@@ -22,6 +22,13 @@ const translations: Record<Locale, Record<string, string>> = {
 
 		// Form
 		'wizard.modelHeading': 'AI Model',
+		'wizard.modelInfo': 'This tool uses OpenRouter to access AI models. Create a free account at',
+		'wizard.modelInfoLink': 'openrouter.ai',
+		'wizard.modelInfoMid': 'to get an API key, then enter it via the key icon in the header. Browse available models at',
+		'wizard.modelInfoModelsLink': 'openrouter.ai/models',
+		'wizard.modelInfoEnd': '— free-tier models work well for most surveys. If you get a "No endpoints available" error, allow third-party model access in your',
+		'wizard.modelInfoPrivacyLink': 'OpenRouter privacy settings',
+		'wizard.modelPrivacyError': 'OpenRouter blocked the request due to your privacy settings. Allow third-party model access at',
 		'wizard.modelLabel': 'OpenRouter Model',
 		'wizard.phase1Heading': '1. Research Goal',
 		'wizard.phase1Desc': 'Describe what you want to find out. One sentence is enough.',
@@ -86,6 +93,13 @@ const translations: Record<Locale, Record<string, string>> = {
 
 		// Form
 		'wizard.modelHeading': 'KI Modell',
+		'wizard.modelInfo': 'Dieses Tool nutzt OpenRouter für den Zugriff auf KI-Modelle. Erstelle ein kostenloses Konto auf',
+		'wizard.modelInfoLink': 'openrouter.ai',
+		'wizard.modelInfoMid': 'um einen API Key zu erhalten, und trage ihn über das Schlüssel-Icon im Header ein. Verfügbare Modelle findest du auf',
+		'wizard.modelInfoModelsLink': 'openrouter.ai/models',
+		'wizard.modelInfoEnd': '— kostenlose Modelle eignen sich gut für die meisten Umfragen. Bei einem „No endpoints available"-Fehler bitte den Zugang zu Drittanbieter-Modellen in den',
+		'wizard.modelInfoPrivacyLink': 'OpenRouter Datenschutzeinstellungen',
+		'wizard.modelPrivacyError': 'OpenRouter hat die Anfrage aufgrund deiner Datenschutzeinstellungen blockiert. Erlaube den Zugang zu Drittanbieter-Modellen unter',
 		'wizard.modelLabel': 'OpenRouter Model',
 		'wizard.phase1Heading': '1. Forschungsziel',
 		'wizard.phase1Desc': 'Beschreibe, was du herausfinden möchtest. Ein Satz reicht.',

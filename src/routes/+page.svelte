@@ -10,10 +10,11 @@
 	// Form state
 	let language = $state<'formal' | 'informal' | null>(null);
 	let selectedDemographics = $state<string[]>([]);
-	let researchQuestion = $state('');
-	let targetGroup = $state('');
-	let useOfResults = $state('');
+	let researchQuestion = $state('How satisfied are volunteers with their engagement in our organization?');
+	let targetGroup = $state('Active volunteers of a mid-sized environmental NGO');
+	let useOfResults = $state('Annual donor report and internal programme evaluation');
 	let model = $state(CHAT_MODEL);
+	let isFreeModel = $derived(model.endsWith(':free'));
 
 	// Generation state
 	let aiLoading = $state(false);
@@ -45,7 +46,7 @@
 	}
 
 	async function generateWithAI() {
-		if (!appSettings.isKeySet) {
+		if (!appSettings.isKeySet && !isFreeModel) {
 			wizardError = $t('wizard.apiKeyMissing');
 			return;
 		}
@@ -112,7 +113,8 @@
 				}
 			}
 		} catch (e) {
-			wizardError = (e as Error).message;
+			const msg = (e as Error).message;
+			wizardError = msg.toLowerCase().includes('no endpoints available') ? '__privacy__' : msg;
 		} finally {
 			aiLoading = false;
 		}
@@ -161,9 +163,6 @@
 					<div class="skill-install"><code>https://qwacback.correlaid.org/mcp</code></div>
 				</li>
 			</ol>
-			<p>
-				<strong>XLSForm Generator</strong> &mdash; generates methodologically sound XLSForm .xlsx files with validated instruments from the qwac question bank
-			</p>
 		</div>
 	</details>
 
@@ -244,6 +243,11 @@
 	<details class="model-section">
 		<summary>{$t('wizard.modelHeading')}</summary>
 		<div class="model-body">
+			<p class="model-info">
+				{$t('wizard.modelInfo')} <a href="https://openrouter.ai" target="_blank" rel="noopener">{$t('wizard.modelInfoLink')}</a>
+				{$t('wizard.modelInfoMid')} <a href="https://openrouter.ai/models" target="_blank" rel="noopener">{$t('wizard.modelInfoModelsLink')}</a>
+				{$t('wizard.modelInfoEnd')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">{$t('wizard.modelInfoPrivacyLink')}</a>.
+			</p>
 			<div class="input-group">
 				<label for="model-select">{$t('wizard.modelLabel')}</label>
 				<input
@@ -270,7 +274,7 @@
 		}}
 	/>
 
-	{#if !appSettings.isKeySet}
+	{#if !appSettings.isKeySet && !isFreeModel}
 		<div class="warning-box" in:fade>
 			<p>{$t('wizard.apiKeyWarning')}</p>
 		</div>
@@ -278,7 +282,11 @@
 
 	{#if wizardError}
 		<div class="error" in:fade>
-			<p><strong>{$t('wizard.error')}</strong> {wizardError}</p>
+			{#if wizardError === '__privacy__'}
+				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelPrivacyError')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">openrouter.ai/settings/privacy</a>.</p>
+			{:else}
+				<p><strong>{$t('wizard.error')}</strong> {wizardError}</p>
+			{/if}
 			<button class="close-error" onclick={() => wizardError = null}>{$t('wizard.close')}</button>
 		</div>
 	{/if}
@@ -493,6 +501,18 @@
 		border-top: var(--dimension-border-width) solid var(--color-text-primary);
 	}
 
+	.model-info {
+		font-size: 0.9rem;
+		opacity: 0.75;
+		margin-bottom: var(--spacing-base);
+	}
+
+	.model-info a {
+		color: var(--color-text-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
 	.skills-body {
 		padding: var(--spacing-lg);
 		background: var(--color-white);
@@ -501,12 +521,16 @@
 
 	.skills-body ol {
 		padding-left: var(--spacing-lg);
-		margin: 0 0 var(--spacing-base) 0;
+		margin: 0;
 	}
 
 	.skills-body li {
 		margin-bottom: var(--spacing-base);
 		line-height: var(--line-height-relaxed);
+	}
+
+	.skills-body li:last-child {
+		margin-bottom: 0;
 	}
 
 	code {

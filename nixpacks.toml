@@ -23,8 +23,4 @@ cacheDirectories = [
 ]
 
 [start]
-cmd = "bun serve.js"
-
-# Ensure dist directory is included in the final image
-[staticAssets]
-"dist" = "dist"
+cmd = "node build/index.js"

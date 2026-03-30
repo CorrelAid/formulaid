@@ -51,17 +51,15 @@
 
 <div class="app-layout">
 	<div class="top-bar">
-		<div class="api-key-toggle">
-			<button class="settings-toggle" onclick={() => showSettings = !showSettings}>
-				{#if appSettings.isKeySet}
-					<span class="status-dot success"></span>
-					{$t('header.apiKeySet')}
-				{:else}
-					<span class="status-dot error"></span>
-					{$t('header.apiKeyMissing')}
-				{/if}
-			</button>
-		</div>
+		<button class="settings-toggle" onclick={() => showSettings = !showSettings}>
+			{#if appSettings.isKeySet}
+				<span class="status-dot success"></span>
+				{$t('header.apiKeySet')}
+			{:else}
+				<span class="status-dot error"></span>
+				{$t('header.apiKeyMissing')}
+			{/if}
+		</button>
 		<LanguageSwitcher
 			{locales}
 			currentLocale={$locale}
@@ -157,11 +155,6 @@
 		align-items: center;
 		gap: var(--spacing-sm);
 		padding: var(--spacing-sm) var(--spacing-lg) 0;
-	}
-
-	.top-bar > :global(*) {
-		align-self: center;
-		margin: 0;
 	}
 
 	.settings-toggle {
