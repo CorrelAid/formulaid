@@ -94,7 +94,7 @@
 			</div>
 
 			<div class="input-group">
-				<label>{$t('header.storageLabel')}</label>
+				<span class="setting-label">{$t('header.storageLabel')}</span>
 				<div class="options-mini">
 					<button
 						class="mini-pill"

@@ -23,4 +23,4 @@ cacheDirectories = [
 ]
 
 [start]
-cmd = "node build/index.js"
+cmd = "bun serve.js"
