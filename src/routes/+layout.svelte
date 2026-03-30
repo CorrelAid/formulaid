@@ -14,6 +14,8 @@
 	let localMode = $state(appSettings.storageMode);
 	let isValidating = $state(false);
 	let validationError = $state<string | null>(null);
+	let mounted = $state(false);
+	$effect(() => { mounted = true; });
 
 	const locales = [
 		{ code: 'en', label: 'EN' },
@@ -52,7 +54,7 @@
 <div class="app-layout">
 	<div class="top-bar">
 		<button class="settings-toggle" onclick={() => showSettings = !showSettings}>
-			{#if appSettings.isKeySet}
+			{#if mounted && appSettings.isKeySet}
 				<span class="status-dot success"></span>
 				{$t('header.apiKeySet')}
 			{:else}
@@ -83,6 +85,7 @@
 					bind:value={localKey}
 					placeholder="sk-or-..."
 				/>
+				<p class="key-hint">{$t('header.apiKeyHint')}</p>
 			</div>
 
 			<div class="input-group">
@@ -313,6 +316,13 @@
 	.save-btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.key-hint {
+		margin: var(--spacing-xs) 0 0;
+		font-size: 0.75rem;
+		opacity: 0.55;
+		color: var(--color-text-primary);
 	}
 
 	.mini-error {

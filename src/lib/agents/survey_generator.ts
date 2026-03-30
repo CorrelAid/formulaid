@@ -40,10 +40,8 @@ export class SurveyGeneratorAgent {
 				return extractQuestions(result.generatedQuestions);
 			}
 		} catch (e) {
-			console.error('SurveyGeneratorAgent failed:', e);
+			throw e;
 		}
-
-		return [];
 	}
 
 	getTraces() {

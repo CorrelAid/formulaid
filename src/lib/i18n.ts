@@ -26,9 +26,11 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelInfoLink': 'openrouter.ai',
 		'wizard.modelInfoMid': 'to get an API key, then enter it via the key icon in the header. Browse available models at',
 		'wizard.modelInfoModelsLink': 'openrouter.ai/models',
+		'wizard.modelToolNote': 'The model must support tool/function calling — the agent uses it to search the question bank. Many free models do not support this; if generation fails, try a different model. A known working free model is qwen/qwen3.6-plus-preview:free.',
 		'wizard.modelInfoEnd': '— free-tier models work well for most surveys. If you get a "No endpoints available" error, allow third-party model access in your',
 		'wizard.modelInfoPrivacyLink': 'OpenRouter privacy settings',
 		'wizard.modelPrivacyError': 'OpenRouter blocked the request due to your privacy settings. Allow third-party model access at',
+		'wizard.modelStreamError': 'The model dropped the connection mid-generation. This usually means the model does not support streaming or tool calling well. Try a different model.',
 		'wizard.modelLabel': 'OpenRouter Model',
 		'wizard.phase1Heading': '1. Research Goal',
 		'wizard.phase1Desc': 'Describe what you want to find out. One sentence is enough.',
@@ -66,6 +68,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'header.ram': 'RAM',
 		'header.timed': '1h persistent',
 		'header.save': 'Save & Validate',
+		'header.apiKeyHint': 'Not required for free models (name ends in :free).',
 		'header.apiKeyError': 'API key validation failed.',
 
 		// Imprint
@@ -97,9 +100,11 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelInfoLink': 'openrouter.ai',
 		'wizard.modelInfoMid': 'um einen API Key zu erhalten, und trage ihn über das Schlüssel-Icon im Header ein. Verfügbare Modelle findest du auf',
 		'wizard.modelInfoModelsLink': 'openrouter.ai/models',
+		'wizard.modelToolNote': 'Das Modell muss Tool/Function Calling unterstützen — der Agent nutzt es, um die Fragendatenbank zu durchsuchen. Viele kostenlose Modelle unterstützen dies nicht; bei Fehlern bitte ein anderes Modell versuchen. Ein bekannt funktionierendes kostenloses Modell ist qwen/qwen3.6-plus-preview:free.',
 		'wizard.modelInfoEnd': '— kostenlose Modelle eignen sich gut für die meisten Umfragen. Bei einem „No endpoints available"-Fehler bitte den Zugang zu Drittanbieter-Modellen in den',
 		'wizard.modelInfoPrivacyLink': 'OpenRouter Datenschutzeinstellungen',
 		'wizard.modelPrivacyError': 'OpenRouter hat die Anfrage aufgrund deiner Datenschutzeinstellungen blockiert. Erlaube den Zugang zu Drittanbieter-Modellen unter',
+		'wizard.modelStreamError': 'Das Modell hat die Verbindung während der Generierung abgebrochen. Das Modell unterstützt wahrscheinlich kein Streaming oder Tool Calling. Bitte ein anderes Modell versuchen.',
 		'wizard.modelLabel': 'OpenRouter Model',
 		'wizard.phase1Heading': '1. Forschungsziel',
 		'wizard.phase1Desc': 'Beschreibe, was du herausfinden möchtest. Ein Satz reicht.',
@@ -137,6 +142,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'header.ram': 'RAM',
 		'header.timed': '1h persistent',
 		'header.save': 'Speichern & Validieren',
+		'header.apiKeyHint': 'Nicht erforderlich für kostenlose Modelle (Name endet auf :free).',
 		'header.apiKeyError': 'API Key Validierung fehlgeschlagen.',
 
 		// Imprint

@@ -19,9 +19,15 @@
 	// Generation state
 	let aiLoading = $state(false);
 	let aiStatus = $state('');
+	let aiStep = $state(0);
 	let traces = $state<any[]>([]);
 	let generatedFile = $state<string | null>(null);
 	let wizardError = $state<string | null>(null);
+
+	// 4 known status events → 25% each; clamp at 95 until done
+	let progress = $derived(
+		generatedFile ? 100 : aiLoading ? Math.min(95, aiStep * 25) : 0
+	);
 
 	function getDemographicQuestions(selected: string[]): DemographicVariable[] {
 		return demographicVariables.filter(v => selected.includes(v.question_name));
@@ -52,6 +58,7 @@
 		}
 		aiLoading = true;
 		aiStatus = get(t)('wizard.statusStarting');
+		aiStep = 1;
 		traces = [];
 		generatedFile = null;
 		wizardError = null;
@@ -102,6 +109,7 @@
 					const data = JSON.parse(line);
 					if (data.type === 'status') {
 						aiStatus = data.message;
+						aiStep += 1;
 					} else if (data.type === 'trace') {
 						traces.push(data.trace);
 					} else if (data.type === 'result') {
@@ -114,7 +122,14 @@
 			}
 		} catch (e) {
 			const msg = (e as Error).message;
-			wizardError = msg.toLowerCase().includes('no endpoints available') ? '__privacy__' : msg;
+			const m = msg.toLowerCase();
+			if (m.includes('no endpoints available') || m.includes('guardrail') || m.includes('data policy') || m.includes('http 404') || (m.includes('404') && m.includes('endpoint'))) {
+				wizardError = '__privacy__';
+			} else if (m.includes('input stream') || m.includes('error in input')) {
+				wizardError = '__stream__';
+			} else {
+				wizardError = msg;
+			}
 		} finally {
 			aiLoading = false;
 		}
@@ -248,6 +263,7 @@
 				{$t('wizard.modelInfoMid')} <a href="https://openrouter.ai/models" target="_blank" rel="noopener">{$t('wizard.modelInfoModelsLink')}</a>
 				{$t('wizard.modelInfoEnd')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">{$t('wizard.modelInfoPrivacyLink')}</a>.
 			</p>
+			<p class="model-tool-note">{$t('wizard.modelToolNote')}</p>
 			<div class="input-group">
 				<label for="model-select">{$t('wizard.modelLabel')}</label>
 				<input
@@ -263,6 +279,7 @@
 	<StepResults
 		{aiLoading}
 		{aiStatus}
+		{progress}
 		{traces}
 		{generatedFile}
 		onGenerate={generateWithAI}
@@ -271,10 +288,11 @@
 			generatedFile = null;
 			traces = [];
 			aiStatus = '';
+			aiStep = 0;
 		}}
 	/>
 
-	{#if !appSettings.isKeySet && !isFreeModel}
+	{#if typeof window !== 'undefined' && !appSettings.isKeySet && !isFreeModel}
 		<div class="warning-box" in:fade>
 			<p>{$t('wizard.apiKeyWarning')}</p>
 		</div>
@@ -284,6 +302,8 @@
 		<div class="error" in:fade>
 			{#if wizardError === '__privacy__'}
 				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelPrivacyError')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">openrouter.ai/settings/privacy</a>.</p>
+			{:else if wizardError === '__stream__'}
+				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelStreamError')}</p>
 			{:else}
 				<p><strong>{$t('wizard.error')}</strong> {wizardError}</p>
 			{/if}
@@ -504,6 +524,16 @@
 	.model-info {
 		font-size: 0.9rem;
 		opacity: 0.75;
+		margin-bottom: var(--spacing-base);
+	}
+
+	.model-tool-note {
+		font-size: 0.85rem;
+		padding: var(--spacing-xs) var(--spacing-sm);
+		background: #fff8f0;
+		border-left: 3px solid #e09100;
+		border-radius: var(--radius-sm);
+		color: #8a5700;
 		margin-bottom: var(--spacing-base);
 	}
 

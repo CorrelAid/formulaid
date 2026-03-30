@@ -11,7 +11,7 @@ export function createModel(apiKey: string, model: string = CHAT_MODEL): AxAISer
 			model
 		},
 		options: {
-			debug: true
+			debug: false
 		}
 	} as any) as unknown as AxAIService<any, any, any>;
 }

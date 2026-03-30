@@ -5,7 +5,7 @@ description: "Generates XLSForm survey files for survey tools such as Kobo Toolb
 
 # XLSForm Generator
 
-Default output language: **German** (labels, hints, answer options in German; variable names in English snake_case).
+Output language: match the language the user writes in. Variable names always in English snake_case.
 
 **Prerequisites:** The `qwacback` MCP server must be configured to use MCP tools. REST API fallbacks are available if not.
 
@@ -36,7 +36,7 @@ If a reference file is missing or empty, use the MCP tools in Step 2 to retrieve
 
 - If the user's request contains a clear goal, target group, and purpose → skip directly to Step 2.
 - If the goal is clear but target group or purpose is missing → ask one short combined question, then proceed.
-- If the goal itself is too vague to design a form → ask only: "Was willst du herausfinden?"
+- If the goal itself is too vague to design a form → ask only: "What do you want to find out?" (in the user's language)
 - Never ask about things that can be inferred (platform, language, length, privacy needs).
 
 From whatever information is available, infer:
@@ -47,11 +47,11 @@ From whatever information is available, infer:
 
 ### Phase 1 — Goal
 
-If not clear from context, ask: "Was willst du herausfinden?" One sentence is enough. Sharpen into 1–5 specific research questions. Infer constructs, target group, length, privacy needs.
+If not clear from context, ask for the research goal in one sentence — in the user's language. Sharpen into 1–5 specific research questions. Infer constructs, target group, length, privacy needs.
 
 ### Phase 2 — Context
 
-If target group or use of results is missing, ask once: "Kurz noch: Wer soll befragt werden, und was passiert mit den Ergebnissen?" Accept sparse answers ("Vereinsmitglieder", "Fördergeber braucht einen Bericht"). Infer everything else.
+If target group or use of results is missing, ask once — in the user's language. Accept sparse answers. Infer everything else.
 
 ### Phase 3 — Biographic correlates
 
@@ -86,7 +86,7 @@ Follow [generate-instructions.md](generate-instructions.md) for the full output 
 Additional essentials (full spec in [references/survey-methodology.md](references/survey-methodology.md)):
 - Always include `start`, `end`, `today`, `deviceid` metadata rows
 - Group with `begin_group` / `end_group`; skip logic in `relevant` column
-- All labels, hints, constraint messages in German
+- All labels, hints, constraint messages in the survey language
 
 ## Step 4: Validate and Deliver
 
@@ -96,7 +96,7 @@ Deliver:
 1. The `.xlsx` file
 2. Summary: sections, question count, estimated completion time, skip logic
 3. What came from qwac (if any)
-4. "Teste vor dem Einsatz — lade die Datei in KoboToolbox hoch oder nutze https://getodk.org/xlsform/"
-5. "Soll ich etwas ändern?"
+4. Reminder to test before deployment (KoboToolbox upload or https://getodk.org/xlsform/)
+5. Ask if anything should be changed — in the user's language
 
 If changes requested: apply, re-run quality checklist, re-deliver.
