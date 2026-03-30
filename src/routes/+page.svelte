@@ -6,6 +6,7 @@
 	import { get } from 'svelte/store';
 	import StepResults from '$lib/components/StepResults.svelte';
 	import { descriptionHtml } from 'virtual:cdl-content';
+	import { LeadAgent, createModel, XLSFormGenerator } from '$lib/agents/index.js';
 
 	// Form state
 	let language = $state<'formal' | 'informal' | null>(null);
@@ -14,7 +15,6 @@
 	let targetGroup = $state('Active volunteers of a mid-sized environmental NGO');
 	let useOfResults = $state('Annual donor report and internal programme evaluation');
 	let model = $state(CHAT_MODEL);
-	let isFreeModel = $derived(model.endsWith(':free'));
 
 	// Generation state
 	let aiLoading = $state(false);
@@ -52,7 +52,7 @@
 	}
 
 	async function generateWithAI() {
-		if (!appSettings.isKeySet && !isFreeModel) {
+		if (!appSettings.isKeySet) {
 			wizardError = $t('wizard.apiKeyMissing');
 			return;
 		}
@@ -72,12 +72,11 @@
 				required: true
 			}));
 
-			const response = await fetch('/api/generate', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					apiKey: appSettings.apiKey,
-					model,
+			const ai = createModel(appSettings.apiKey, model || 'google/gemini-2.0-flash-001');
+			const leadAgent = new LeadAgent(ai);
+
+			const survey = await leadAgent.buildSurvey(
+				{
 					researchQuestion,
 					targetGroup,
 					useOfResults,
@@ -85,41 +84,25 @@
 					selectedDemographics,
 					demographicQuestions: demoQuestions,
 					contextQuestions: []
-				})
-			});
-
-			if (!response.ok) throw new Error('Generation failed.');
-
-			const reader = response.body?.getReader();
-			if (!reader) throw new Error('Response body is empty');
-
-			const decoder = new TextDecoder();
-			let buffer = '';
-
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-
-				buffer += decoder.decode(value, { stream: true });
-				const lines = buffer.split('\n');
-				buffer = lines.pop() || '';
-
-				for (const line of lines) {
-					if (!line.trim()) continue;
-					const data = JSON.parse(line);
-					if (data.type === 'status') {
-						aiStatus = data.message;
-						aiStep += 1;
-					} else if (data.type === 'trace') {
-						traces.push(data.trace);
-					} else if (data.type === 'result') {
-						generatedFile = data.file;
-						aiStatus = get(t)('wizard.statusDone');
-					} else if (data.type === 'error') {
-						throw new Error(data.message);
-					}
+				} as any,
+				(status: string) => {
+					aiStatus = status;
+					aiStep += 1;
+				},
+				(trace: any) => {
+					traces.push(trace);
 				}
+			);
+
+			const generator = new XLSFormGenerator();
+			const excelBuffer = generator.generate(survey);
+
+			let binary = '';
+			for (let i = 0; i < excelBuffer.length; i++) {
+				binary += String.fromCharCode(excelBuffer[i]);
 			}
+			generatedFile = btoa(binary);
+			aiStatus = get(t)('wizard.statusDone');
 		} catch (e) {
 			const msg = (e as Error).message;
 			const m = msg.toLowerCase();
@@ -292,7 +275,7 @@
 		}}
 	/>
 
-	{#if typeof window !== 'undefined' && !appSettings.isKeySet && !isFreeModel}
+	{#if typeof window !== 'undefined' && !appSettings.isKeySet}
 		<div class="warning-box" in:fade>
 			<p>{$t('wizard.apiKeyWarning')}</p>
 		</div>

@@ -63,6 +63,13 @@ export default defineConfig({
 		}
 	},
 	preview: {
+		proxy: {
+			'/api/v1': {
+				target: 'https://openrouter.ai',
+				changeOrigin: true,
+				secure: true
+			}
+		},
 		headers: {
 			'Cross-Origin-Embedder-Policy': 'require-corp',
 			'Cross-Origin-Opener-Policy': 'same-origin'

@@ -8,7 +8,7 @@
 		"build": "vite build",
 		"test:workflow": "bun scripts/test_workflow.ts",
 		"build:skill": "bash scripts/build_skill.sh",
-		"serve": "node build/index.js",
+		"serve": "bun serve.js",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

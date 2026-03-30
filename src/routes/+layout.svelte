@@ -32,6 +32,11 @@
 			});
 			if (!response.ok) throw new Error(get(t)('header.apiKeyError'));
 
+			const data = await response.json();
+			const limit = data?.data?.limit;
+			if (limit === null || limit === undefined) throw new Error(get(t)('header.apiKeyNoLimit'));
+			if (limit > 5) throw new Error(get(t)('header.apiKeyLimitTooHigh'));
+
 			appSettings.setKey(localKey, localMode);
 			showSettings = false;
 		} catch (e) {

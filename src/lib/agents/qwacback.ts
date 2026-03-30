@@ -1,6 +1,6 @@
 import { AxMCPClient, type AxFunction } from '@ax-llm/ax';
 
-const QWACBACK_MCP_URL = process.env.QWACBACK_MCP_URL ?? 'https://qwacback.correlaid.org/mcp';
+const QWACBACK_MCP_URL = 'https://qwacback.correlaid.org/mcp';
 
 /** Simple stateful HTTP transport — no SSE stream, just POST with session ID. */
 class SimpleHTTPTransport {

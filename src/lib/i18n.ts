@@ -70,6 +70,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'header.save': 'Save & Validate',
 		'header.apiKeyHint': 'Not required for free models (name ends in :free).',
 		'header.apiKeyError': 'API key validation failed.',
+		'header.apiKeyNoLimit': 'Please set a credit limit on your OpenRouter key (max $5).',
+		'header.apiKeyLimitTooHigh': 'Credit limit must be $5 or less. Please lower it in your OpenRouter key settings.',
 
 		// Imprint
 		'imprint.title': 'Imprint',
@@ -144,6 +146,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'header.save': 'Speichern & Validieren',
 		'header.apiKeyHint': 'Nicht erforderlich für kostenlose Modelle (Name endet auf :free).',
 		'header.apiKeyError': 'API Key Validierung fehlgeschlagen.',
+		'header.apiKeyNoLimit': 'Bitte ein Ausgabenlimit am OpenRouter-Key setzen (max. 5 $).',
+		'header.apiKeyLimitTooHigh': 'Das Ausgabenlimit muss 5 $ oder weniger betragen. Bitte in den OpenRouter-Key-Einstellungen anpassen.',
 
 		// Imprint
 		'imprint.title': 'Impressum',
