@@ -51,6 +51,13 @@ export default defineConfig({
 			allow: ['..']
 		},
 		proxy: {
+			// EUrouter must be matched before the OpenRouter catch-all.
+			'/api/eurouter/v1': {
+				target: 'https://api.eurouter.ai',
+				changeOrigin: true,
+				secure: true,
+				rewrite: (path: string) => path.replace(/^\/api\/eurouter\/v1/, '/api/v1')
+			},
 			'/api/v1': {
 				target: 'https://openrouter.ai',
 				changeOrigin: true,
@@ -64,6 +71,13 @@ export default defineConfig({
 	},
 	preview: {
 		proxy: {
+			// EUrouter must be matched before the OpenRouter catch-all.
+			'/api/eurouter/v1': {
+				target: 'https://api.eurouter.ai',
+				changeOrigin: true,
+				secure: true,
+				rewrite: (path: string) => path.replace(/^\/api\/eurouter\/v1/, '/api/v1')
+			},
 			'/api/v1': {
 				target: 'https://openrouter.ai',
 				changeOrigin: true,

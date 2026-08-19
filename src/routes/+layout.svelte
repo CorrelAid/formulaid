@@ -1,7 +1,8 @@
 <script lang="ts">
 	import favicon from '@correlaid/cdl-design/favicons/favicon.svg';
 	import '$lib/styles/main.css';
-	import { appSettings } from '$lib/settings.svelte.ts';
+	import { appSettings } from '$lib/settings.svelte';
+	import { PROVIDERS, getProvider, type ProviderId } from '$lib/constants';
 	import { locale, t, type Locale } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import { LanguageSwitcher } from '@correlaid/cdl-design';
@@ -12,31 +13,66 @@
 	let showSettings = $state(false);
 	let localKey = $state(appSettings.apiKey);
 	let localMode = $state(appSettings.storageMode);
+	let localProvider = $state<ProviderId>(appSettings.provider);
+	let localCustomUrl = $state(appSettings.customBaseUrl);
 	let isValidating = $state(false);
 	let validationError = $state<string | null>(null);
 	let mounted = $state(false);
-	$effect(() => { mounted = true; });
+	$effect(() => {
+		mounted = true;
+	});
 
 	const locales = [
 		{ code: 'en', label: 'EN' },
 		{ code: 'de', label: 'DE' }
 	];
 
+	function resolvedBaseUrl(): string {
+		return localProvider === 'custom'
+			? localCustomUrl.replace(/\/+$/, '')
+			: getProvider(localProvider).baseUrl;
+	}
+
+	/**
+	 * OpenRouter keys are checked against `/key`, which also exposes the credit
+	 * limit — this app insists on a capped key so a leaked one cannot run up a
+	 * bill. Other providers have no such endpoint, so the key is checked by
+	 * listing models instead.
+	 */
 	async function validateAndSave() {
 		if (!localKey) return;
+		if (localProvider === 'custom' && !localCustomUrl.trim()) {
+			validationError = get(t)('header.customUrlMissing');
+			return;
+		}
 		isValidating = true;
 		validationError = null;
 		try {
-			const response = await fetch('/api/v1/key', {
-				headers: { Authorization: `Bearer ${localKey}` }
-			});
-			if (!response.ok) throw new Error(get(t)('header.apiKeyError'));
+			if (localProvider === 'openrouter') {
+				const response = await fetch('/api/v1/key', {
+					headers: { Authorization: `Bearer ${localKey}` }
+				});
+				if (!response.ok) throw new Error(get(t)('header.apiKeyError'));
 
-			const data = await response.json();
-			const limit = data?.data?.limit;
-			if (limit === null || limit === undefined) throw new Error(get(t)('header.apiKeyNoLimit'));
-			if (limit > 5) throw new Error(get(t)('header.apiKeyLimitTooHigh'));
+				const data = await response.json();
+				const limit = data?.data?.limit;
+				if (limit === null || limit === undefined) throw new Error(get(t)('header.apiKeyNoLimit'));
+				if (limit > 5) throw new Error(get(t)('header.apiKeyLimitTooHigh'));
+			} else {
+				let response: Response;
+				try {
+					response = await fetch(`${resolvedBaseUrl()}/models`, {
+						headers: { Authorization: `Bearer ${localKey}` }
+					});
+				} catch {
+					// A custom endpoint is called directly from the browser, so a
+					// network-level failure is almost always a missing CORS header.
+					throw new Error(get(t)('header.endpointUnreachable'));
+				}
+				if (!response.ok) throw new Error(get(t)('header.apiKeyError'));
+			}
 
+			appSettings.setProvider(localProvider, localCustomUrl.trim());
 			appSettings.setKey(localKey, localMode);
 			showSettings = false;
 		} catch (e) {
@@ -49,6 +85,8 @@
 	$effect(() => {
 		localKey = appSettings.apiKey;
 		localMode = appSettings.storageMode;
+		localProvider = appSettings.provider;
+		localCustomUrl = appSettings.customBaseUrl;
 	});
 </script>
 
@@ -58,10 +96,14 @@
 
 <div class="app-layout">
 	<div class="top-bar">
-		<button class="settings-toggle" onclick={() => showSettings = !showSettings}>
+		<button
+			class="settings-toggle"
+			class:needs-key={mounted && !appSettings.isKeySet}
+			onclick={() => (showSettings = !showSettings)}
+		>
 			{#if mounted && appSettings.isKeySet}
 				<span class="status-dot success"></span>
-				{$t('header.apiKeySet')}
+				{$t('header.apiKeySet')} · {getProvider(appSettings.provider).label}
 			{:else}
 				<span class="status-dot error"></span>
 				{$t('header.apiKeyMissing')}
@@ -75,21 +117,41 @@
 	</div>
 
 	{#if showSettings}
-		<div class="settings-overlay" onclick={() => showSettings = false} role="presentation"></div>
+		<div class="settings-overlay" onclick={() => (showSettings = false)} role="presentation"></div>
 		<div class="settings-dropdown" in:fade={{ duration: 150 }}>
 			<div class="dropdown-header">
 				<h3>{$t('header.settingsTitle')}</h3>
-				<button class="close-btn" onclick={() => showSettings = false}>&times;</button>
+				<button class="close-btn" onclick={() => (showSettings = false)}>&times;</button>
+			</div>
+
+			<div class="input-group">
+				<label for="header-provider">{$t('header.providerLabel')}</label>
+				<select id="header-provider" bind:value={localProvider}>
+					{#each PROVIDERS as p (p.id)}
+						<option value={p.id}>{p.label}</option>
+					{/each}
+				</select>
+				{#if localProvider === 'custom'}
+					<input
+						class="custom-url"
+						type="url"
+						bind:value={localCustomUrl}
+						placeholder="https://my-gateway.example/v1"
+					/>
+					<p class="key-hint">{$t('header.customUrlHint')}</p>
+				{:else}
+					<p class="key-hint">
+						{$t('header.providerKeyHint')}
+						<a href={getProvider(localProvider).keysUrl} target="_blank" rel="noopener"
+							>{getProvider(localProvider).keysUrl}</a
+						>
+					</p>
+				{/if}
 			</div>
 
 			<div class="input-group">
 				<label for="header-apikey">{$t('header.apiKeyLabel')}</label>
-				<input
-					id="header-apikey"
-					type="password"
-					bind:value={localKey}
-					placeholder="sk-or-..."
-				/>
+				<input id="header-apikey" type="password" bind:value={localKey} placeholder="sk-or-..." />
 				<p class="key-hint">{$t('header.apiKeyHint')}</p>
 			</div>
 
@@ -99,14 +161,14 @@
 					<button
 						class="mini-pill"
 						class:selected={localMode === 'ram'}
-						onclick={() => localMode = 'ram'}
+						onclick={() => (localMode = 'ram')}
 					>
 						{$t('header.ram')}
 					</button>
 					<button
 						class="mini-pill"
 						class:selected={localMode === 'timed'}
-						onclick={() => localMode = 'timed'}
+						onclick={() => (localMode = 'timed')}
 					>
 						{$t('header.timed')}
 					</button>
@@ -118,11 +180,7 @@
 			{/if}
 
 			<div class="dropdown-actions">
-				<button
-					class="save-btn"
-					disabled={!localKey || isValidating}
-					onclick={validateAndSave}
-				>
+				<button class="save-btn" disabled={!localKey || isValidating} onclick={validateAndSave}>
 					{isValidating ? '...' : $t('header.save')}
 				</button>
 			</div>
@@ -182,6 +240,45 @@
 
 	.settings-toggle:hover {
 		background: #f0ecf0;
+	}
+
+	/* Without a key nothing works, so the entry point should be impossible to
+	   miss rather than a quiet grey pill. */
+	.settings-toggle.needs-key {
+		background: var(--color-secondary, #b3005b);
+		color: var(--color-white, #fff);
+		border-color: var(--color-secondary, #b3005b);
+		animation: key-pulse 2.2s ease-in-out infinite;
+	}
+
+	.settings-toggle.needs-key:hover {
+		background: var(--color-secondary, #b3005b);
+		opacity: 0.9;
+	}
+
+	@keyframes key-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(179, 0, 91, 0.45);
+		}
+		50% {
+			box-shadow: 0 0 0 6px rgba(179, 0, 91, 0);
+		}
+	}
+
+	.settings-dropdown select,
+	.settings-dropdown .custom-url {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.5rem;
+		border: 1px solid var(--color-text-primary);
+		border-radius: var(--radius-base);
+		font-family: inherit;
+		font-size: 0.9rem;
+	}
+
+	.settings-dropdown .custom-url {
+		margin-top: var(--spacing-xs);
 	}
 
 	.status-dot {
@@ -258,7 +355,7 @@
 		letter-spacing: var(--letter-spacing-wider);
 	}
 
-	input[type="password"] {
+	input[type='password'] {
 		width: 100%;
 		padding: 0.6rem;
 		border: var(--dimension-border-width) solid var(--color-text-primary);
@@ -267,7 +364,7 @@
 		font-family: var(--font-family-mono);
 	}
 
-	input[type="password"]:focus {
+	input[type='password']:focus {
 		outline: none;
 		border-color: var(--color-secondary);
 	}

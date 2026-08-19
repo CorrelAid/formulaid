@@ -5,7 +5,13 @@ import { extractQuestions } from './question_parser.js';
 import generateInstructions from '../../../skills/xlsform/generate-instructions.md?raw';
 
 const SIGNATURE =
-	'researchQuestion:string, targetGroup?:string, useOfResults?:string, language:string, demographics?:string -> reasoning:string, generatedQuestions:json';
+	'researchQuestion:string, targetGroup?:string, useOfResults?:string, language:string, demographics?:string, validationFeedback?:string -> reasoning:string, generatedQuestions:json';
+
+export interface GeneratedSurvey {
+	questions: Question[];
+	/** Free-text account of why these questions, in the requested UI language. */
+	reasoning: string;
+}
 
 export class SurveyGeneratorAgent {
 	private gen: AxGen;
@@ -18,30 +24,28 @@ export class SurveyGeneratorAgent {
 		ai: AxAIService<any, any, any>,
 		input: AgentInput,
 		onStatus?: (msg: string) => void
-	): Promise<Question[]> {
+	): Promise<GeneratedSurvey> {
 		if (onStatus) onStatus('Generiere Umfrage basierend auf der Forschungsfrage...');
 
-		try {
-			const qwacFunctions = await getQwacbackFunctions();
+		const qwacFunctions = await getQwacbackFunctions();
 
-			const result = await this.gen.forward(
-				ai,
-				{
-					researchQuestion: input.researchQuestion,
-					targetGroup: input.targetGroup,
-					useOfResults: input.useOfResults,
-					language: input.language,
-					demographics: input.selectedDemographics.join(', ') || undefined
-				},
-				{ functions: qwacFunctions, maxSteps: 8 }
-			);
+		const result = await this.gen.forward(
+			ai,
+			{
+				researchQuestion: input.researchQuestion,
+				targetGroup: input.targetGroup,
+				useOfResults: input.useOfResults,
+				language: input.language,
+				demographics: input.selectedDemographics.join(', ') || undefined,
+				validationFeedback: input.validationFeedback
+			},
+			{ functions: qwacFunctions, maxSteps: 8 }
+		);
 
-			if (result.generatedQuestions) {
-				return extractQuestions(result.generatedQuestions);
-			}
-		} catch (e) {
-			throw e;
-		}
+		return {
+			questions: result.generatedQuestions ? extractQuestions(result.generatedQuestions) : [],
+			reasoning: typeof result.reasoning === 'string' ? result.reasoning : ''
+		};
 	}
 
 	getTraces() {
