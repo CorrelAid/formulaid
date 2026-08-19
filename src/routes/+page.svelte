@@ -1,20 +1,50 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { demographicVariables, CHAT_MODEL, type DemographicVariable } from '$lib/constants';
-	import { appSettings } from '$lib/settings.svelte.ts';
+	import {
+		demographicVariables,
+		CHAT_MODEL,
+		getProvider,
+		type DemographicVariable
+	} from '$lib/constants';
+	import { appSettings } from '$lib/settings.svelte';
 	import { locale, t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import StepResults from '$lib/components/StepResults.svelte';
 	import { descriptionHtml } from 'virtual:cdl-content';
-	import { LeadAgent, createModel, XLSFormGenerator } from '$lib/agents/index.js';
+	import {
+		LeadAgent,
+		createModel,
+		XLSFormGenerator,
+		XLSFormValidator,
+		type ValidationFinding,
+		type Survey
+	} from '$lib/agents/index.js';
+
+	/** How often the generator is asked to repair its own output before the form
+	 *  is delivered with the remaining findings shown (#11). */
+	const MAX_REPAIR_ATTEMPTS = 2;
 
 	// Form state
 	let language = $state<'formal' | 'informal' | null>(null);
 	let selectedDemographics = $state<string[]>([]);
-	let researchQuestion = $state('How satisfied are volunteers with their engagement in our organization?');
+	let researchQuestion = $state(
+		'How satisfied are volunteers with their engagement in our organization?'
+	);
 	let targetGroup = $state('Active volunteers of a mid-sized environmental NGO');
 	let useOfResults = $state('Annual donor report and internal programme evaluation');
 	let model = $state(CHAT_MODEL);
+	let activeProvider = $derived(getProvider(appSettings.provider));
+	// Model names are provider-specific, so following the provider is the right
+	// default — but never overwrite a name the user typed themselves.
+	let lastProviderId = $state(appSettings.provider);
+	$effect(() => {
+		if (appSettings.provider !== lastProviderId) {
+			if (model === getProvider(lastProviderId).defaultModel) {
+				model = getProvider(appSettings.provider).defaultModel;
+			}
+			lastProviderId = appSettings.provider;
+		}
+	});
 
 	// Generation state
 	let aiLoading = $state(false);
@@ -22,15 +52,16 @@
 	let aiStep = $state(0);
 	let traces = $state<any[]>([]);
 	let generatedFile = $state<string | null>(null);
+	let generatedSurvey = $state<Survey | null>(null);
+	let validationFindings = $state<ValidationFinding[]>([]);
+	let repairAttempts = $state(0);
 	let wizardError = $state<string | null>(null);
 
 	// 4 known status events → 25% each; clamp at 95 until done
-	let progress = $derived(
-		generatedFile ? 100 : aiLoading ? Math.min(95, aiStep * 25) : 0
-	);
+	let progress = $derived(generatedFile ? 100 : aiLoading ? Math.min(95, aiStep * 25) : 0);
 
 	function getDemographicQuestions(selected: string[]): DemographicVariable[] {
-		return demographicVariables.filter(v => selected.includes(v.question_name));
+		return demographicVariables.filter((v) => selected.includes(v.question_name));
 	}
 
 	function mapToQuestionType(type: string): string {
@@ -45,10 +76,13 @@
 
 	function parseChoices(optionsText: string): any[] {
 		if (!optionsText) return [];
-		return optionsText.split('\n').filter(line => line.trim()).map((line, i) => ({
-			label: line.trim(),
-			name: `choice_${i}`
-		}));
+		return optionsText
+			.split('\n')
+			.filter((line) => line.trim())
+			.map((line, i) => ({
+				label: line.trim(),
+				name: `choice_${i}`
+			}));
 	}
 
 	async function generateWithAI() {
@@ -61,9 +95,12 @@
 		aiStep = 1;
 		traces = [];
 		generatedFile = null;
+		generatedSurvey = null;
+		validationFindings = [];
+		repairAttempts = 0;
 		wizardError = null;
 		try {
-			const demoQuestions = getDemographicQuestions(selectedDemographics).map(r => ({
+			const demoQuestions = getDemographicQuestions(selectedDemographics).map((r) => ({
 				id: r.question_id,
 				name: r.question_name,
 				label: r.question_text,
@@ -72,41 +109,89 @@
 				required: true
 			}));
 
-			const ai = createModel(appSettings.apiKey, model || 'google/gemini-2.0-flash-001');
-			const leadAgent = new LeadAgent(ai);
-
-			const survey = await leadAgent.buildSurvey(
-				{
-					researchQuestion,
-					targetGroup,
-					useOfResults,
-					language: language || 'formal',
-					selectedDemographics,
-					demographicQuestions: demoQuestions,
-					contextQuestions: []
-				} as any,
-				(status: string) => {
-					aiStatus = status;
-					aiStep += 1;
-				},
-				(trace: any) => {
-					traces.push(trace);
-				}
+			const ai = createModel(
+				appSettings.apiKey,
+				model || activeProvider.defaultModel,
+				appSettings.baseUrl
 			);
-
+			const leadAgent = new LeadAgent(ai);
 			const generator = new XLSFormGenerator();
-			const excelBuffer = generator.generate(survey);
+			const validator = new XLSFormValidator();
+
+			let survey: Survey | null = null;
+			let excelBuffer: Uint8Array | null = null;
+			let validationFeedback: string | undefined;
+
+			// Generate → validate → hand the errors back to the generator. Capped,
+			// and whatever the last attempt produced is still delivered with the
+			// remaining findings on screen (#11).
+			for (let attempt = 0; attempt <= MAX_REPAIR_ATTEMPTS; attempt++) {
+				if (attempt > 0) {
+					repairAttempts = attempt;
+					aiStatus = get(t)('wizard.statusRepairing');
+				}
+
+				survey = await leadAgent.buildSurvey(
+					{
+						researchQuestion,
+						targetGroup,
+						useOfResults,
+						language: language || 'formal',
+						selectedDemographics,
+						demographicQuestions: demoQuestions,
+						contextQuestions: [],
+						validationFeedback
+					} as any,
+					(status: string) => {
+						aiStatus = status;
+						aiStep += 1;
+					},
+					(trace: any) => {
+						traces.push(trace);
+					}
+				);
+
+				excelBuffer = generator.generate(survey);
+
+				try {
+					validationFindings = validator.validate(excelBuffer);
+				} catch (e) {
+					validationFindings = [
+						{
+							severity: 'error',
+							message: `Validation failed to run: ${(e as Error).message}`
+						}
+					];
+				}
+
+				const errors = validationFindings.filter((f) => f.severity === 'error');
+				if (errors.length === 0 || attempt === MAX_REPAIR_ATTEMPTS) break;
+
+				validationFeedback = [
+					'The previous questionnaire was rejected by the CDL XLSForm subset validator.',
+					'Fix every point below. Use only question types and appearances the skill allows.',
+					...errors.map((e) => `- ${e.message}`)
+				].join('\n');
+			}
+
+			generatedSurvey = survey;
 
 			let binary = '';
-			for (let i = 0; i < excelBuffer.length; i++) {
-				binary += String.fromCharCode(excelBuffer[i]);
+			for (let i = 0; i < excelBuffer!.length; i++) {
+				binary += String.fromCharCode(excelBuffer![i]);
 			}
 			generatedFile = btoa(binary);
 			aiStatus = get(t)('wizard.statusDone');
 		} catch (e) {
 			const msg = (e as Error).message;
 			const m = msg.toLowerCase();
-			if (m.includes('no endpoints available') || m.includes('guardrail') || m.includes('data policy') || m.includes('http 404') || (m.includes('404') && m.includes('endpoint'))) {
+			if (
+				m.includes('no endpoints available') ||
+				m.includes('guardrail') ||
+				m.includes('data policy') ||
+				m.includes('http 404') ||
+				(m.includes('404') && m.includes('endpoint'))
+			) {
 				wizardError = '__privacy__';
 			} else if (m.includes('input stream') || m.includes('error in input')) {
 				wizardError = '__stream__';
@@ -124,7 +209,9 @@
 		for (let i = 0; i < binary.length; i++) {
 			bytes[i] = binary.charCodeAt(i);
 		}
-		const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+		const blob = new Blob([bytes], {
+			type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+		});
 		const link = document.createElement('a');
 		const url = URL.createObjectURL(blob);
 		link.setAttribute('href', url);
@@ -152,12 +239,15 @@
 			<p>{$t('page.skillsIntro')}</p>
 			<ol>
 				<li>
-					{$t('page.skillsStep1')}<br>
-					<a href="https://github.com/CorrelAid/formulaid/raw/main/skills/xlsform.zip">{$t('page.skillsStep1Link')}</a>
+					{$t('page.skillsStep1')}<br />
+					<a href="https://github.com/CorrelAid/formulaid/raw/main/skills/xlsform.zip"
+						>{$t('page.skillsStep1Link')}</a
+					>
 				</li>
 				<li>{$t('page.skillsStep2')}</li>
 				<li>
-					<strong>{$t('page.skillsStep3Label')}</strong> {$t('page.skillsStep3')}<br>
+					<strong>{$t('page.skillsStep3Label')}</strong>
+					{$t('page.skillsStep3')}<br />
 					<div class="skill-install"><code>https://qwacback.correlaid.org/mcp</code></div>
 				</li>
 			</ol>
@@ -171,10 +261,11 @@
 			<label for="research-question">{$t('wizard.researchLabel')}</label>
 			<textarea
 				id="research-question"
-				rows="3"
+				rows="4"
 				bind:value={researchQuestion}
 				placeholder={$t('wizard.researchPlaceholder')}
 			></textarea>
+			<p class="field-hint">{$t('wizard.researchHint')}</p>
 		</div>
 	</section>
 
@@ -211,14 +302,18 @@
 				<button
 					class="toggle-btn"
 					class:selected={language === 'formal'}
-					onclick={() => { language = 'formal'; }}
+					onclick={() => {
+						language = 'formal';
+					}}
 				>
 					{$t('wizard.formal')}
 				</button>
 				<button
 					class="toggle-btn"
 					class:selected={language === 'informal'}
-					onclick={() => { language = 'informal'; }}
+					onclick={() => {
+						language = 'informal';
+					}}
 				>
 					{$t('wizard.informal')}
 				</button>
@@ -227,10 +322,15 @@
 
 		<div class="setting-group">
 			<span class="setting-label">{$t('wizard.demographicsLabel')}</span>
+			<p class="field-hint">{$t('wizard.demographicsHint')}</p>
 			<div class="checkbox-grid">
 				{#each demographicVariables as variable (variable.question_name)}
 					<label class="checkbox-item">
-						<input type="checkbox" bind:group={selectedDemographics} value={variable.question_name}>
+						<input
+							type="checkbox"
+							bind:group={selectedDemographics}
+							value={variable.question_name}
+						/>
 						<span>{variable.name}</span>
 					</label>
 				{/each}
@@ -242,9 +342,18 @@
 		<summary>{$t('wizard.modelHeading')}</summary>
 		<div class="model-body">
 			<p class="model-info">
-				{$t('wizard.modelInfo')} <a href="https://openrouter.ai" target="_blank" rel="noopener">{$t('wizard.modelInfoLink')}</a>
-				{$t('wizard.modelInfoMid')} <a href="https://openrouter.ai/models" target="_blank" rel="noopener">{$t('wizard.modelInfoModelsLink')}</a>
-				{$t('wizard.modelInfoEnd')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">{$t('wizard.modelInfoPrivacyLink')}</a>.
+				{$t('wizard.modelInfo')}
+				<a href="https://openrouter.ai" target="_blank" rel="noopener"
+					>{$t('wizard.modelInfoLink')}</a
+				>
+				{$t('wizard.modelInfoMid')}
+				<a href="https://openrouter.ai/models" target="_blank" rel="noopener"
+					>{$t('wizard.modelInfoModelsLink')}</a
+				>
+				{$t('wizard.modelInfoEnd')}
+				<a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener"
+					>{$t('wizard.modelInfoPrivacyLink')}</a
+				>.
 			</p>
 			<p class="model-tool-note">{$t('wizard.modelToolNote')}</p>
 			<div class="input-group">
@@ -253,11 +362,72 @@
 					id="model-select"
 					type="text"
 					bind:value={model}
-					placeholder="e.g. mistralai/ministral-14b-2512"
+					placeholder={activeProvider.defaultModel}
 				/>
+				<p class="field-hint">
+					{$t('wizard.providerActive')}
+					<strong>{activeProvider.label}</strong>. {$t('wizard.providerSwitchHint')}
+					{#if activeProvider.modelsUrl}
+						<a href={activeProvider.modelsUrl} target="_blank" rel="noopener"
+							>{activeProvider.modelsUrl}</a
+						>
+					{/if}
+				</p>
 			</div>
 		</div>
 	</details>
+
+	{#if generatedFile && validationFindings.length > 0}
+		<div
+			class="validation-warn"
+			class:has-errors={validationFindings.some((f) => f.severity === 'error')}
+		>
+			<p class="validation-warn-heading">
+				{validationFindings.some((f) => f.severity === 'error')
+					? $t('wizard.validationErrorsHeading')
+					: $t('wizard.validationWarningsHeading')}
+			</p>
+			<ul>
+				{#each validationFindings as finding (finding.severity + finding.message)}
+					<li class="severity-{finding.severity}">
+						<span class="severity-tag">{finding.severity}</span>
+						<span class="finding-message">{finding.message}</span>
+					</li>
+				{/each}
+			</ul>
+			<p class="validation-warn-foot">
+				{#if repairAttempts > 0}
+					{$t('wizard.validationRepaired')} ({repairAttempts}/{MAX_REPAIR_ATTEMPTS})
+				{/if}
+				{$t('wizard.validationFoot')}
+			</p>
+		</div>
+	{/if}
+
+	{#if generatedSurvey && (generatedSurvey.reasoning || generatedSurvey.questions.some((q) => q.rationale))}
+		<details class="reasoning-section" open>
+			<summary>{$t('wizard.reasoningHeading')}</summary>
+			<div class="reasoning-body">
+				<p class="field-hint">{$t('wizard.reasoningIntro')}</p>
+				{#if generatedSurvey.reasoning}
+					<p class="reasoning-text">{generatedSurvey.reasoning}</p>
+				{/if}
+				<ul class="reasoning-list">
+					{#each generatedSurvey.questions as q (q.name)}
+						<li>
+							<span class="reasoning-label">{q.label}</span>
+							{#if q.rationale}
+								<span class="reasoning-why">{q.rationale}</span>
+							{/if}
+							{#if q.source}
+								<span class="reasoning-source">{$t('wizard.reasoningSource')}: {q.source}</span>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</details>
+	{/if}
 
 	<StepResults
 		{aiLoading}
@@ -269,6 +439,9 @@
 		onDownload={() => downloadExcel('questionnaire.xlsx', generatedFile!)}
 		onReset={() => {
 			generatedFile = null;
+			generatedSurvey = null;
+			validationFindings = [];
+			repairAttempts = 0;
 			traces = [];
 			aiStatus = '';
 			aiStep = 0;
@@ -284,19 +457,29 @@
 	{#if wizardError}
 		<div class="error" in:fade>
 			{#if wizardError === '__privacy__'}
-				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelPrivacyError')} <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener">openrouter.ai/settings/privacy</a>.</p>
+				<p>
+					<strong>{$t('wizard.error')}</strong>
+					{$t('wizard.modelPrivacyError')}
+					<a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener"
+						>openrouter.ai/settings/privacy</a
+					>.
+				</p>
 			{:else if wizardError === '__stream__'}
 				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelStreamError')}</p>
 			{:else}
 				<p><strong>{$t('wizard.error')}</strong> {wizardError}</p>
 			{/if}
-			<button class="close-error" onclick={() => wizardError = null}>{$t('wizard.close')}</button>
+			<button class="close-error" onclick={() => (wizardError = null)}>{$t('wizard.close')}</button>
 		</div>
 	{/if}
 
 	<footer>
 		<p>
-			This tool is open source and available at <a href="https://github.com/CorrelAid/formulaid" target="_blank" rel="noopener">GitHub</a>.
+			This tool is open source and available at <a
+				href="https://github.com/CorrelAid/formulaid"
+				target="_blank"
+				rel="noopener">GitHub</a
+			>.
 		</p>
 	</footer>
 </main>
@@ -364,7 +547,7 @@
 		letter-spacing: var(--letter-spacing-wider);
 	}
 
-	input[type="text"],
+	input[type='text'],
 	textarea {
 		width: 100%;
 		padding: 0.75rem;
@@ -380,7 +563,7 @@
 		resize: vertical;
 	}
 
-	input[type="text"]:focus,
+	input[type='text']:focus,
 	textarea:focus {
 		outline: none;
 		border-color: var(--color-secondary);
@@ -459,6 +642,73 @@
 
 	.error p {
 		margin: 0 0 var(--spacing-sm) 0;
+	}
+
+	.validation-warn {
+		padding: var(--spacing-base);
+		background: #fff8e1;
+		border-left: 4px solid #f59e0b;
+		border-radius: var(--radius-md);
+		color: #78350f;
+	}
+
+	.validation-warn.has-errors {
+		background: #ffebee;
+		border-left-color: #f44336;
+		color: #c62828;
+	}
+
+	.validation-warn-heading {
+		margin: 0 0 var(--spacing-sm) 0;
+		font-weight: var(--font-weight-semibold);
+	}
+
+	.validation-warn ul {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 var(--spacing-sm) 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.validation-warn li {
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+		font-family: var(--font-family-mono, monospace);
+		font-size: 0.85rem;
+		line-height: 1.4;
+	}
+
+	.severity-tag {
+		flex-shrink: 0;
+		padding: 0.1rem 0.4rem;
+		border-radius: 99px;
+		font-size: 0.7rem;
+		font-weight: var(--font-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.severity-error .severity-tag {
+		background: #c62828;
+		color: white;
+	}
+
+	.severity-warning .severity-tag {
+		background: #f59e0b;
+		color: white;
+	}
+
+	.finding-message {
+		word-break: break-word;
+	}
+
+	.validation-warn-foot {
+		margin: 0;
+		font-size: 0.85rem;
+		opacity: 0.85;
 	}
 
 	.close-error {
@@ -578,5 +828,53 @@
 		color: var(--color-text-primary);
 		text-decoration: underline;
 		text-underline-offset: 2px;
+	}
+
+	.field-hint {
+		margin: var(--spacing-xs) 0 0;
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
+	}
+
+	.reasoning-section {
+		background: var(--color-white);
+		border: var(--dimension-border-width) solid var(--color-text-primary);
+		border-radius: var(--radius-lg);
+		padding: var(--spacing-base) var(--spacing-lg);
+	}
+
+	.reasoning-section summary {
+		cursor: pointer;
+		font-weight: var(--font-weight-semibold);
+	}
+
+	.reasoning-text {
+		white-space: pre-wrap;
+	}
+
+	.reasoning-list {
+		list-style: none;
+		padding: 0;
+		margin: var(--spacing-sm) 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+	}
+
+	.reasoning-list li {
+		border-left: 3px solid var(--color-tertiary);
+		padding-left: var(--spacing-sm);
+	}
+
+	.reasoning-label {
+		display: block;
+		font-weight: var(--font-weight-medium);
+	}
+
+	.reasoning-why,
+	.reasoning-source {
+		display: block;
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
 	}
 </style>

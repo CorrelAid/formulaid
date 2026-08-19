@@ -18,11 +18,7 @@ export class LeadAgent {
 	): Promise<Survey> {
 		if (onStatus) onStatus('Generiere Fragen aus Kontext...');
 
-		const generatedQuestions = await this.surveyGenerator.generateSurvey(
-			this.ai,
-			input,
-			onStatus
-		);
+		const generated = await this.surveyGenerator.generateSurvey(this.ai, input, onStatus);
 
 		if (onTrace) {
 			const traces = this.surveyGenerator.getTraces();
@@ -36,7 +32,8 @@ export class LeadAgent {
 
 		return {
 			title: 'Generated Questionnaire',
-			questions: [...input.demographicQuestions, ...generatedQuestions]
+			questions: [...input.demographicQuestions, ...generated.questions],
+			reasoning: generated.reasoning
 		};
 	}
 }
