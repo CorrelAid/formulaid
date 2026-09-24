@@ -7,3 +7,6 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Committed verbatim from the formtransform handover
+HANDOVER.md
