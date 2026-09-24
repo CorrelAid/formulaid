@@ -113,6 +113,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.statusGenerating': 'Building the questionnaire from your research goal…',
 		'wizard.statusValidating': 'Checking the questionnaire…',
 		'wizard.cancel': 'Cancel',
+		'wizard.resetInputs': 'Clear form',
 		'wizard.modelNotFound':
 			'The model was not found. Check the model name in section 4 and the provider’s model list.',
 		'wizard.qwacUnavailable':
@@ -236,6 +237,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.statusGenerating': 'Erstelle Fragebogen aus dem Forschungsziel…',
 		'wizard.statusValidating': 'Prüfe den Fragebogen…',
 		'wizard.cancel': 'Abbrechen',
+		'wizard.resetInputs': 'Formular leeren',
 		'wizard.modelNotFound':
 			'Das Modell wurde nicht gefunden. Prüfe den Modellnamen in Abschnitt 4 und die Modellliste des Anbieters.',
 		'wizard.qwacUnavailable':

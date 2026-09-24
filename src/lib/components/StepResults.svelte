@@ -12,6 +12,7 @@
 		onCancel,
 		onDownload,
 		onReset,
+		onResetInputs,
 		hasFile
 	} = $props<{
 		aiLoading: boolean;
@@ -22,6 +23,7 @@
 		onCancel: () => void;
 		onDownload: () => void;
 		onReset: () => void;
+		onResetInputs: () => void;
 		hasFile: boolean;
 	}>();
 </script>
@@ -52,6 +54,9 @@
 			{/if}
 		{/if}
 	</div>
+	{#if !aiLoading}
+		<button class="reset-inputs" onclick={onResetInputs}>{$t('wizard.resetInputs')}</button>
+	{/if}
 
 	{#if aiLoading || progress > 0}
 		<div class="progress-wrap">
@@ -116,6 +121,18 @@
 
 	.secondary-btn:hover:not(:disabled) {
 		background: color-mix(in srgb, var(--color-tertiary) 30%, white);
+	}
+
+	.reset-inputs {
+		display: block;
+		margin: var(--spacing-sm) 0 0 auto;
+		padding: 0;
+		border: none;
+		background: none;
+		font-size: 0.85rem;
+		color: var(--color-secondary);
+		text-decoration: underline;
+		cursor: pointer;
 	}
 
 	.primary-btn:disabled,

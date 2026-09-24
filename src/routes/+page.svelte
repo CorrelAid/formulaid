@@ -7,6 +7,7 @@
 		type DemographicVariable
 	} from '$lib/constants';
 	import { appSettings } from '$lib/settings.svelte';
+	import { loadWizardInputs, saveWizardInputs } from '$lib/wizard_storage';
 	import { locale, t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import StepResults from '$lib/components/StepResults.svelte';
@@ -25,13 +26,38 @@
 	} from '$lib/agents/index.js';
 
 	// Form state
-	let language = $state<'formal' | 'informal' | null>(null);
-	let selectedDemographics = $state<string[]>([]);
+	// Restored from the last visit (#23); the examples only fill a first visit.
+	const saved = loadWizardInputs();
+	let language = $state<'formal' | 'informal' | null>(saved?.language ?? null);
+	let selectedDemographics = $state<string[]>(saved?.selectedDemographics ?? []);
 	let researchQuestion = $state(
-		'How satisfied are volunteers with their engagement in our organization?'
+		saved?.researchQuestion ??
+			'How satisfied are volunteers with their engagement in our organization?'
 	);
-	let targetGroup = $state('Active volunteers of a mid-sized environmental NGO');
-	let useOfResults = $state('Annual donor report and internal programme evaluation');
+	let targetGroup = $state(
+		saved?.targetGroup ?? 'Active volunteers of a mid-sized environmental NGO'
+	);
+	let useOfResults = $state(
+		saved?.useOfResults ?? 'Annual donor report and internal programme evaluation'
+	);
+	$effect(() => {
+		saveWizardInputs({
+			researchQuestion,
+			targetGroup,
+			useOfResults,
+			language,
+			selectedDemographics: [...selectedDemographics]
+		});
+	});
+
+	function resetInputs() {
+		researchQuestion = '';
+		targetGroup = '';
+		useOfResults = '';
+		language = null;
+		selectedDemographics = [];
+		resetResult();
+	}
 	let model = $state(CHAT_MODEL);
 	let activeProvider = $derived(getProvider(appSettings.provider));
 
@@ -438,6 +464,7 @@
 		onDownload={() =>
 			generatedFile && generatedSurvey && downloadFile(generatedFile, fileNameFor(generatedSurvey))}
 		onReset={resetResult}
+		onResetInputs={resetInputs}
 	/>
 
 	{#if typeof window !== 'undefined' && !appSettings.isKeySet}
