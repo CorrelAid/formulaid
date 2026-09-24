@@ -34,6 +34,8 @@
 	let useOfResults = $state('Annual donor report and internal programme evaluation');
 	let model = $state(CHAT_MODEL);
 	let activeProvider = $derived(getProvider(appSettings.provider));
+
+	const displayUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
 	// Model names are provider-specific, so following the provider is the right
 	// default — but never overwrite a name the user typed themselves.
 	let lastProviderId = $state(appSettings.provider);
@@ -143,7 +145,7 @@
 						validationFeedback
 					} as any,
 					(status: string) => {
-						aiStatus = status;
+						aiStatus = get(t)(status);
 						aiStep += 1;
 					},
 					(trace: any) => {
@@ -338,44 +340,46 @@
 		</div>
 	</section>
 
-	<details class="model-section">
-		<summary>{$t('wizard.modelHeading')}</summary>
-		<div class="model-body">
+	<section>
+		<h2>{$t('wizard.modelHeading')}</h2>
+		<p class="model-info">
+			{#if activeProvider.id === 'custom'}
+				{$t('wizard.modelInfoCustom')}
+			{:else}
+				{$t('wizard.modelInfoActive')} <strong>{activeProvider.label}</strong>.
+				{$t('wizard.modelInfoKeys')}
+				<a href={activeProvider.keysUrl} target="_blank" rel="noopener"
+					>{displayUrl(activeProvider.keysUrl)}</a
+				>,
+				{$t('wizard.modelInfoModels')}
+				<a href={activeProvider.modelsUrl} target="_blank" rel="noopener"
+					>{displayUrl(activeProvider.modelsUrl)}</a
+				>.
+			{/if}
+			{$t('wizard.modelInfoSwitch')}
+		</p>
+		{#if activeProvider.id === 'openrouter'}
 			<p class="model-info">
-				{$t('wizard.modelInfo')}
-				<a href="https://openrouter.ai" target="_blank" rel="noopener"
-					>{$t('wizard.modelInfoLink')}</a
-				>
-				{$t('wizard.modelInfoMid')}
-				<a href="https://openrouter.ai/models" target="_blank" rel="noopener"
-					>{$t('wizard.modelInfoModelsLink')}</a
-				>
-				{$t('wizard.modelInfoEnd')}
+				{$t('wizard.modelInfoOpenRouterFree')}
 				<a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noopener"
 					>{$t('wizard.modelInfoPrivacyLink')}</a
 				>.
 			</p>
-			<p class="model-tool-note">{$t('wizard.modelToolNote')}</p>
-			<div class="input-group">
-				<label for="model-select">{$t('wizard.modelLabel')}</label>
-				<input
-					id="model-select"
-					type="text"
-					bind:value={model}
-					placeholder={activeProvider.defaultModel}
-				/>
-				<p class="field-hint">
-					{$t('wizard.providerActive')}
-					<strong>{activeProvider.label}</strong>. {$t('wizard.providerSwitchHint')}
-					{#if activeProvider.modelsUrl}
-						<a href={activeProvider.modelsUrl} target="_blank" rel="noopener"
-							>{activeProvider.modelsUrl}</a
-						>
-					{/if}
-				</p>
-			</div>
+		{/if}
+		<p class="model-tool-note">
+			{$t('wizard.modelToolNote')}
+			{#if activeProvider.id === 'openrouter'}{$t('wizard.modelToolNoteFree')}{/if}
+		</p>
+		<div class="input-group">
+			<label for="model-select">{$t('wizard.modelLabel')}</label>
+			<input
+				id="model-select"
+				type="text"
+				bind:value={model}
+				placeholder={activeProvider.defaultModel}
+			/>
 		</div>
-	</details>
+	</section>
 
 	{#if generatedFile && validationFindings.length > 0}
 		<div
@@ -475,11 +479,8 @@
 
 	<footer>
 		<p>
-			This tool is open source and available at <a
-				href="https://github.com/CorrelAid/formulaid"
-				target="_blank"
-				rel="noopener">GitHub</a
-			>.
+			{$t('page.footer')}
+			<a href="https://github.com/CorrelAid/formulaid" target="_blank" rel="noopener">GitHub</a>.
 		</p>
 	</footer>
 </main>
@@ -536,7 +537,6 @@
 	}
 
 	.input-group label,
-	.setting-group label,
 	.setting-label {
 		display: block;
 		margin-bottom: var(--spacing-xs);
@@ -605,8 +605,9 @@
 
 	.checkbox-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		gap: var(--spacing-xs);
+		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+		gap: var(--spacing-sm) var(--spacing-base);
+		margin-top: var(--spacing-sm);
 		padding: var(--spacing-base);
 		background: color-mix(in srgb, var(--color-tertiary) 20%, white);
 		border-radius: var(--radius-md);
@@ -614,10 +615,24 @@
 
 	.checkbox-item {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: var(--spacing-xs);
 		font-size: 0.9rem;
+		line-height: var(--line-height-snug);
 		cursor: pointer;
+	}
+
+	.checkbox-item input {
+		flex-shrink: 0;
+		margin: 0.15em 0 0;
+	}
+
+	/* Long German compounds (Beschäftigungsverhältnisse) must break inside
+	   the column instead of pushing the text below the checkbox. */
+	.checkbox-item span {
+		min-width: 0;
+		overflow-wrap: anywhere;
+		hyphens: auto;
 	}
 
 	.warning-box {
@@ -726,14 +741,12 @@
 		color: white;
 	}
 
-	.model-section,
 	.skills-section {
 		border: var(--dimension-border-width) solid var(--color-text-primary);
 		border-radius: var(--radius-lg);
 		overflow: hidden;
 	}
 
-	.model-section summary,
 	.skills-section summary {
 		padding: var(--spacing-base) var(--spacing-lg);
 		cursor: pointer;
@@ -743,15 +756,8 @@
 		transition: background 0.2s;
 	}
 
-	.model-section summary:hover,
 	.skills-section summary:hover {
 		background: #f5f0f4;
-	}
-
-	.model-body {
-		padding: var(--spacing-lg);
-		background: var(--color-white);
-		border-top: var(--dimension-border-width) solid var(--color-text-primary);
 	}
 
 	.model-info {

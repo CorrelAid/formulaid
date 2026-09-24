@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
 	let { traces } = $props<{ traces: any[] }>();
 </script>
 
@@ -8,7 +9,7 @@
 		<div class="traces-list">
 			{#each traces as traceItem, i}
 				<details class="trace-item">
-					<summary>Aktion {i + 1}: {traceItem?.programId || 'KI-Verarbeitung'}</summary>
+					<summary>{$t('traces.step')} {i + 1}: {traceItem?.programId || $t('traces.fallback')}</summary>
 					<pre>{JSON.stringify(traceItem?.trace || {}, null, 2)}</pre>
 				</details>
 			{/each}

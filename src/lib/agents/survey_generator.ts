@@ -25,7 +25,7 @@ export class SurveyGeneratorAgent {
 		input: AgentInput,
 		onStatus?: (msg: string) => void
 	): Promise<GeneratedSurvey> {
-		if (onStatus) onStatus('Generiere Umfrage basierend auf der Forschungsfrage...');
+		if (onStatus) onStatus('wizard.statusGeneratingSurvey');
 
 		const qwacFunctions = await getQwacbackFunctions();
 

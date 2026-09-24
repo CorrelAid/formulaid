@@ -13,10 +13,11 @@ export class LeadAgent {
 
 	async buildSurvey(
 		input: AgentInput,
+		/** Receives i18n keys (wizard.status*), translated by the page. */
 		onStatus?: (msg: string) => void,
 		onTrace?: (trace: any) => void
 	): Promise<Survey> {
-		if (onStatus) onStatus('Generiere Fragen aus Kontext...');
+		if (onStatus) onStatus('wizard.statusGeneratingQuestions');
 
 		const generated = await this.surveyGenerator.generateSurvey(this.ai, input, onStatus);
 
@@ -28,11 +29,12 @@ export class LeadAgent {
 			}
 		}
 
-		if (onStatus) onStatus('Umfrage erfolgreich erstellt!');
+		if (onStatus) onStatus('wizard.statusCreated');
 
 		return {
 			title: 'Generated Questionnaire',
-			questions: [...input.demographicQuestions, ...generated.questions],
+			// Demographics go last: the UI promises it, and it is survey convention.
+			questions: [...generated.questions, ...input.demographicQuestions],
 			reasoning: generated.reasoning
 		};
 	}

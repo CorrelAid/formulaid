@@ -151,8 +151,15 @@
 
 			<div class="input-group">
 				<label for="header-apikey">{$t('header.apiKeyLabel')}</label>
-				<input id="header-apikey" type="password" bind:value={localKey} placeholder="sk-or-..." />
-				<p class="key-hint">{$t('header.apiKeyHint')}</p>
+				<input
+					id="header-apikey"
+					type="password"
+					bind:value={localKey}
+					placeholder={localProvider === 'openrouter' ? 'sk-or-...' : 'sk-...'}
+				/>
+				{#if localProvider === 'openrouter'}
+					<p class="key-hint">{$t('header.openRouterLimitHint')}</p>
+				{/if}
 			</div>
 
 			<div class="input-group">
