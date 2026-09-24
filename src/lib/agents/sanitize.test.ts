@@ -28,6 +28,18 @@ const messy: Survey = {
 		},
 		// Demographic question with the same name as a generated one.
 		{ id: '3', type: 'text', name: 'employment_status', label: 'Doppelt', required: false },
+		// Umlauts in names and choice codes (seen in a real run).
+		{
+			id: '6',
+			type: 'select_one',
+			name: 'aktivitätshäufigkeit',
+			label: 'Wie oft?',
+			required: false,
+			choices: [
+				{ name: 'täglich', label: 'Täglich' },
+				{ name: 'wöchentlich', label: 'Wöchentlich' }
+			]
+		},
 		// Already-valid name, then a duplicate that references it.
 		{ id: '4', type: 'text', name: 'age', label: 'Alter', required: false },
 		{
@@ -50,7 +62,9 @@ describe('sanitizeSurvey', () => {
 	});
 
 	it('dedupes names and keeps relevant in sync with renames and recodes', () => {
-		const [first, second, third, age, age2] = sanitizeSurvey(messy).questions;
+		const [first, second, third, umlaut, age, age2] = sanitizeSurvey(messy).questions;
+		expect(umlaut.name).toBe('aktivitaetshaeufigke');
+		expect(umlaut.choices!.map((c) => c.name)).toEqual(['taegl', 'woech']);
 		expect(age.name).toBe('age');
 		expect(age2.name).toBe('age1');
 		expect(age2.relevant).toBe('${age} != 0');

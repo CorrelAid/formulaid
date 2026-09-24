@@ -1,10 +1,11 @@
 import { AxGen, type AxAIService } from '@ax-llm/ax';
-import { APPEARANCES, FieldSanitizer, QUESTION_TYPES } from '@correlaid/formtransform';
+import { APPEARANCES, QUESTION_TYPES } from '@correlaid/formtransform';
+import { registryLimits } from './sanitize.js';
 import type { Question } from './types.js';
 import { extractQuestions } from './question_parser.js';
 
 const SIGNATURE =
-	'previousQuestions:json, validationFeedback:string, language:string -> generatedQuestions:json';
+	'previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
 
 /** Built from the registry, so the repair prompt can never drift from what the
  *  validator accepts. */
@@ -19,9 +20,7 @@ function buildInstructions(): string {
 	const appearances = Object.entries(APPEARANCES)
 		.filter(([, a]) => a.supported)
 		.map(([name, a]) => `${name} (${(a.validForTypes ?? []).join(', ')})`);
-	const sanitizer = new FieldSanitizer();
-	const maxName = sanitizer.sanitizeName('x'.repeat(100)).length;
-	const maxCode = sanitizer.sanitizeAnswerCode('x'.repeat(100)).length;
+	const { maxName, maxCode } = registryLimits();
 	return [
 		'You repair an XLSForm questionnaire that a validator rejected.',
 		'Return the same questions as JSON, changing only what the validation feedback asks for.',
@@ -50,7 +49,7 @@ export class RepairAgent {
 
 	async repair(
 		ai: AxAIService,
-		input: { previousQuestions: Question[]; validationFeedback: string; language: string },
+		input: { previousQuestions: Question[]; validationFeedback: string; formOfAddress: string },
 		signal?: AbortSignal
 	): Promise<Question[]> {
 		const result = await this.gen.forward(
@@ -58,7 +57,7 @@ export class RepairAgent {
 			{
 				previousQuestions: input.previousQuestions,
 				validationFeedback: input.validationFeedback,
-				language: input.language
+				formOfAddress: input.formOfAddress
 			},
 			{ abortSignal: signal }
 		);
@@ -67,5 +66,9 @@ export class RepairAgent {
 
 	getTraces() {
 		return this.gen.getTraces();
+	}
+
+	getUsage() {
+		return this.gen.getUsage();
 	}
 }

@@ -1,4 +1,4 @@
-import { FieldSanitizer } from '@correlaid/formtransform';
+import { FieldSanitizer, QUESTION_TYPES } from '@correlaid/formtransform';
 import type { Choice, Survey } from './types.js';
 
 /** Companion rows of select_*_other keep this suffix; the validator strips it
@@ -17,9 +17,7 @@ const OTHER_SUFFIX = '_other';
  */
 export function sanitizeSurvey(survey: Survey): Survey {
 	const sanitizer = new FieldSanitizer();
-	// Length limits, read back from the sanitizer instead of hardcoding them.
-	const maxName = sanitizer.sanitizeName('x'.repeat(100)).length;
-	const maxCode = sanitizer.sanitizeAnswerCode('x'.repeat(100)).length;
+	const { maxName, maxCode } = registryLimits();
 
 	const renamed = new Map<string, string>();
 	const seen = new Set<string>();
@@ -46,6 +44,25 @@ export function sanitizeSurvey(survey: Survey): Survey {
 	};
 }
 
+/** FieldSanitizer strips only underscores and hyphens, but the validator
+ *  wants ASCII letters and digits, so German names like "häufigkeit" would
+ *  still fail. Spell out umlauts and drop whatever else is left first. */
+function toAscii(raw: string): string {
+	return raw
+		.replace(
+			/[äöüÄÖÜß]/g,
+			(c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue', ß: 'ss' })[c] ?? c
+		)
+		.normalize('NFKD')
+		.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+/** Name and choice-code length limits, from the registry's constraints. */
+export function registryLimits(): { maxName: number; maxCode: number } {
+	const { maxNameLength, maxChoiceCodeLength } = QUESTION_TYPES.select_one.constraints;
+	return { maxName: maxNameLength, maxCode: maxChoiceCodeLength };
+}
+
 function sanitizeName(
 	sanitizer: FieldSanitizer,
 	raw: string,
@@ -54,7 +71,8 @@ function sanitizeName(
 ): string {
 	const isOther = raw.endsWith(OTHER_SUFFIX);
 	const base = isOther ? raw.slice(0, -OTHER_SUFFIX.length) : raw;
-	const name = sanitizer.sanitizeNameUnique(base) || sanitizer.sanitizeNameUnique(fallback);
+	const name =
+		sanitizer.sanitizeNameUnique(toAscii(base)) || sanitizer.sanitizeNameUnique(fallback);
 	// LimeSurvey appends "other" to the base, so the base has to leave room.
 	return isOther ? name.slice(0, maxName - 'other'.length) + OTHER_SUFFIX : name;
 }
@@ -68,7 +86,7 @@ function sanitizeChoices(
 	const used = new Set<string>();
 	return choices.map((c, i) => {
 		const original = String(c.name ?? '');
-		let code = sanitizer.sanitizeAnswerCode(original) || `c${i + 1}`;
+		let code = sanitizer.sanitizeAnswerCode(toAscii(original)) || `c${i + 1}`;
 		// Truncating to the code limit can collide within one list.
 		for (let n = 1; used.has(code); n++) {
 			const suffix = String(n);

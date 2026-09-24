@@ -69,7 +69,8 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`  Demografik:      ${input.selectedDemographics.join(', ') || 'keine'}`);
 	console.log('─'.repeat(60));
 
-	const ai = createModel(API_KEY!, MODEL);
+	// Outside the browser there is no same-origin proxy, so call OpenRouter directly.
+	const ai = createModel(API_KEY!, MODEL, 'https://openrouter.ai/api/v1');
 	const agent = new LeadAgent(ai);
 
 	const start = Date.now();
@@ -79,7 +80,9 @@ async function runCase(label: string, input: AgentInput) {
 
 	const elapsed = ((Date.now() - start) / 1000).toFixed(1);
 	console.log(`\nGenerated "${survey.title}": ${survey.questions.length} questions in ${elapsed}s`);
+	const { promptTokens, completionTokens } = agent.usage();
 	console.log(`  repairs: ${repairAttempts}, qwac: ${qwacAvailable ? 'yes' : 'unavailable'}`);
+	console.log(`  tokens: ${promptTokens} in, ${completionTokens} out`);
 	for (const f of findings) console.log(`  [${f.severity}] ${f.message}`);
 	console.log();
 

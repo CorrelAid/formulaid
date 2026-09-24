@@ -1,5 +1,5 @@
 import type { AxAIService } from '@ax-llm/ax';
-import { SurveyGeneratorAgent } from './survey_generator.js';
+import { SurveyGeneratorAgent, formOfAddress } from './survey_generator.js';
 import { RepairAgent } from './repair_agent.js';
 import { sanitizeSurvey } from './sanitize.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
@@ -81,7 +81,7 @@ export class LeadAgent {
 				{
 					previousQuestions: survey.questions.slice(0, questions.length),
 					validationFeedback: errors.map((e) => `- ${e.message}`).join('\n'),
-					language: input.language
+					formOfAddress: formOfAddress(input.language)
 				},
 				signal
 			);
@@ -89,6 +89,18 @@ export class LeadAgent {
 			// An empty answer would throw away the questionnaire; keep the old one.
 			if (repaired.length > 0) questions = repaired;
 		}
+	}
+
+	/** Tokens used by all runs of this agent so far, summed over both
+	 *  generators (used by scripts/test_workflow.ts to compare prompts). */
+	usage(): { promptTokens: number; completionTokens: number } {
+		let promptTokens = 0;
+		let completionTokens = 0;
+		for (const u of [...this.surveyGenerator.getUsage(), ...this.repairAgent.getUsage()]) {
+			promptTokens += u.tokens?.promptTokens ?? 0;
+			completionTokens += u.tokens?.completionTokens ?? 0;
+		}
+		return { promptTokens, completionTokens };
 	}
 
 	private validate(workbook: Uint8Array): ValidationFinding[] {

@@ -89,6 +89,7 @@
 	type WizardError =
 		| { kind: 'privacy' }
 		| { kind: 'modelNotFound' }
+		| { kind: 'rateLimited' }
 		| { kind: 'stream' }
 		| { kind: 'message'; text: string };
 	let wizardError = $state<WizardError | null>(null);
@@ -121,6 +122,10 @@
 			(m.includes('no endpoints available') || m.includes('guardrail') || m.includes('data policy'))
 		) {
 			return { kind: 'privacy' };
+		}
+		// Busy models (e.g. the default one) get rate-limited upstream for everyone.
+		if (/\b429\b/.test(m) || m.includes('too many requests') || m.includes('rate-limited')) {
+			return { kind: 'rateLimited' };
 		}
 		if (m.includes('http 404') || /\b404\b/.test(m)) return { kind: 'modelNotFound' };
 		if (m.includes('input stream') || m.includes('error in input')) return { kind: 'stream' };
@@ -483,6 +488,8 @@
 						>openrouter.ai/settings/privacy</a
 					>.
 				</p>
+			{:else if wizardError.kind === 'rateLimited'}
+				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelRateLimited')}</p>
 			{:else if wizardError.kind === 'modelNotFound'}
 				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelNotFound')}</p>
 			{:else if wizardError.kind === 'stream'}

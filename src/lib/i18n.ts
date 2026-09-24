@@ -113,6 +113,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.statusGenerating': 'Building the questionnaire from your research goal…',
 		'wizard.statusValidating': 'Checking the questionnaire…',
 		'wizard.cancel': 'Cancel',
+		'wizard.modelRateLimited':
+			'The model is overloaded right now (too many requests at the provider). Try again in a minute or pick a different model in section 4.',
 		'wizard.resetInputs': 'Clear form',
 		'wizard.modelNotFound':
 			'The model was not found. Check the model name in section 4 and the provider’s model list.',
@@ -237,6 +239,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.statusGenerating': 'Erstelle Fragebogen aus dem Forschungsziel…',
 		'wizard.statusValidating': 'Prüfe den Fragebogen…',
 		'wizard.cancel': 'Abbrechen',
+		'wizard.modelRateLimited':
+			'Das Modell ist gerade überlastet (zu viele Anfragen beim Anbieter). Versuche es in einer Minute erneut oder wähle in Abschnitt 4 ein anderes Modell.',
 		'wizard.resetInputs': 'Formular leeren',
 		'wizard.modelNotFound':
 			'Das Modell wurde nicht gefunden. Prüfe den Modellnamen in Abschnitt 4 und die Modellliste des Anbieters.',
