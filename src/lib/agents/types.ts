@@ -1,11 +1,13 @@
-export type QuestionType =
-	| 'select_one'
-	| 'select_multiple'
-	| 'text'
-	| 'integer'
-	| 'decimal'
-	| 'date'
-	| 'note';
+import type { QUESTION_TYPES } from '@correlaid/formtransform';
+
+type QuestionTypeEntry = (typeof QUESTION_TYPES)[keyof typeof QUESTION_TYPES];
+
+/** XLSForm `type` cell of every question kind in the formtransform registry.
+ *  Composites like `grid` have no single type cell and drop out. */
+export type QuestionType = Extract<
+	QuestionTypeEntry,
+	{ kind: 'question'; typeString: string }
+>['typeString'];
 
 export interface Choice {
 	label: string;

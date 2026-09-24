@@ -2,9 +2,8 @@ import { QUESTION_TYPES } from '@correlaid/formtransform';
 import type { Question, QuestionType } from './types.js';
 
 /** Set of XLSForm type strings the parser will preserve verbatim from the type
- *  cell instead of falling back to label-based inference. Mirrors the
- *  `QuestionType` union in `./types.ts` (question kinds with a defined
- *  `typeString`). */
+ *  cell instead of falling back to label-based inference. The runtime
+ *  counterpart of `QuestionType` in `./types.ts`, built from the same filter. */
 const KNOWN_QUESTION_TYPES = new Set(
 	Object.values(QUESTION_TYPES)
 		.filter((e) => e.kind === 'question' && e.typeString)
