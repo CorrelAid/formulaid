@@ -1,20 +1,10 @@
-import { existsSync, readdirSync } from 'fs';
+import { existsSync } from 'fs';
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-console.log(`Starting server on ${HOST}:${PORT}...`);
-console.log(`Working directory: ${process.cwd()}`);
-
-// Check if dist directory exists
-const distPath = './build';
-if (existsSync(distPath)) {
-	console.log(`✅ build directory exists`);
-	const files = readdirSync(distPath);
-	console.log(`build contents: ${files.join(', ')}`);
-} else {
-	console.error(`❌ build directory NOT FOUND at ${distPath}`);
-	console.log(`Current directory contents:`, readdirSync('.'));
+if (!existsSync('./build')) {
+	console.error(`❌ build directory not found in ${process.cwd()} — run "bun run build" first`);
 }
 
 const server = Bun.serve({
@@ -24,8 +14,6 @@ const server = Bun.serve({
 	async fetch(req) {
 		const url = new URL(req.url);
 		let pathname = url.pathname;
-
-		console.log(`[${new Date().toISOString()}] ${req.method} ${pathname}`);
 
 		// Proxy API requests to the supported LLM gateways. Neither sends CORS
 		// headers this origin may use, so the browser cannot call them directly.
@@ -40,7 +28,6 @@ const server = Bun.serve({
 
 		if (proxyTarget) {
 			const targetUrl = `https://${proxyTarget.host}${proxyTarget.path}${url.search}`;
-			console.log(`  → Proxying to: ${targetUrl}`);
 
 			const proxyHeaders = new Headers(req.headers);
 			proxyHeaders.set('Host', proxyTarget.host);
@@ -107,12 +94,7 @@ const server = Bun.serve({
 		let file = Bun.file(filePath);
 
 		if (await file.exists()) {
-			console.log(`  → Serving: ${filePath}`);
 			const response = new Response(file);
-
-			// Add cross-origin isolation headers for SharedArrayBuffer support (DuckDB-Wasm)
-			response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
-			response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
 
 			// Add content-type based on extension
 			if (pathname.endsWith('.js'))
@@ -134,13 +116,8 @@ const server = Bun.serve({
 		if (!pathname.endsWith('.html') && !pathname.endsWith('/')) {
 			const dirIndexFile = Bun.file(`./build${pathname}/index.html`);
 			if (await dirIndexFile.exists()) {
-				console.log(`  → Serving: ./build${pathname}/index.html`);
 				return new Response(dirIndexFile, {
-					headers: {
-						'Content-Type': 'text/html; charset=utf-8',
-						'Cross-Origin-Embedder-Policy': 'require-corp',
-						'Cross-Origin-Opener-Policy': 'same-origin'
-					}
+					headers: { 'Content-Type': 'text/html; charset=utf-8' }
 				});
 			}
 		}
@@ -149,19 +126,13 @@ const server = Bun.serve({
 		if (!pathname.endsWith('.html')) {
 			const htmlFile = Bun.file(`${filePath}.html`);
 			if (await htmlFile.exists()) {
-				console.log(`  → Serving: ${filePath}.html`);
 				return new Response(htmlFile, {
-					headers: {
-						'Content-Type': 'text/html; charset=utf-8',
-						'Cross-Origin-Embedder-Policy': 'require-corp',
-						'Cross-Origin-Opener-Policy': 'same-origin'
-					}
+					headers: { 'Content-Type': 'text/html; charset=utf-8' }
 				});
 			}
 		}
 
 		// 404
-		console.log(`  → 404 Not Found: ${pathname}`);
 		return new Response('Not Found', { status: 404 });
 	}
 });

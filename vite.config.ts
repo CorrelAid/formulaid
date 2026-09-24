@@ -63,10 +63,6 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: true
 			}
-		},
-		headers: {
-			'Cross-Origin-Embedder-Policy': 'require-corp',
-			'Cross-Origin-Opener-Policy': 'same-origin'
 		}
 	},
 	preview: {
@@ -83,10 +79,6 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: true
 			}
-		},
-		headers: {
-			'Cross-Origin-Embedder-Policy': 'require-corp',
-			'Cross-Origin-Opener-Policy': 'same-origin'
 		}
 	},
 	test: {

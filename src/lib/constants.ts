@@ -1,5 +1,3 @@
-export const SESSION_KEY = 'formulaid_api_key';
-
 export const CHAT_MODEL = 'mistralai/mistral-small-2603';
 
 export type ProviderId = 'openrouter' | 'eurouter' | 'custom';
