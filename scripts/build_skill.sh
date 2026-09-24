@@ -31,7 +31,7 @@ QWAC_API="https://qwacback.correlaid.org/api"
 # is the authoritative catalogue for the XLSForm allowlist. Pin to a commit SHA,
 # not a branch — a registry change should never alter a shipped skill without a
 # formulaid commit. Update this SHA when the registry changes substantively.
-FORMTRANSFORM_REF="${FORMTRANSFORM_REF:-694a5c36f35c1ff048b46926681584678b65f4f5}"
+FORMTRANSFORM_REF="${FORMTRANSFORM_REF:-f15df170693e8ff49b1ccf225d45ac27009c574a}"
 FORMTRANSFORM_PATH="${FORMTRANSFORM_PATH:-$(cd "$PROJECT_ROOT/.." 2>/dev/null && cd formtransform 2>/dev/null && pwd)}"
 
 # Demographic sources (specific question + study)

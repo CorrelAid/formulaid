@@ -43,10 +43,10 @@
 	"dependencies": {
 		"@ax-llm/ax": "^19.0.38",
 		"@correlaid/cdl-design": "github:CorrelAid/cdl-design",
-		"@correlaid/formtransform": "github:CorrelAid/formtransform#694a5c36f35c1ff048b46926681584678b65f4f5",
+		"@correlaid/formtransform": "github:CorrelAid/formtransform#f15df170693e8ff49b1ccf225d45ac27009c574a",
 		"xlsx": "^0.18.5"
 	},
-	"allowScripts": {
-		"github:CorrelAid/formtransform#694a5c36f35c1ff048b46926681584678b65f4f5": true
-	}
+	"trustedDependencies": [
+		"@correlaid/formtransform"
+	]
 }
