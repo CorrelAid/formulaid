@@ -7,7 +7,7 @@
       "dependencies": {
         "@ax-llm/ax": "^19.0.38",
         "@correlaid/cdl-design": "github:CorrelAid/cdl-design",
-        "@correlaid/formtransform": "github:CorrelAid/formtransform#v0.1.0",
+        "@correlaid/formtransform": "https://github.com/CorrelAid/formtransform/releases/download/v0.1.1/correlaid-formtransform-0.1.1.tgz",
         "xlsx": "^0.18.5",
       },
       "devDependencies": {
@@ -34,9 +34,6 @@
       },
     },
   },
-  "trustedDependencies": [
-    "@correlaid/formtransform",
-  ],
   "packages": {
     "@ax-llm/ax": ["@ax-llm/ax@19.0.38", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "dayjs": "^1.11.13" }, "bin": { "ax": "cli/index.mjs" } }, "sha512-bDnITU4aJUOidRoGKBs9z8Asf2XAgaSsHMjG069Ty6+CiHdSXMf2wPhJ0cR1PXjZK9r9tVq5ktyYCNl+P5XI0Q=="],
 
@@ -46,7 +43,7 @@
 
     "@correlaid/cdl-design": ["@correlaid/cdl-design@github:CorrelAid/cdl-design#a5a8162", { "dependencies": { "@sveltejs/kit": "^2.50.2", "@sveltejs/package": "^2.5.7", "@sveltejs/vite-plugin-svelte": "^6.2.4", "@terrazzo/parser": "^0.5.0", "@terrazzo/plugin-css": "^0.5.0", "svelte": "^5.0.0", "typescript": "^5.9.3", "vite": "^7.3.1" }, "peerDependencies": { "shiki": "^3.0.0", "svelte": "^5.0.0" } }, "CorrelAid-cdl-design-a5a8162", "sha512-f1zW30ETkKex7fWhT3MPslb85AQNbycz83M7P3wy+QRg+qCZRQyRwOu6g3qcJ6EjPuGfluFbsuNUcxscVlSiJQ=="],
 
-    "@correlaid/formtransform": ["@correlaid/formtransform@github:CorrelAid/formtransform#336205c", { "dependencies": { "marked": "^17.0.5", "xlsx": "^0.18.5" }, "bin": { "formtransform": "dist/cli.js" } }, "CorrelAid-formtransform-336205c", "sha512-FRgW8W9SFPyc/m+iMOyEtftzhLk9MysJXlzjFqKks/53MRlAdtlNSRY/3yRXMMuYAV7SwqeF0OO6Drqwi3Apvw=="],
+    "@correlaid/formtransform": ["@correlaid/formtransform@https://github.com/CorrelAid/formtransform/releases/download/v0.1.1/correlaid-formtransform-0.1.1.tgz", { "dependencies": { "marked": "^17.0.5", "xlsx": "^0.18.5" }, "bin": { "formtransform": "dist/cli.js" } }, "sha512-PduoV9yGAmTAw7iqaJVOZ5gH0NsDSkYhfymGB7K508aqDoJ3VioZpgrG6EeYsIbEemHIt4Q9dtlD/yWXFZqNvw=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.3", "", { "os": "aix", "cpu": "ppc64" }, "sha512-9fJMTNFTWZMh5qwrBItuziu834eOCUcEqymSH7pY+zoMVEZg3gcPuBNxH1EvfVYe9h0x/Ptw8KBzv7qxb7l8dg=="],
 
