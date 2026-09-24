@@ -251,15 +251,48 @@ if [[ "$FOUND_RESULTS" == "false" ]]; then
 fi
 
 # ── 5. Embed references into generate-instructions.md ───────────────────────
+# generate-instructions.md is the web app's whole system prompt, sent on every
+# tool step and repair (#15). It gets the type allowlist it tells the model to
+# follow, and only the questionnaire-design chapters of the methodology.
+# references/ keeps the full text for the Claude skill.
 
 echo ""
 echo "📎 Embedding references into generate-instructions.md"
 
 GEN_INSTR="$OUT/generate-instructions.md"
+GEN_CHAPTERS=(
+  "Forschungsfragen formulieren"
+  "Messtheorie & Konstrukte"
+  "Operationalisierung"
+  "Fragebogenaufbau"
+  "Fragen formulieren"
+  "Antworttypen"
+)
+
+for f in references/question-types.md references/xlsform-syntax.md; do
+  printf '\n\n---\n\n' >> "$GEN_INSTR"
+  cat "$SUB_SKILL_DST/$f" >> "$GEN_INSTR"
+done
+ok "cdl-survey-types question types + syntax appended"
+
 if [[ -f "$REFS/survey-methodology.md" ]]; then
   printf '\n\n---\n\n## Survey Methodology\n\n' >> "$GEN_INSTR"
-  cat "$REFS/survey-methodology.md" >> "$GEN_INSTR"
-  ok "survey-methodology.md appended"
+  # The llm.txt joins page bodies with "---" in table-of-contents order and
+  # the pages carry no titles of their own, so pair them with the TOC entries.
+  # If the two don't line up, embed everything rather than guess.
+  python3 - "$REFS/survey-methodology.md" "${GEN_CHAPTERS[@]}" >> "$GEN_INSTR" <<'PY' || { cat "$REFS/survey-methodology.md" >> "$GEN_INSTR"; warn "chapter filter failed; full methodology embedded"; }
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+keep = sys.argv[2:]
+parts = [p.strip() for p in text.split("\n\n---\n\n")]
+titles = re.findall(r"^ {3}- (.+)$", parts[0], re.M)
+pages = parts[1:]
+if len(titles) != len(pages) or not set(keep) <= set(titles):
+    sys.exit(f"{len(titles)} TOC entries, {len(pages)} pages, missing: {set(keep) - set(titles)}")
+out = [f"### Kapitel: {t}\n\n{p}" for t, p in zip(titles, pages) if t in keep and p]
+print("\n\n---\n\n".join(out))
+PY
+  ok "methodology: ${#GEN_CHAPTERS[@]} questionnaire-design chapters appended"
 fi
 
 # ── 6. Package as zip ──────────────────────────────────────────────────────
