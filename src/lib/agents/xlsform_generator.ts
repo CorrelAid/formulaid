@@ -1,6 +1,36 @@
 import type { Survey } from './types.js';
 import * as XLSX from 'xlsx';
 
+const FALLBACK_SLUG = 'questionnaire';
+
+/** ASCII slug of a title: German umlauts spelled out, everything else that is
+ *  not a letter or digit collapsed to "_". */
+export function slugify(title: string, maxLength = 40): string {
+	const slug = title
+		.toLowerCase()
+		.replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[c] ?? c)
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[^a-z0-9]+/g, '_')
+		.slice(0, maxLength)
+		.replace(/^_+|_+$/g, '');
+	return slug || FALLBACK_SLUG;
+}
+
+/** `form_id` for the settings sheet: the title slug plus a minute timestamp,
+ *  so two forms generated from similar prompts don't collide on import (#22).
+ *  Starts with a letter, as ODK requires. */
+export function formIdFor(title: string, now = new Date()): string {
+	const stamp = now.toISOString().slice(0, 16).replace(/[-:T]/g, '');
+	const slug = slugify(title);
+	return `${/^[a-z]/.test(slug) ? slug : `f_${slug}`}_${stamp}`;
+}
+
+/** Download filename for a survey. */
+export function fileNameFor(survey: Survey): string {
+	return `${slugify(survey.title)}.xlsx`;
+}
+
 export class XLSFormGenerator {
 	generate(survey: Survey): Uint8Array {
 		const surveyData = [['type', 'name', 'label', 'hint', 'required', 'relevant']];
@@ -37,7 +67,7 @@ export class XLSFormGenerator {
 		const wsChoices = XLSX.utils.aoa_to_sheet(choicesData);
 		const wsSettings = XLSX.utils.aoa_to_sheet([
 			['form_title', 'form_id'],
-			[survey.title || 'Generated Questionnaire', 'generated_form']
+			[survey.title || 'Questionnaire', survey.formId ?? formIdFor(survey.title)]
 		]);
 		// Why each question is here, and where it came from (#5). Converters read
 		// only survey/choices/settings, so an extra sheet travels along harmlessly.

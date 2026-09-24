@@ -30,20 +30,28 @@ class SimpleHTTPTransport {
 	}
 }
 
-let initPromise: Promise<AxFunction[]> | null = null;
-
-async function initClient(): Promise<AxFunction[]> {
-	const client = new AxMCPClient(new SimpleHTTPTransport());
-	await client.init();
-	return client.toFunction();
+export interface QwacbackTools {
+	functions: AxFunction[];
+	/** False when the MCP server could not be reached. Generation still runs,
+	 *  but every question is then written by the model (#19). */
+	available: boolean;
 }
 
-export async function getQwacbackFunctions(): Promise<AxFunction[]> {
+let initPromise: Promise<QwacbackTools> | null = null;
+
+async function initClient(): Promise<QwacbackTools> {
+	const client = new AxMCPClient(new SimpleHTTPTransport());
+	await client.init();
+	return { functions: client.toFunction(), available: true };
+}
+
+export async function getQwacbackFunctions(): Promise<QwacbackTools> {
 	if (!initPromise) {
 		initPromise = initClient().catch((e) => {
 			console.warn('qwacback MCP unavailable, skipping:', e.message);
+			// Not cached: the next generation tries again.
 			initPromise = null;
-			return [];
+			return { functions: [], available: false };
 		});
 	}
 	return initPromise;

@@ -3,22 +3,32 @@
 	import { t } from '$lib/i18n';
 	import type { Trace } from '$lib/agents/types';
 
-	let { aiLoading, aiStatus, progress, traces, onGenerate, onDownload, onReset, generatedFile } =
-		$props<{
-			aiLoading: boolean;
-			aiStatus: string;
-			progress: number;
-			traces: Trace[];
-			onGenerate: () => void;
-			onDownload: () => void;
-			onReset: () => void;
-			generatedFile: string | null;
-		}>();
+	let {
+		aiLoading,
+		aiStatus,
+		progress,
+		traces,
+		onGenerate,
+		onCancel,
+		onDownload,
+		onReset,
+		hasFile
+	} = $props<{
+		aiLoading: boolean;
+		aiStatus: string;
+		progress: number;
+		traces: Trace[];
+		onGenerate: () => void;
+		onCancel: () => void;
+		onDownload: () => void;
+		onReset: () => void;
+		hasFile: boolean;
+	}>();
 </script>
 
 <section class="results-section">
 	<div class="actions">
-		{#if generatedFile}
+		{#if hasFile}
 			<button class="secondary-btn" onclick={onReset} disabled={aiLoading}>
 				{$t('wizard.generateNew')}
 			</button>
@@ -37,6 +47,9 @@
 				{/if}
 				{aiLoading ? aiStatus : $t('wizard.generateBtn')}
 			</button>
+			{#if aiLoading}
+				<button class="secondary-btn" onclick={onCancel}>{$t('wizard.cancel')}</button>
+			{/if}
 		{/if}
 	</div>
 
@@ -54,7 +67,7 @@
 		</div>
 	{/if}
 
-	{#if generatedFile}
+	{#if hasFile}
 		<div class="success-alert">
 			<p>{$t('wizard.generated')}</p>
 		</div>

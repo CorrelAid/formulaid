@@ -110,9 +110,13 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Free models (name ends in :free) work well for most surveys. If you get a “No endpoints available” error, allow third-party model access in your',
 		'wizard.modelToolNoteFree':
 			'Many free models do not support tool calling. A known working free model is qwen/qwen3.6-plus-preview:free.',
-		'wizard.statusGeneratingQuestions': 'Generating questions from your context…',
-		'wizard.statusGeneratingSurvey': 'Building the questionnaire from your research goal…',
-		'wizard.statusCreated': 'Questionnaire created!',
+		'wizard.statusGenerating': 'Building the questionnaire from your research goal…',
+		'wizard.statusValidating': 'Checking the questionnaire…',
+		'wizard.cancel': 'Cancel',
+		'wizard.modelNotFound':
+			'The model was not found. Check the model name in section 4 and the provider’s model list.',
+		'wizard.qwacUnavailable':
+			'The qwac question bank could not be reached, so all questions were written by the model and none come from validated instruments. Generate again later to use the question bank.',
 		'traces.step': 'Step',
 		'traces.fallback': 'AI processing',
 		'header.openRouterLimitHint':
@@ -229,9 +233,13 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Kostenlose Modelle (Name endet auf :free) eignen sich für die meisten Umfragen. Bei einem „No endpoints available“-Fehler erlaube den Zugang zu Drittanbieter-Modellen in den',
 		'wizard.modelToolNoteFree':
 			'Viele kostenlose Modelle können das nicht. Ein bekannt funktionierendes kostenloses Modell ist qwen/qwen3.6-plus-preview:free.',
-		'wizard.statusGeneratingQuestions': 'Generiere Fragen aus dem Kontext…',
-		'wizard.statusGeneratingSurvey': 'Erstelle Fragebogen aus dem Forschungsziel…',
-		'wizard.statusCreated': 'Fragebogen erstellt!',
+		'wizard.statusGenerating': 'Erstelle Fragebogen aus dem Forschungsziel…',
+		'wizard.statusValidating': 'Prüfe den Fragebogen…',
+		'wizard.cancel': 'Abbrechen',
+		'wizard.modelNotFound':
+			'Das Modell wurde nicht gefunden. Prüfe den Modellnamen in Abschnitt 4 und die Modellliste des Anbieters.',
+		'wizard.qwacUnavailable':
+			'Die Fragendatenbank qwac war nicht erreichbar. Alle Fragen wurden deshalb vom Modell formuliert, keine stammt aus validierten Instrumenten. Generiere später erneut, um die Fragendatenbank zu nutzen.',
 		'traces.step': 'Schritt',
 		'traces.fallback': 'KI-Verarbeitung',
 		'header.openRouterLimitHint':

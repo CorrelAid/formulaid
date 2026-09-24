@@ -43,6 +43,9 @@ export interface Trace {
 
 export interface Survey {
 	title: string;
+	/** XLSForm settings `form_id`; derived from the title so imported forms
+	 *  don't collide (#22). */
+	formId?: string;
 	questions: Question[];
 	/** The generator's own account of how it arrived at this set of questions. */
 	reasoning?: string;
@@ -55,8 +58,12 @@ export interface AgentInput {
 	language: 'formal' | 'informal';
 	selectedDemographics: string[];
 	demographicQuestions: Question[];
-	contextQuestions: Question[];
-	/** Findings from a previous validation run, fed back so the generator can
-	 *  repair its own output instead of the app guessing at a fix (#11). */
-	validationFeedback?: string;
 }
+
+/** What a run is doing right now; the page turns it into status text and
+ *  progress (#20). `attempt` is 0 for the first generation and counts repair
+ *  attempts after that. */
+export type RunPhase =
+	| { phase: 'generating' }
+	| { phase: 'validating'; attempt: number }
+	| { phase: 'repairing'; attempt: number };

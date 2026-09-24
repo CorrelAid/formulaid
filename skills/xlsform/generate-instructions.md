@@ -28,7 +28,7 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 - Add `"Keine Angabe"` as a choice (with `exclusive: yes`) for sensitive questions
 - Use `"Sonstiges"` + a follow-up `text` question with `relevant` logic instead of `or_other`
 - Fill `reasoning` with a short German account of how the set of questions was arrived at: which construct is covered by which block, what was taken from the question bank and what was written from scratch. The user sees this text — it is the questionnaire's audit trail
-- If `validationFeedback` is set, the previous attempt was **rejected** by the CDL XLSForm subset validator. Fix every point it lists before anything else; do not re-emit the rejected construct in a different disguise
+- Fill `title` with a short questionnaire title (a few words) in the language of the questions; it becomes the form title and the file name
 - Output `generatedQuestions` as **plain JSON only** — no markdown code fences, no ```json blocks, no backticks around the value
 
 

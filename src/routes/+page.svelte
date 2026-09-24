@@ -13,19 +13,16 @@
 	import { descriptionHtml } from 'virtual:cdl-content';
 	import {
 		LeadAgent,
+		MAX_REPAIR_ATTEMPTS,
 		createModel,
-		XLSFormGenerator,
-		XLSFormValidator,
+		fileNameFor,
 		type ValidationFinding,
+		type RunPhase,
 		type Survey,
 		type Trace,
 		type Choice,
 		type QuestionType
 	} from '$lib/agents/index.js';
-
-	/** How often the generator is asked to repair its own output before the form
-	 *  is delivered with the remaining findings shown (#11). */
-	const MAX_REPAIR_ATTEMPTS = 2;
 
 	// Form state
 	let language = $state<'formal' | 'informal' | null>(null);
@@ -54,16 +51,55 @@
 	// Generation state
 	let aiLoading = $state(false);
 	let aiStatus = $state('');
-	let aiStep = $state(0);
+	let runProgress = $state(0);
 	let traces = $state<Trace[]>([]);
-	let generatedFile = $state<string | null>(null);
+	let generatedFile = $state<Blob | null>(null);
 	let generatedSurvey = $state<Survey | null>(null);
 	let validationFindings = $state<ValidationFinding[]>([]);
 	let repairAttempts = $state(0);
-	let wizardError = $state<string | null>(null);
+	let qwacAvailable = $state(true);
+	let abortController: AbortController | null = null;
 
-	// 4 known status events → 25% each; clamp at 95 until done
-	let progress = $derived(generatedFile ? 100 : aiLoading ? Math.min(95, aiStep * 25) : 0);
+	type WizardError =
+		| { kind: 'privacy' }
+		| { kind: 'modelNotFound' }
+		| { kind: 'stream' }
+		| { kind: 'message'; text: string };
+	let wizardError = $state<WizardError | null>(null);
+
+	let progress = $derived(generatedFile ? 100 : aiLoading ? runProgress : 0);
+
+	/** Status text and progress per phase (#20). Repairs move the bar in steps
+	 *  instead of jumping to the end, and it never reaches 100 before done. */
+	function showPhase(p: RunPhase) {
+		const tr = get(t);
+		if (p.phase === 'generating') {
+			aiStatus = tr('wizard.statusGenerating');
+			runProgress = 15;
+		} else if (p.phase === 'validating') {
+			aiStatus = tr('wizard.statusValidating');
+			runProgress = p.attempt === 0 ? 60 : 66 + p.attempt * 12;
+		} else {
+			aiStatus = `${tr('wizard.statusRepairing')} (${p.attempt}/${MAX_REPAIR_ATTEMPTS})`;
+			runProgress = 60 + p.attempt * 12;
+			repairAttempts = p.attempt;
+		}
+	}
+
+	/** Map provider errors to something actionable (#21). The privacy hint is
+	 *  OpenRouter-specific, so it only applies when OpenRouter is active. */
+	function classifyError(msg: string): WizardError {
+		const m = msg.toLowerCase();
+		if (
+			activeProvider.id === 'openrouter' &&
+			(m.includes('no endpoints available') || m.includes('guardrail') || m.includes('data policy'))
+		) {
+			return { kind: 'privacy' };
+		}
+		if (m.includes('http 404') || /\b404\b/.test(m)) return { kind: 'modelNotFound' };
+		if (m.includes('input stream') || m.includes('error in input')) return { kind: 'stream' };
+		return { kind: 'message', text: msg };
+	}
 
 	function getDemographicQuestions(selected: string[]): DemographicVariable[] {
 		return demographicVariables.filter((v) => selected.includes(v.question_name));
@@ -90,20 +126,29 @@
 			}));
 	}
 
-	async function generateWithAI() {
-		if (!appSettings.isKeySet) {
-			wizardError = $t('wizard.apiKeyMissing');
-			return;
-		}
-		aiLoading = true;
-		aiStatus = get(t)('wizard.statusStarting');
-		aiStep = 1;
-		traces = [];
+	function resetResult() {
 		generatedFile = null;
 		generatedSurvey = null;
 		validationFindings = [];
 		repairAttempts = 0;
+		qwacAvailable = true;
+		traces = [];
+		aiStatus = '';
+		runProgress = 0;
+	}
+
+	async function generateWithAI() {
+		if (!appSettings.isKeySet) {
+			wizardError = { kind: 'message', text: $t('wizard.apiKeyMissing') };
+			return;
+		}
+		resetResult();
 		wizardError = null;
+		aiLoading = true;
+		aiStatus = get(t)('wizard.statusStarting');
+		runProgress = 5;
+		const controller = new AbortController();
+		abortController = controller;
 		try {
 			const demoQuestions = getDemographicQuestions(selectedDemographics).map((r) => ({
 				id: r.question_id,
@@ -119,112 +164,48 @@
 				model || activeProvider.defaultModel,
 				appSettings.baseUrl
 			);
-			const leadAgent = new LeadAgent(ai);
-			const generator = new XLSFormGenerator();
-			const validator = new XLSFormValidator();
-
-			let survey: Survey | null = null;
-			let excelBuffer: Uint8Array | null = null;
-			let validationFeedback: string | undefined;
-
-			// Generate → validate → hand the errors back to the generator. Capped,
-			// and whatever the last attempt produced is still delivered with the
-			// remaining findings on screen (#11).
-			for (let attempt = 0; attempt <= MAX_REPAIR_ATTEMPTS; attempt++) {
-				if (attempt > 0) {
-					repairAttempts = attempt;
-					aiStatus = get(t)('wizard.statusRepairing');
+			const result = await new LeadAgent(ai).run(
+				{
+					researchQuestion,
+					targetGroup,
+					useOfResults,
+					language: language || 'formal',
+					selectedDemographics,
+					demographicQuestions: demoQuestions
+				},
+				{
+					signal: controller.signal,
+					onPhase: showPhase,
+					onTrace: (trace) => traces.push(trace)
 				}
+			);
 
-				survey = await leadAgent.buildSurvey(
-					{
-						researchQuestion,
-						targetGroup,
-						useOfResults,
-						language: language || 'formal',
-						selectedDemographics,
-						demographicQuestions: demoQuestions,
-						contextQuestions: [],
-						validationFeedback
-					},
-					(status: string) => {
-						aiStatus = get(t)(status);
-						aiStep += 1;
-					},
-					(trace: Trace) => {
-						traces.push(trace);
-					}
-				);
-
-				excelBuffer = generator.generate(survey);
-
-				try {
-					validationFindings = validator.validate(excelBuffer);
-				} catch (e) {
-					validationFindings = [
-						{
-							severity: 'error',
-							message: `Validation failed to run: ${(e as Error).message}`
-						}
-					];
-				}
-
-				const errors = validationFindings.filter((f) => f.severity === 'error');
-				if (errors.length === 0 || attempt === MAX_REPAIR_ATTEMPTS) break;
-
-				validationFeedback = [
-					'The previous questionnaire was rejected by the CDL XLSForm subset validator.',
-					'Fix every point below. Use only question types and appearances the skill allows.',
-					...errors.map((e) => `- ${e.message}`)
-				].join('\n');
-			}
-
-			generatedSurvey = survey;
-
-			let binary = '';
-			for (let i = 0; i < excelBuffer!.length; i++) {
-				binary += String.fromCharCode(excelBuffer![i]);
-			}
-			generatedFile = btoa(binary);
+			generatedSurvey = result.survey;
+			validationFindings = result.findings;
+			repairAttempts = result.repairAttempts;
+			qwacAvailable = result.qwacAvailable;
+			generatedFile = new Blob([result.workbook as BlobPart], {
+				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			});
 			aiStatus = get(t)('wizard.statusDone');
 		} catch (e) {
-			const msg = (e as Error).message;
-			const m = msg.toLowerCase();
-			if (
-				m.includes('no endpoints available') ||
-				m.includes('guardrail') ||
-				m.includes('data policy') ||
-				m.includes('http 404') ||
-				(m.includes('404') && m.includes('endpoint'))
-			) {
-				wizardError = '__privacy__';
-			} else if (m.includes('input stream') || m.includes('error in input')) {
-				wizardError = '__stream__';
-			} else {
-				wizardError = msg;
-			}
+			// A cancelled run is not an error: go back to where the user started (#18).
+			if (controller.signal.aborted) resetResult();
+			else wizardError = classifyError((e as Error).message);
 		} finally {
 			aiLoading = false;
+			abortController = null;
 		}
 	}
 
-	function downloadExcel(filename: string, base64: string) {
-		const binary = atob(base64);
-		const bytes = new Uint8Array(binary.length);
-		for (let i = 0; i < binary.length; i++) {
-			bytes[i] = binary.charCodeAt(i);
-		}
-		const blob = new Blob([bytes], {
-			type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-		});
+	function downloadFile(file: Blob, filename: string) {
+		const url = URL.createObjectURL(file);
 		const link = document.createElement('a');
-		const url = URL.createObjectURL(blob);
-		link.setAttribute('href', url);
-		link.setAttribute('download', filename);
-		link.style.visibility = 'hidden';
-		document.body.appendChild(link);
+		link.href = url;
+		link.download = filename;
 		link.click();
-		document.body.removeChild(link);
+		// Revoking synchronously can cancel the download in some browsers.
+		setTimeout(() => URL.revokeObjectURL(url));
 	}
 </script>
 
@@ -440,23 +421,23 @@
 		</details>
 	{/if}
 
+	{#if generatedFile && !qwacAvailable}
+		<div class="warning-box" in:fade>
+			<p>{$t('wizard.qwacUnavailable')}</p>
+		</div>
+	{/if}
+
 	<StepResults
 		{aiLoading}
 		{aiStatus}
 		{progress}
 		{traces}
-		{generatedFile}
+		hasFile={generatedFile !== null}
 		onGenerate={generateWithAI}
-		onDownload={() => downloadExcel('questionnaire.xlsx', generatedFile!)}
-		onReset={() => {
-			generatedFile = null;
-			generatedSurvey = null;
-			validationFindings = [];
-			repairAttempts = 0;
-			traces = [];
-			aiStatus = '';
-			aiStep = 0;
-		}}
+		onCancel={() => abortController?.abort()}
+		onDownload={() =>
+			generatedFile && generatedSurvey && downloadFile(generatedFile, fileNameFor(generatedSurvey))}
+		onReset={resetResult}
 	/>
 
 	{#if typeof window !== 'undefined' && !appSettings.isKeySet}
@@ -467,7 +448,7 @@
 
 	{#if wizardError}
 		<div class="error" in:fade>
-			{#if wizardError === '__privacy__'}
+			{#if wizardError.kind === 'privacy'}
 				<p>
 					<strong>{$t('wizard.error')}</strong>
 					{$t('wizard.modelPrivacyError')}
@@ -475,10 +456,12 @@
 						>openrouter.ai/settings/privacy</a
 					>.
 				</p>
-			{:else if wizardError === '__stream__'}
+			{:else if wizardError.kind === 'modelNotFound'}
+				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelNotFound')}</p>
+			{:else if wizardError.kind === 'stream'}
 				<p><strong>{$t('wizard.error')}</strong> {$t('wizard.modelStreamError')}</p>
 			{:else}
-				<p><strong>{$t('wizard.error')}</strong> {wizardError}</p>
+				<p><strong>{$t('wizard.error')}</strong> {wizardError.text}</p>
 			{/if}
 			<button class="close-error" onclick={() => (wizardError = null)}>{$t('wizard.close')}</button>
 		</div>

@@ -6,3 +6,4 @@ export * from './xlsform_validator.js';
 export * from './config.js';
 export * from './qwacback.js';
 export * from './question_parser.js';
+export * from './sanitize.js';

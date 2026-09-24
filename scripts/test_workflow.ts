@@ -1,4 +1,4 @@
-import { LeadAgent, createModel, XLSFormGenerator } from '../src/lib/agents/index.js';
+import { LeadAgent, createModel, fileNameFor } from '../src/lib/agents/index.js';
 import type { AgentInput } from '../src/lib/agents/types.js';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -32,8 +32,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 					choices: [],
 					required: true
 				}
-			],
-			contextQuestions: []
+			]
 		}
 	},
 	{
@@ -44,8 +43,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 			useOfResults: 'Vorstandspräsentation und Entscheidungsgrundlage für Jahresplanung',
 			language: 'informal',
 			selectedDemographics: [],
-			demographicQuestions: [],
-			contextQuestions: []
+			demographicQuestions: []
 		}
 	},
 	{
@@ -54,8 +52,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 			researchQuestion: 'Welche Wirkung hat das Bildungsprogramm auf die Teilnehmenden?',
 			language: 'formal',
 			selectedDemographics: ['school_education'],
-			demographicQuestions: [],
-			contextQuestions: []
+			demographicQuestions: []
 		}
 	}
 ];
@@ -76,30 +73,28 @@ async function runCase(label: string, input: AgentInput) {
 	const agent = new LeadAgent(ai);
 
 	const start = Date.now();
-	const survey = await agent.buildSurvey(
-		input,
-		(status) => console.log(`  [status] ${status}`),
-		() => {}
-	);
+	const { survey, workbook, findings, repairAttempts, qwacAvailable } = await agent.run(input, {
+		onPhase: (p) => console.log(`  [phase] ${p.phase}${'attempt' in p ? ` ${p.attempt}` : ''}`)
+	});
 
 	const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-	console.log(`\nGenerated ${survey.questions.length} questions in ${elapsed}s:\n`);
+	console.log(`\nGenerated "${survey.title}": ${survey.questions.length} questions in ${elapsed}s`);
+	console.log(`  repairs: ${repairAttempts}, qwac: ${qwacAvailable ? 'yes' : 'unavailable'}`);
+	for (const f of findings) console.log(`  [${f.severity}] ${f.message}`);
+	console.log();
 
 	for (const q of survey.questions) {
 		const choices = q.choices?.length ? ` [${q.choices.map((c) => c.label).join(' / ')}]` : '';
 		console.log(`  [${q.type}] ${q.label}${choices}`);
 	}
 
-	const generator = new XLSFormGenerator();
-	const buffer = generator.generate(survey);
-
 	const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 	const dir = join(OUTPUT_DIR, slug);
 	mkdirSync(dir, { recursive: true });
-	writeFileSync(join(dir, 'questionnaire.xlsx'), buffer);
+	writeFileSync(join(dir, fileNameFor(survey)), workbook);
 	writeFileSync(join(dir, 'questions.json'), JSON.stringify(survey.questions, null, 2));
 	console.log(`\nSaved to scripts/test_output/${slug}/`);
-	console.log(`  questionnaire.xlsx  (${buffer.length} bytes)`);
+	console.log(`  ${fileNameFor(survey)}  (${workbook.length} bytes)`);
 	console.log(`  questions.json      (${survey.questions.length} questions)`);
 }
 

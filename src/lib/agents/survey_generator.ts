@@ -5,12 +5,15 @@ import { extractQuestions } from './question_parser.js';
 import generateInstructions from '../../../skills/xlsform/generate-instructions.md?raw';
 
 const SIGNATURE =
-	'researchQuestion:string, targetGroup?:string, useOfResults?:string, language:string, demographics?:string, validationFeedback?:string -> reasoning:string, generatedQuestions:json';
+	'researchQuestion:string, targetGroup?:string, useOfResults?:string, language:string, demographics?:string -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
 
 export interface GeneratedSurvey {
+	title: string;
 	questions: Question[];
 	/** Free-text account of why these questions, in the requested UI language. */
 	reasoning: string;
+	/** Whether the qwac question bank could be searched during generation. */
+	qwacAvailable: boolean;
 }
 
 export class SurveyGeneratorAgent {
@@ -23,11 +26,9 @@ export class SurveyGeneratorAgent {
 	async generateSurvey(
 		ai: AxAIService,
 		input: AgentInput,
-		onStatus?: (msg: string) => void
+		signal?: AbortSignal
 	): Promise<GeneratedSurvey> {
-		if (onStatus) onStatus('wizard.statusGeneratingSurvey');
-
-		const qwacFunctions = await getQwacbackFunctions();
+		const qwac = await getQwacbackFunctions();
 
 		const result = await this.gen.forward(
 			ai,
@@ -36,15 +37,16 @@ export class SurveyGeneratorAgent {
 				targetGroup: input.targetGroup,
 				useOfResults: input.useOfResults,
 				language: input.language,
-				demographics: input.selectedDemographics.join(', ') || undefined,
-				validationFeedback: input.validationFeedback
+				demographics: input.selectedDemographics.join(', ') || undefined
 			},
-			{ functions: qwacFunctions, maxSteps: 8 }
+			{ functions: qwac.functions, maxSteps: 8, abortSignal: signal }
 		);
 
 		return {
+			title: typeof result.title === 'string' ? result.title.trim() : '',
 			questions: result.generatedQuestions ? extractQuestions(result.generatedQuestions) : [],
-			reasoning: typeof result.reasoning === 'string' ? result.reasoning : ''
+			reasoning: typeof result.reasoning === 'string' ? result.reasoning : '',
+			qwacAvailable: qwac.available
 		};
 	}
 
