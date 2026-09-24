@@ -17,7 +17,10 @@
 		XLSFormGenerator,
 		XLSFormValidator,
 		type ValidationFinding,
-		type Survey
+		type Survey,
+		type Trace,
+		type Choice,
+		type QuestionType
 	} from '$lib/agents/index.js';
 
 	/** How often the generator is asked to repair its own output before the form
@@ -52,7 +55,7 @@
 	let aiLoading = $state(false);
 	let aiStatus = $state('');
 	let aiStep = $state(0);
-	let traces = $state<any[]>([]);
+	let traces = $state<Trace[]>([]);
 	let generatedFile = $state<string | null>(null);
 	let generatedSurvey = $state<Survey | null>(null);
 	let validationFindings = $state<ValidationFinding[]>([]);
@@ -66,7 +69,7 @@
 		return demographicVariables.filter((v) => selected.includes(v.question_name));
 	}
 
-	function mapToQuestionType(type: string): string {
+	function mapToQuestionType(type: string): QuestionType {
 		if (!type) return 'text';
 		const t = type.toLowerCase();
 		if (t.includes('single') || t.includes('one') || t === 'select_one') return 'select_one';
@@ -76,7 +79,7 @@
 		return 'text';
 	}
 
-	function parseChoices(optionsText: string): any[] {
+	function parseChoices(optionsText: string): Choice[] {
 		if (!optionsText) return [];
 		return optionsText
 			.split('\n')
@@ -143,12 +146,12 @@
 						demographicQuestions: demoQuestions,
 						contextQuestions: [],
 						validationFeedback
-					} as any,
+					},
 					(status: string) => {
 						aiStatus = get(t)(status);
 						aiStep += 1;
 					},
-					(trace: any) => {
+					(trace: Trace) => {
 						traces.push(trace);
 					}
 				);
@@ -232,6 +235,8 @@
 <main>
 	<div class="hero">
 		<h1>{$t('page.title')}</h1>
+		<!-- Build-time snippet from the wp_eins repo (our own content), not user input. -->
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		<div class="description">{@html descriptionHtml[$locale]}</div>
 	</div>
 
@@ -348,10 +353,12 @@
 			{:else}
 				{$t('wizard.modelInfoActive')} <strong>{activeProvider.label}</strong>.
 				{$t('wizard.modelInfoKeys')}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external provider URL -->
 				<a href={activeProvider.keysUrl} target="_blank" rel="noopener"
 					>{displayUrl(activeProvider.keysUrl)}</a
 				>,
 				{$t('wizard.modelInfoModels')}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external provider URL -->
 				<a href={activeProvider.modelsUrl} target="_blank" rel="noopener"
 					>{displayUrl(activeProvider.modelsUrl)}</a
 				>.

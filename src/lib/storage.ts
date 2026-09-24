@@ -19,7 +19,7 @@ export function saveKey(key: string, mode: StorageMode, durationMinutes: number 
 	// 'ram' mode stays in JS memory (handled by component state)
 }
 
-export function loadKey(): { key: string, mode: StorageMode } | null {
+export function loadKey(): { key: string; mode: StorageMode } | null {
 	const data = localStorage.getItem(STORAGE_KEY);
 	if (!data) return null;
 
@@ -31,7 +31,7 @@ export function loadKey(): { key: string, mode: StorageMode } | null {
 			// Explicit self-destruct if expired
 			localStorage.removeItem(STORAGE_KEY);
 		}
-	} catch (e) {
+	} catch {
 		localStorage.removeItem(STORAGE_KEY);
 	}
 

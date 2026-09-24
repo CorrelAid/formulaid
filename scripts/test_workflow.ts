@@ -86,7 +86,7 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`\nGenerated ${survey.questions.length} questions in ${elapsed}s:\n`);
 
 	for (const q of survey.questions) {
-		const choices = q.choices?.length ? ` [${q.choices.map(c => c.label).join(' / ')}]` : '';
+		const choices = q.choices?.length ? ` [${q.choices.map((c) => c.label).join(' / ')}]` : '';
 		console.log(`  [${q.type}] ${q.label}${choices}`);
 	}
 

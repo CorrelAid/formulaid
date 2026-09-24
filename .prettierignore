@@ -7,3 +7,10 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Generated
+src/lib/styles/gen_tokens.css
+src/lib/agents/compiled/
+
+# Build output: vendored and generated skill files
+skills/

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { locale, t } from '$lib/i18n';
 	import { liabilityHtml } from 'virtual:cdl-content';
 </script>
@@ -9,16 +10,27 @@
 
 <main>
 	<div class="container">
-		<a href="/" class="back-link">&larr; {$t('page.title')}</a>
+		<a href={resolve('/')} class="back-link">&larr; {$t('page.title')}</a>
 		<h1>{$t('imprint.title')}</h1>
 
 		<section>
 			<p>
-				{$t('imprint.hostedBy')} <a href="https://correlaid.org" target="_blank" rel="noopener noreferrer">{$t('imprint.correlaid')}</a>{$t('imprint.partOfCdl')} <a href="https://civic-data.de" target="_blank" rel="noopener noreferrer">{$t('imprint.cdl')}</a>.
-				{$t('imprint.referenceText')} <a href="https://civic-data.de/impressum/" target="_blank" rel="noopener noreferrer">civic-data.de/impressum/</a>.
+				{$t('imprint.hostedBy')}
+				<a href="https://correlaid.org" target="_blank" rel="noopener noreferrer"
+					>{$t('imprint.correlaid')}</a
+				>{$t('imprint.partOfCdl')}
+				<a href="https://civic-data.de" target="_blank" rel="noopener noreferrer"
+					>{$t('imprint.cdl')}</a
+				>.
+				{$t('imprint.referenceText')}
+				<a href="https://civic-data.de/impressum/" target="_blank" rel="noopener noreferrer"
+					>civic-data.de/impressum/</a
+				>.
 			</p>
 		</section>
 
+		<!-- Build-time snippet from the wp_eins repo (our own content), not user input. -->
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html liabilityHtml[$locale]}
 	</div>
 </main>

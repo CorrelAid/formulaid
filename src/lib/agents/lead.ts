@@ -1,12 +1,12 @@
 import type { AxAIService } from '@ax-llm/ax';
 import { SurveyGeneratorAgent } from './survey_generator.js';
-import type { AgentInput, Survey } from './types.js';
+import type { AgentInput, Survey, Trace } from './types.js';
 
 export class LeadAgent {
 	private surveyGenerator: SurveyGeneratorAgent;
-	private ai: AxAIService<any, any, any>;
+	private ai: AxAIService;
 
-	constructor(ai: AxAIService<any, any, any>) {
+	constructor(ai: AxAIService) {
 		this.ai = ai;
 		this.surveyGenerator = new SurveyGeneratorAgent();
 	}
@@ -15,7 +15,7 @@ export class LeadAgent {
 		input: AgentInput,
 		/** Receives i18n keys (wizard.status*), translated by the page. */
 		onStatus?: (msg: string) => void,
-		onTrace?: (trace: any) => void
+		onTrace?: (trace: Trace) => void
 	): Promise<Survey> {
 		if (onStatus) onStatus('wizard.statusGeneratingQuestions');
 

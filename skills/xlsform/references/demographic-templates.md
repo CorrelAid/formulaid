@@ -4,11 +4,11 @@
 > These are validated survey instruments — prefer them over writing demographics from scratch.
 
 At runtime, fetch directly:
+
 - Question `z4bm7lrn7mopedd`: `qwacback:get_question "z4bm7lrn7mopedd"` or `web_fetch https://qwacback.correlaid.org/api/questions/z4bm7lrn7mopedd`
 - Study `2z4e5jfgc6s6mwy`: `qwacback:list_questions` (study: `2z4e5jfgc6s6mwy`) or `web_fetch https://qwacback.correlaid.org/api/studies/2z4e5jfgc6s6mwy/questions`
 
 ---
-
 
 ## Question: z4bm7lrn7mopedd
 
@@ -67,6 +67,12 @@ At runtime, fetch directly:
   ],
   "settings": {}
 }
+```
+
+## Study: Demographische Standards: Ausgabe 2024 (id: 2z4e5jfgc6s6mwy)
+
+```json
+{"abstract":"Eine gemeinsame Empfehlung des ADM Arbeitskreis Deutscher Markt- und Sozialforschungsinstitute e.V., der Arbeitsgemeinschaft Sozialwissenschaftlicher Institute e.V. (ASI) und des Statistischen Bundesamtes. Die Demographischen Standards haben die Aufgabe, sozialstrukturelle Erhebungsmerkmale in Befragungen zu vereinheitlichen, um dadurch die Vergleichbarkeit zwischen einzelnen Umfragen zu ermöglichen.","analysis_unit":"","author":"","author_affiliation":"","collectionId":"pbc_1392141781","collectionName":"studies","data_kind":"","holdings_description":"","holdings_uri":"","id":"2z4e5jfgc6s6mwy","id_no":"10.21241/ssoar.94099","keywords":["Demografie","Sozialstruktur","Bildung","Erwerbstätigkeit","Einkommen","Migration","Staatsangehörigkeit","Familienstand","Haushalt","Telekommunikation","Internetnutzung"],"nation":"Deutschland","producer":"","producer_affiliation":"","time_period":"2024","title":"Demographische Standards: Ausgabe 2024","topic_classifications":["Template"],"universe":"Bevölkerung in Deutschland"}
 ```
 
 ### Questions
@@ -369,5 +375,10 @@ At runtime, fetch directly:
       "label": "ja"
     },
     {
-      "list_name": "eu_staatsangehoe
+      "list_name": "eu_staatsangehoerigkeit",
+      "name": "2",
+      "label": "nein"
+    },
+    {
+
 ```

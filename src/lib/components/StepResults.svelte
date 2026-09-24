@@ -1,26 +1,19 @@
 <script lang="ts">
 	import TraceList from './TraceList.svelte';
 	import { t } from '$lib/i18n';
+	import type { Trace } from '$lib/agents/types';
 
-	let {
-		aiLoading,
-		aiStatus,
-		progress,
-		traces,
-		onGenerate,
-		onDownload,
-		onReset,
-		generatedFile
-	} = $props<{
-		aiLoading: boolean,
-		aiStatus: string,
-		progress: number,
-		traces: any[],
-		onGenerate: () => void,
-		onDownload: () => void,
-		onReset: () => void,
-		generatedFile: string | null
-	}>();
+	let { aiLoading, aiStatus, progress, traces, onGenerate, onDownload, onReset, generatedFile } =
+		$props<{
+			aiLoading: boolean;
+			aiStatus: string;
+			progress: number;
+			traces: Trace[];
+			onGenerate: () => void;
+			onDownload: () => void;
+			onReset: () => void;
+			generatedFile: string | null;
+		}>();
 </script>
 
 <section class="results-section">
@@ -29,11 +22,7 @@
 			<button class="secondary-btn" onclick={onReset} disabled={aiLoading}>
 				{$t('wizard.generateNew')}
 			</button>
-			<button
-				class="primary-btn"
-				onclick={onDownload}
-				disabled={aiLoading}
-			>
+			<button class="primary-btn" onclick={onDownload} disabled={aiLoading}>
 				{$t('wizard.downloadFile')}
 			</button>
 		{:else}
@@ -87,7 +76,8 @@
 		gap: var(--spacing-sm);
 	}
 
-	.primary-btn, .secondary-btn {
+	.primary-btn,
+	.secondary-btn {
 		padding: 0.75rem var(--spacing-lg);
 		border-radius: var(--radius-md);
 		font-weight: var(--font-weight-semibold);
@@ -115,7 +105,8 @@
 		background: color-mix(in srgb, var(--color-tertiary) 30%, white);
 	}
 
-	.primary-btn:disabled, .secondary-btn:disabled {
+	.primary-btn:disabled,
+	.secondary-btn:disabled {
 		opacity: 0.65;
 		cursor: not-allowed;
 	}
@@ -125,16 +116,21 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% { opacity: 0.65; }
-		50%       { opacity: 0.9; }
+		0%,
+		100% {
+			opacity: 0.65;
+		}
+		50% {
+			opacity: 0.9;
+		}
 	}
 
 	.spinner {
 		display: inline-block;
 		width: 14px;
 		height: 14px;
-		border: 2px solid rgba(255,255,255,0.35);
-		border-top-color: rgba(255,255,255,0.9);
+		border: 2px solid rgba(255, 255, 255, 0.35);
+		border-top-color: rgba(255, 255, 255, 0.9);
 		border-radius: 50%;
 		animation: spin 0.75s linear infinite;
 		vertical-align: middle;
@@ -143,7 +139,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.progress-wrap {
@@ -184,8 +182,12 @@
 	}
 
 	@keyframes shimmer {
-		0%   { transform: translateX(-100%); }
-		100% { transform: translateX(200%); }
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(200%);
+		}
 	}
 
 	.progress-label {

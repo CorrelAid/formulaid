@@ -7,6 +7,8 @@
 	import { get } from 'svelte/store';
 	import { LanguageSwitcher } from '@correlaid/cdl-design';
 	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	let { children } = $props();
 
@@ -18,7 +20,7 @@
 	let isValidating = $state(false);
 	let validationError = $state<string | null>(null);
 	let mounted = $state(false);
-	$effect(() => {
+	onMount(() => {
 		mounted = true;
 	});
 
@@ -142,6 +144,7 @@
 				{:else}
 					<p class="key-hint">
 						{$t('header.providerKeyHint')}
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external provider URL -->
 						<a href={getProvider(localProvider).keysUrl} target="_blank" rel="noopener"
 							>{getProvider(localProvider).keysUrl}</a
 						>
@@ -201,7 +204,7 @@
 	<footer>
 		<div class="footer-inner">
 			<nav>
-				<a href="/imprint/">{$t('layout.imprint')}</a>
+				<a href={resolve('/imprint')}>{$t('layout.imprint')}</a>
 			</nav>
 		</div>
 	</footer>

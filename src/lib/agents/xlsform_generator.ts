@@ -18,12 +18,7 @@ export class XLSFormGenerator {
 				const listName = embeddedList ?? `${q.name}_list`;
 				rowType = `${baseType} ${listName}`;
 				for (const choice of q.choices) {
-					choicesData.push([
-						listName,
-						choice.name,
-						choice.label,
-						(choice as any).exclusive ? 'yes' : ''
-					]);
+					choicesData.push([listName, choice.name, choice.label, choice.exclusive ? 'yes' : '']);
 				}
 			}
 
@@ -33,7 +28,7 @@ export class XLSFormGenerator {
 				q.label,
 				q.hint || '',
 				q.required ? 'yes' : 'no',
-				(q as any).relevant ?? (q as any).relevance ?? ''
+				q.relevant ?? ''
 			]);
 		}
 

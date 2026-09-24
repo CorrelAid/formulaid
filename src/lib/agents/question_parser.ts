@@ -1,5 +1,5 @@
 import { QUESTION_TYPES } from '@correlaid/formtransform';
-import type { Question, QuestionType } from './types.js';
+import type { Choice, Question, QuestionType } from './types.js';
 
 /** Set of XLSForm type strings the parser will preserve verbatim from the type
  *  cell instead of falling back to label-based inference. The runtime
@@ -39,19 +39,27 @@ function stringToQuestion(text: string, index: number): Question {
 	};
 }
 
-function isQuestion(obj: any): boolean {
-	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		(typeof obj.label === 'string' || typeof obj.question === 'string')
-	);
+type RawQuestion = Record<string, unknown>;
+
+function isQuestion(obj: unknown): obj is RawQuestion {
+	if (typeof obj !== 'object' || obj === null) return false;
+	const raw = obj as RawQuestion;
+	return typeof raw.label === 'string' || typeof raw.question === 'string';
 }
 
-function normalizeQuestion(obj: any, index: number): Question {
-	const label: string = obj.label ?? obj.question ?? '';
-	const name: string = obj.name ?? obj.variable_name ?? `q_${index}`;
-	const id: string = obj.id != null ? String(obj.id) : `q_${index}`;
-	const rawType: string = typeof obj.type === 'string' ? obj.type.trim() : '';
+const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined);
+
+/** First of `keys` that holds a value, stringified. */
+function firstOf(obj: RawQuestion, ...keys: string[]): string | undefined {
+	for (const k of keys) if (obj[k] != null) return String(obj[k]);
+	return undefined;
+}
+
+function normalizeQuestion(obj: RawQuestion, index: number): Question {
+	const label = str(obj.label) ?? str(obj.question) ?? '';
+	const name = str(obj.name) ?? str(obj.variable_name) ?? `q_${index}`;
+	const id = obj.id != null ? String(obj.id) : `q_${index}`;
+	const rawType = str(obj.type)?.trim() ?? '';
 	// XLSForm types like "select_one list_name" or "select_multiple list_name" are valid
 	const baseType = rawType.split(' ')[0];
 	const type: QuestionType = (
@@ -59,27 +67,26 @@ function normalizeQuestion(obj: any, index: number): Question {
 			? rawType // preserve full type including list name (e.g. "select_one skala5")
 			: inferType(label)
 	) as QuestionType;
-	const choices = Array.isArray(obj.choices)
+	const choices: Choice[] = Array.isArray(obj.choices)
 		? obj.choices
 		: Array.isArray(obj.options)
-			? obj.options.map((o: any, i: number) => ({ name: `c_${i}`, label: String(o) }))
+			? obj.options.map((o: unknown, i: number) => ({ name: `c_${i}`, label: String(o) }))
 			: [];
-	const relevant: string | undefined = obj.relevant ?? obj.relevance ?? undefined;
+	const relevant = str(obj.relevant) ?? str(obj.relevance);
 	// The model is asked for a justification per question (#5). It uses whichever
 	// of these key names it feels like, so accept all of them.
-	const rationale: string | undefined =
-		obj.rationale ?? obj.reasoning ?? obj.justification ?? obj.why ?? undefined;
-	const source: string | undefined = obj.source ?? obj.question_id ?? obj.qwac_id ?? undefined;
+	const rationale = firstOf(obj, 'rationale', 'reasoning', 'justification', 'why');
+	const source = firstOf(obj, 'source', 'question_id', 'qwac_id');
 	return {
 		id,
 		name,
 		label,
 		type,
-		required: obj.required ?? true,
+		required: typeof obj.required === 'boolean' ? obj.required : true,
 		choices,
 		...(relevant ? { relevant } : {}),
-		...(rationale ? { rationale: String(rationale) } : {}),
-		...(source ? { source: String(source) } : {})
+		...(rationale ? { rationale } : {}),
+		...(source ? { source } : {})
 	};
 }
 

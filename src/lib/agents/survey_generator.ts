@@ -21,7 +21,7 @@ export class SurveyGeneratorAgent {
 	}
 
 	async generateSurvey(
-		ai: AxAIService<any, any, any>,
+		ai: AxAIService,
 		input: AgentInput,
 		onStatus?: (msg: string) => void
 	): Promise<GeneratedSurvey> {

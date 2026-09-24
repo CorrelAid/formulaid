@@ -230,21 +230,23 @@ fi
 sleep 0.3
 
 # 4b. Fetch all questions from demographic study + XLSForm export
-meta=$(fetch_json "$QWAC_API/studies/$DEMOGRAPHIC_STUDY_ID" "Study: $DEMOGRAPHIC_STUDY_ID")
+# Study metadata is a plain PocketBase record; only the questions and xlsform
+# sub-routes exist under /studies.
+meta=$(fetch_json "$QWAC_API/collections/studies/records/$DEMOGRAPHIC_STUDY_ID" "Study: $DEMOGRAPHIC_STUDY_ID")
 if [[ -n "$meta" && "$meta" != "null" ]]; then
   title=$(echo "$meta" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('title',''))" 2>/dev/null || echo "$DEMOGRAPHIC_STUDY_ID")
-  printf '\n## Study: %s (id: %s)\n\n```json\n%s\n```\n' "$title" "$DEMOGRAPHIC_STUDY_ID" "$(echo "$meta" | head -c 3000)" >> "$DEMO_FILE"
+  printf '\n## Study: %s (id: %s)\n\n```json\n%s\n```\n' "$title" "$DEMOGRAPHIC_STUDY_ID" "${meta:0:3000}" >> "$DEMO_FILE"
   FOUND_RESULTS=true
 fi
 
 study_qs=$(fetch_json "$QWAC_API/studies/$DEMOGRAPHIC_STUDY_ID/questions?perPage=100" "  → Questions")
 if [[ -n "$study_qs" && "$study_qs" != "null" ]]; then
-  printf '\n### Questions\n\n```json\n%s\n```\n' "$(echo "$study_qs" | head -c 15000)" >> "$DEMO_FILE"
+  printf '\n### Questions\n\n```json\n%s\n```\n' "${study_qs:0:15000}" >> "$DEMO_FILE"
 fi
 
 xlsform=$(fetch_json "$QWAC_API/studies/$DEMOGRAPHIC_STUDY_ID/xlsform" "  → XLSForm export")
 if [[ -n "$xlsform" && "$xlsform" != "null" ]]; then
-  printf '\n### XLSForm Export\n\n```json\n%s\n```\n' "$(echo "$xlsform" | head -c 10000)" >> "$DEMO_FILE"
+  printf '\n### XLSForm Export\n\n```json\n%s\n```\n' "${xlsform:0:10000}" >> "$DEMO_FILE"
 fi
 
 if [[ "$FOUND_RESULTS" == "false" ]]; then
