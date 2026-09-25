@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import type { Question, Survey } from '$lib/agents/types';
+	import { detectDemographicsStart } from './surveyView';
 
 	let {
 		survey,
-		/** Variable names of the demographics the wizard appended, so the view
-		 *  can group them under their own heading instead of mixing them with
-		 *  the AI-written questions. */
-		demographicNames = []
-	}: { survey: Survey; demographicNames?: string[] } = $props();
+		/** qwac ids of the demographics the wizard appended, so the view can
+		 *  group them under their own heading instead of mixing them with
+		 *  the AI-written questions (#47). */
+		demographicIds = []
+	}: { survey: Survey; demographicIds?: string[] } = $props();
 
 	/** `assembleSurvey` names the opening and closing note `welcome` and `end`,
 	 *  so formtransform turns them into LimeSurvey's welcome and end texts.
@@ -32,12 +33,10 @@
 	let bodyQuestions = $derived(survey.questions.filter((q) => !isNote(q)));
 	let welcomeNote = $derived(survey.questions.find((q) => q.name === 'welcome'));
 	let endNote = $derived(survey.questions.find((q) => q.name === 'end'));
-	let demoSet = $derived(new Set(demographicNames));
+	let demoIdSet = $derived(new Set(demographicIds));
 
-	/** The first demographic index in `bodyQuestions`, or its length. */
-	let demographicsStart = $derived(
-		bodyQuestions.findIndex((q) => demoSet.has(q.name) && !q.rationale)
-	);
+	/** The first demographic index in `bodyQuestions`, or -1 when none. */
+	let demographicsStart = $derived(detectDemographicsStart(bodyQuestions, demoIdSet));
 
 	let rqs = $derived(survey.researchQuestions ?? []);
 	let hasMultipleRqs = $derived(rqs.length > 1);
