@@ -30,6 +30,7 @@ describe('XLSFormGenerator explanations sheet', () => {
 		expect(flat).toContain('Offener Einstieg zum Konstrukt Zufriedenheit.');
 		expect(flat).toContain('qwac:abc123');
 		expect(flat).toContain('Zwei Konstrukte');
+		expect(flat).toContain('kein fertiges Ergebnis');
 	});
 
 	it('keeps the workbook valid — converters ignore the extra sheet', () => {

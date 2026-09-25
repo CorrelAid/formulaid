@@ -43,6 +43,12 @@ const translations: Record<Locale, Record<string, string>> = {
 			'That is the maximum. Fewer, clearer research questions make for a better questionnaire.',
 		'wizard.researchMissing': 'Enter at least one research question in section 1.',
 		'wizard.researchShort': 'RQ',
+		'wizard.draftHeading': 'This is a draft.',
+		'wizard.draftText':
+			'Use the questionnaire as a starting point, not as a final result: review every question, adapt it to your target group, and pretest it with a few people from that group before you use it.',
+		'wizard.draftCheck':
+			'The automatic check only makes sure the file works technically, not that the questions are good.',
+		'wizard.draftPretestLink': 'How to run a pretest (Umfragenwerkstatt, German)',
 		'wizard.reasoningServes': 'Serves',
 		'wizard.researchPlaceholder': 'e.g. Employee satisfaction in remote work',
 		'wizard.phase2Heading': '2. Context',
@@ -176,6 +182,12 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Mehr geht nicht. Wenige, klare Forschungsfragen ergeben einen besseren Fragebogen.',
 		'wizard.researchMissing': 'Gib in Abschnitt 1 mindestens eine Forschungsfrage ein.',
 		'wizard.researchShort': 'FF',
+		'wizard.draftHeading': 'Das ist ein Entwurf.',
+		'wizard.draftText':
+			'Nutze den Fragebogen als Ausgangspunkt, nicht als fertiges Ergebnis: Prüfe jede Frage, passe sie an deine Zielgruppe an und teste den Fragebogen vorab mit einigen Personen aus der Zielgruppe (Pretest).',
+		'wizard.draftCheck':
+			'Die automatische Prüfung stellt nur sicher, dass die Datei technisch funktioniert, nicht dass die Fragen gut sind.',
+		'wizard.draftPretestLink': 'So geht ein Pretest (Umfragenwerkstatt)',
 		'wizard.reasoningServes': 'Dient',
 		'wizard.researchPlaceholder': 'z. B. Mitarbeiterzufriedenheit im Homeoffice',
 		'wizard.phase2Heading': '2. Kontext',

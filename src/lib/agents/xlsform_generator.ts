@@ -3,6 +3,10 @@ import * as XLSX from 'xlsx';
 
 const FALLBACK_SLUG = 'questionnaire';
 
+/** The questionnaires are German, so the workbook note is too. */
+export const DRAFT_NOTE =
+	'Automatisch generierter Entwurf (FormulAid): ein Ausgangspunkt, kein fertiges Ergebnis. Vor dem Einsatz jede Frage prüfen, an die Zielgruppe anpassen und mit einigen Personen aus der Zielgruppe testen (Pretest, siehe https://umfragen.civic-data.de/pretesting).';
+
 /** ASCII slug of a title: German umlauts spelled out, everything else that is
  *  not a letter or digit collapsed to "_". */
 export function slugify(title: string, maxLength = 40): string {
@@ -103,6 +107,9 @@ export class XLSFormGenerator {
 			explanationsData.push([]);
 			explanationsData.push(['_overall_reasoning', survey.reasoning]);
 		}
+		// Travels with the file, for whoever opens it without the app (#35).
+		explanationsData.push([]);
+		explanationsData.push(['_note', DRAFT_NOTE]);
 		const wsExplanations = XLSX.utils.aoa_to_sheet(explanationsData);
 
 		XLSX.utils.book_append_sheet(wb, wsSurvey, 'survey');

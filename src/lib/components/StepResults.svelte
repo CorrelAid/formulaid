@@ -29,6 +29,18 @@
 </script>
 
 <section class="results-section">
+	{#if hasFile}
+		<!-- The result is a draft, however finished it looks (#35). -->
+		<div class="draft-notice" role="note">
+			<p><strong>{$t('wizard.draftHeading')}</strong> {$t('wizard.draftText')}</p>
+			<p>
+				{$t('wizard.draftCheck')}
+				<a href="https://umfragen.civic-data.de/pretesting" target="_blank" rel="noopener"
+					>{$t('wizard.draftPretestLink')}</a
+				>
+			</p>
+		</div>
+	{/if}
 	<div class="actions">
 		{#if hasFile}
 			<button class="secondary-btn" onclick={onReset} disabled={aiLoading}>
@@ -121,6 +133,27 @@
 
 	.secondary-btn:hover:not(:disabled) {
 		background: color-mix(in srgb, var(--color-tertiary) 30%, white);
+	}
+
+	.draft-notice {
+		margin-bottom: var(--spacing-base);
+		padding: var(--spacing-sm) var(--spacing-base);
+		border-left: 3px solid var(--color-secondary);
+		border-radius: var(--radius-sm);
+		background: color-mix(in srgb, var(--color-secondary) 8%, white);
+		font-size: 0.9rem;
+	}
+
+	.draft-notice p {
+		margin: 0;
+	}
+
+	.draft-notice p + p {
+		margin-top: var(--spacing-xs);
+	}
+
+	.draft-notice a {
+		color: var(--color-secondary);
 	}
 
 	.reset-inputs {
