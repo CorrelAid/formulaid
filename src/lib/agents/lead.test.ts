@@ -254,9 +254,10 @@ describe('LeadAgent.run', () => {
 		const result = await new LeadAgent(ai).run(input);
 
 		expect(calls.repair).toBe(0);
-		// Sanitized: `bereich_sonstiges` -> `bereichsonstiges`.
-		const followup = result.survey.questions.find((q) => q.name === 'bereichsonstiges');
-		expect(followup?.relevant).toBe("selected(${bereich}, 'sonst')");
+		// Brought into the registry convention, so LimeSurvey gets its own
+		// "other" field: answer code `other`, follow-up `bereich_other`.
+		const followup = result.survey.questions.find((q) => q.name === 'bereich_other');
+		expect(followup?.relevant).toBe("selected(${bereich}, 'other')");
 	});
 
 	it('does not accept a repair that returns sanitized names and still no relevant (#53)', async () => {

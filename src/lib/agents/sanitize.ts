@@ -24,8 +24,40 @@ export function sanitizeSurvey(survey: Survey): Survey {
 	// Per original question name: original choice code → new code.
 	const recoded = new Map<string, Map<string, string>>();
 
+	// `<q>_other` companions pair with their question by name: formtransform
+	// turns the pair into LimeSurvey's own "other" field. So a companion takes
+	// its parent's sanitized name plus the suffix, and a parent that has one
+	// leaves room for it (LimeSurvey appends "other" to the name).
+	const raw = new Set(survey.questions.map((q) => q.name));
+	const parentOf = (name: string) =>
+		name.endsWith(OTHER_SUFFIX) && raw.has(name.slice(0, -OTHER_SUFFIX.length))
+			? name.slice(0, -OTHER_SUFFIX.length)
+			: null;
+	const hasCompanion = new Set(
+		survey.questions.map((q) => parentOf(q.name)).filter((p): p is string => p !== null)
+	);
+	const parentNames = new Map<string, string>();
+
+	// Parents first, companions after, so every companion finds its parent's
+	// new name; the order of the questions stays as it was.
+	const names = new Map<number, string>();
+	const order = survey.questions
+		.map((q, i) => ({ q, i }))
+		.sort((a, b) => Number(!!parentOf(a.q.name)) - Number(!!parentOf(b.q.name)));
+	for (const { q, i } of order) {
+		const parent = parentOf(q.name);
+		if (parent && parentNames.has(parent)) {
+			names.set(i, parentNames.get(parent)! + OTHER_SUFFIX);
+			continue;
+		}
+		const limit = hasCompanion.has(q.name) ? maxName - 'other'.length : maxName;
+		const name = sanitizeName(sanitizer, q.name, `q${i + 1}`, maxName, limit);
+		names.set(i, name);
+		if (hasCompanion.has(q.name) && !parentNames.has(q.name)) parentNames.set(q.name, name);
+	}
+
 	const questions = survey.questions.map((q, i) => {
-		const name = sanitizeName(sanitizer, q.name, `q${i + 1}`, maxName);
+		const name = names.get(i)!;
 		// A reference to a duplicated name means the first question that has it.
 		const first = !seen.has(q.name);
 		seen.add(q.name);
@@ -64,14 +96,19 @@ function sanitizeName(
 	sanitizer: FieldSanitizer,
 	raw: string,
 	fallback: string,
-	maxName: number
+	maxName: number,
+	limit = maxName
 ): string {
 	const isOther = raw.endsWith(OTHER_SUFFIX);
 	const base = isOther ? raw.slice(0, -OTHER_SUFFIX.length) : raw;
+	// Truncating before the unique check keeps a shortened parent unique too.
+	const short = (n: string) =>
+		limit < maxName ? attempt(() => sanitizer.sanitizeName(n)).slice(0, limit - 1) : n;
 	const name =
-		attempt(() => sanitizer.sanitizeNameUnique(base)) || sanitizer.sanitizeNameUnique(fallback);
+		attempt(() => sanitizer.sanitizeNameUnique(short(base))) ||
+		sanitizer.sanitizeNameUnique(fallback);
 	// LimeSurvey appends "other" to the base, so the base has to leave room.
-	return isOther ? name.slice(0, maxName - 'other'.length) + OTHER_SUFFIX : name;
+	return isOther ? name.slice(0, maxName - 'other'.length) + OTHER_SUFFIX : name.slice(0, limit);
 }
 
 function sanitizeChoices(

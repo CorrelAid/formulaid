@@ -64,8 +64,11 @@ describe('linkFollowUps', () => {
 		expect(out.map((q) => q.relevant)).toEqual([
 			undefined,
 			"${hilfe} = 'ja'",
-			"${hilfe} = 'sonst'"
+			"${hilfe} = 'other'"
 		]);
+		// The Sonstiges pair follows the registry convention (see below).
+		expect(out[2].name).toBe('hilfe_other');
+		expect(out[0].choices!.map((c) => c.name)).toEqual(['ja', 'nein', 'other']);
 	});
 
 	it('keeps a relevant the model wrote', () => {
@@ -90,6 +93,36 @@ describe('linkFollowUps', () => {
 	});
 });
 
+describe('Sonstiges pairs follow the registry convention', () => {
+	it('renames the answer to other and the follow-up to <parent>_other', () => {
+		const out = linkFollowUps([
+			select('vorteile', 'select_multiple', [
+				['zeit', 'Zeitersparnis'],
+				['sonst', 'Sonstiges']
+			]),
+			text('vorteilesonstige', 'Sonstige Vorteile (bitte angeben)')
+		]);
+		expect(out[0].choices!.map((c) => c.name)).toEqual(['zeit', 'other']);
+		expect(out[1]).toMatchObject({
+			name: 'vorteile_other',
+			relevant: "selected(${vorteile}, 'other')"
+		});
+	});
+
+	it('keeps the code when another question refers to it', () => {
+		const out = linkFollowUps([
+			select('vorteile', 'select_multiple', [
+				['zeit', 'Zeitersparnis'],
+				['sonst', 'Sonstiges']
+			]),
+			text('vorteilesonstige', 'Sonstige Vorteile (bitte angeben)'),
+			text('warum', 'Warum?', "selected(${vorteile}, 'sonst')")
+		]);
+		expect(out[0].choices!.map((c) => c.name)).toEqual(['zeit', 'sonst']);
+		expect(out[1].relevant).toBe("selected(${vorteile}, 'sonst')");
+	});
+});
+
 describe('findFollowUps after sanitizing (#53)', () => {
 	it('still finds a follow-up whose name lost its underscore', () => {
 		const qs = [
@@ -100,7 +133,7 @@ describe('findFollowUps after sanitizing (#53)', () => {
 			text('bereichsonstiges', 'Welche Bereiche noch?')
 		];
 		expect(orphanedFollowUps(qs).map((q) => q.name)).toEqual(['bereichsonstiges']);
-		expect(linkFollowUps(qs)[1].relevant).toBe("selected(${bereich}, 'sonst')");
+		expect(linkFollowUps(qs)[1].relevant).toBe("selected(${bereich}, 'other')");
 	});
 });
 

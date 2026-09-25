@@ -44,7 +44,9 @@ const isSelect = (q: Question) => /^select_(?:one|multiple)\b/.test(q.type);
 export interface FollowUp {
 	/** Index of the follow-up in the list it was found in. */
 	index: number;
+	kind: Kind;
 	parent: Question | null;
+	parentIndex: number;
 	/** The parent's choice codes that open this follow-up. */
 	codes: string[];
 }
@@ -74,7 +76,13 @@ export function findFollowUps(questions: Question[]): FollowUp[] {
 		const byLabelOnly = OTHER_LABEL.test(q.label.trim()) || YES_LABEL.test(q.label.trim());
 		if (!codes.length && !byLabelOnly) return;
 		followUpIndexes.add(i);
-		found.push({ index: i, parent: codes.length ? candidate : null, codes });
+		found.push({
+			index: i,
+			kind,
+			parent: codes.length ? candidate : null,
+			parentIndex: codes.length ? j : -1,
+			codes
+		});
 	});
 	return found;
 }
@@ -89,14 +97,41 @@ function relevantFor(parent: Question, code: string): string {
  * Give every follow-up without `relevant` the obvious one, when the parent
  * offers exactly one matching answer. A mechanical fix like the ones in
  * sanitize.ts: done in code, so the repair loop only sees real ambiguity.
+ *
+ * A Sonstiges follow-up is also brought into the registry's convention: the
+ * answer's code becomes `other` and the follow-up `<parent>_other`, with
+ * `relevant` on `'other'`. formtransform recognises exactly that pair and
+ * turns it into LimeSurvey's own "other" field; any other name or code gives
+ * a separate text question. Done only when nothing else refers to the old
+ * code and `other` is free in the parent's list.
+ *
  * Run before sanitizing; sanitizeSurvey then follows the renames.
  */
 export function linkFollowUps(questions: Question[]): Question[] {
 	const out = [...questions];
+	const names = new Set(questions.map((q) => q.name));
 	for (const f of findFollowUps(questions)) {
 		const q = out[f.index];
 		if (q.relevant?.trim() || !f.parent || f.codes.length !== 1) continue;
-		out[f.index] = { ...q, relevant: relevantFor(f.parent, f.codes[0]) };
+		let parent = out[f.parentIndex];
+		let code = f.codes[0];
+		let name = q.name;
+		if (f.kind === 'other') {
+			const companion = `${parent.name}_other`;
+			const otherFree = !(parent.choices ?? []).some((c) => c.name === 'other' && c.name !== code);
+			const codeUnused = out.every((x, k) => k === f.index || !x.relevant?.includes(`'${code}'`));
+			if (otherFree && codeUnused && (companion === q.name || !names.has(companion))) {
+				parent = {
+					...parent,
+					choices: parent.choices!.map((c) => (c.name === code ? { ...c, name: 'other' } : c))
+				};
+				out[f.parentIndex] = parent;
+				code = 'other';
+				name = companion;
+				names.add(companion);
+			}
+		}
+		out[f.index] = { ...q, name, relevant: relevantFor(parent, code) };
 	}
 	return out;
 }

@@ -79,3 +79,47 @@ describe('sanitizeSurvey', () => {
 		);
 	});
 });
+
+describe('sanitizeSurvey <q>_other pairs', () => {
+	const other = (name: string, parent: string) => ({
+		id: name,
+		type: 'text' as const,
+		name,
+		label: 'Sonstiges',
+		required: false,
+		relevant: `selected(\${${parent}}, 'other')`
+	});
+	const parent = (name: string) => ({
+		id: name,
+		type: 'select_multiple' as const,
+		name,
+		label: 'Welche?',
+		required: true,
+		choices: [
+			{ name: 'a', label: 'A' },
+			{ name: 'other', label: 'Sonstiges' }
+		]
+	});
+
+	it("keeps the companion's name paired with its parent", () => {
+		const { questions } = sanitizeSurvey({
+			title: 't',
+			questions: [parent('vorteile'), other('vorteile_other', 'vorteile')]
+		});
+		expect(questions.map((q) => q.name)).toEqual(['vorteile', 'vorteile_other']);
+	});
+
+	it('shortens a long parent so parent and companion stay paired', () => {
+		const { questions } = sanitizeSurvey({
+			title: 't',
+			questions: [
+				parent('verbesserungsvorschlag'),
+				other('verbesserungsvorschlag_other', 'verbesserungsvorschlag')
+			]
+		});
+		const [p, c] = questions;
+		expect(p.name.length).toBeLessThanOrEqual(15);
+		expect(c.name).toBe(`${p.name}_other`);
+		expect(c.relevant).toBe(`selected(\${${p.name}}, 'other')`);
+	});
+});

@@ -23,6 +23,7 @@ import {
 	assembleSurvey,
 	demographicQuestions,
 	extractQuestions,
+	type Question,
 	type Survey
 } from '../../src/lib/agents/index.js';
 import { demographicVariables } from '../../src/lib/constants.js';
@@ -32,6 +33,7 @@ import {
 	orphanedFollowUps,
 	unconditionedQuestions
 } from '../../src/lib/agents/follow_ups.js';
+import { doubleBarrelled } from '../../src/lib/agents/wording.js';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
 const OUTPUT = join(import.meta.dirname, 'output');
@@ -126,7 +128,8 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 		expect({
 			orphanedFollowUps: orphanedFollowUps(own).map((q) => q.name),
 			unconditioned: unconditionedQuestions(own).map((q) => q.name),
-			open: openQuestions(own).map((q) => q.name)
+			open: openQuestions(own).map((q) => q.name),
+			doubleBarrelled: doubleBarrelled(own).map((q) => q.name)
 		}).toMatchSnapshot();
 	});
 
@@ -149,12 +152,25 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 			if (!survey.questions.some((q) => q.name === note)) continue;
 			expect(rows.some((r) => r.class === 'SL' && r.name === setting && r.text)).toBe(true);
 		}
+		// A `<q>_other` pair becomes LimeSurvey's own "other" field: the parent
+		// gets other = Y, its `other` answer and the companion question go.
+		const names = new Set(survey.questions.map((q) => q.name));
+		const hasOtherField = (q: Question) => names.has(`${q.name}_other`);
 		for (const q of survey.questions) {
 			if (q.type === 'note' && q.name in texts) continue;
+			const parent = q.name.endsWith('_other') ? q.name.slice(0, -'_other'.length) : null;
+			if (parent && names.has(parent)) {
+				expect(converted.has(q.name), `${q.name} folded into ${parent}`).toBe(false);
+				expect(converted.get(parent)?.row.other, `other field of ${parent}`).toBe('Y');
+				continue;
+			}
 			const target = converted.get(q.name);
 			expect(target, `question ${q.name}`).toBeDefined();
 			if (q.choices?.length) {
-				expect(target!.codes, `answer codes of ${q.name}`).toEqual(q.choices.map((c) => c.name));
+				const codes = q.choices
+					.map((c) => c.name)
+					.filter((c) => !(hasOtherField(q) && c === 'other'));
+				expect(target!.codes, `answer codes of ${q.name}`).toEqual(codes);
 			}
 			if (q.relevant) {
 				expect(target!.row.relevance, `relevance of ${q.name}`).not.toMatch(/^1?$/);

@@ -10,6 +10,7 @@ import {
 	orphanedFollowUps,
 	unconditionedQuestions
 } from './follow_ups.js';
+import { doubleBarrelled } from './wording.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question, RunPhase, Survey, Trace } from './types.js';
@@ -62,12 +63,19 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
 			`Question(s) worded for some respondents only ("falls/wenn Sie …") but shown to everyone: ${unconditioned.map((q) => q.name).join(', ')}. Add a \`relevant\` that refers to the earlier question deciding it (add that filter question if there is none), or reword it so it applies to everyone.`
 		);
 	}
+	const double = doubleBarrelled(answerable);
+	if (double.length > 0) {
+		feedback.push(
+			`Question(s) that ask about two things at once, so one answer can't rate both: ${double.map((q) => q.name).join(', ')}. Split each into two questions, one per thing.`
+		);
+	}
 	return feedback;
 }
 
 /** How far a questionnaire is from the quality targets: missing questions,
- *  surplus open ones, uncovered research questions, and questions that
- *  should be conditional but aren't. 0 means nothing to fix. */
+ *  surplus open ones, uncovered research questions, questions that should be
+ *  conditional but aren't, and double-barrelled ratings. 0 means nothing to
+ *  fix. */
 export function qualityGap(questions: Question[], researchQuestionCount = 0): number {
 	const answerable = questions.filter((q) => q.type !== 'note');
 	return (
@@ -75,7 +83,8 @@ export function qualityGap(questions: Question[], researchQuestionCount = 0): nu
 		Math.max(0, openQuestions(answerable).length - MAX_OPEN_QUESTIONS) +
 		uncovered(questions, researchQuestionCount).length +
 		orphanedFollowUps(answerable).length +
-		unconditionedQuestions(answerable).length
+		unconditionedQuestions(answerable).length +
+		doubleBarrelled(answerable).length
 	);
 }
 

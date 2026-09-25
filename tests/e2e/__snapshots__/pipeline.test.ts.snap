@@ -2,6 +2,7 @@
 
 exports[`'all-demographics' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [],
   "orphanedFollowUps": [],
   "unconditioned": [],
@@ -12,6 +13,7 @@ exports[`'all-demographics' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'choice-shapes' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [
     "note",
   ],
@@ -24,6 +26,7 @@ exports[`'choice-shapes' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'exclusive-answer' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [],
   "orphanedFollowUps": [],
   "unconditioned": [],
@@ -34,6 +37,7 @@ exports[`'exclusive-answer' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'messy-names-and-logic' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [
     "wochenstunden1",
   ],
@@ -46,6 +50,7 @@ exports[`'messy-names-and-logic' > passes the formtransform validator 1`] = `[]`
 
 exports[`'missing-relevant-on-follow-up' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [],
   "orphanedFollowUps": [],
   "unconditioned": [],
@@ -56,6 +61,7 @@ exports[`'missing-relevant-on-follow-up' > passes the formtransform validator 1`
 
 exports[`'other-follow-up' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [],
   "orphanedFollowUps": [],
   "unconditioned": [],
@@ -66,6 +72,9 @@ exports[`'other-follow-up' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'real-mitarbeiterzufriedenheit-formal' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [
+    "kommunikation",
+  ],
   "open": [
     "verbesserungsvorschl",
   ],
@@ -78,6 +87,7 @@ exports[`'real-mitarbeiterzufriedenheit-formal' > passes the formtransform valid
 
 exports[`'real-nachbarschaftstreff-drei-forschu…' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [
     "fehlendeangebote",
     "sonstigesangebote",
@@ -91,6 +101,9 @@ exports[`'real-nachbarschaftstreff-drei-forschu…' > passes the formtransform v
 
 exports[`'real-vereinsmitglieder-bedarfserhebun…' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [
+    "infoerhalt",
+  ],
   "open": [
     "feedback",
   ],
@@ -103,6 +116,7 @@ exports[`'real-vereinsmitglieder-bedarfserhebun…' > passes the formtransform v
 
 exports[`'real-wirkungsmessung-ngo-formal-kein-…' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [
     "verbesserungsvorschl",
   ],
@@ -115,6 +129,7 @@ exports[`'real-wirkungsmessung-ngo-formal-kein-…' > passes the formtransform v
 
 exports[`'several-research-questions' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [
     "fehlt",
   ],
@@ -127,6 +142,7 @@ exports[`'several-research-questions' > passes the formtransform validator 1`] =
 
 exports[`'shared-list-names' > links follow-ups and records what the quality checks still find 1`] = `
 {
+  "doubleBarrelled": [],
   "open": [],
   "orphanedFollowUps": [],
   "unconditioned": [],
