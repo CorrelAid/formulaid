@@ -4,6 +4,12 @@ import { RepairAgent } from './repair_agent.js';
 import { KeywordAgent } from './keyword_agent.js';
 import { searchQuestionBank, type BankQuestion } from './qwacback.js';
 import { sanitizeSurvey } from './sanitize.js';
+import {
+	linkFollowUps,
+	openQuestions,
+	orphanedFollowUps,
+	unconditionedQuestions
+} from './follow_ups.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question, RunPhase, Survey, Trace } from './types.js';
@@ -17,26 +23,12 @@ export const MAX_REPAIR_ATTEMPTS = 2;
 const MIN_QUESTIONS = 8;
 const MAX_OPEN_QUESTIONS = 3;
 
-/** A text question that looks like a Sonstiges / yes-no follow-up is one of:
- *    * name ends in _sonstiges / _sonst / _other
- *    * label starts with "Falls Sonstiges" / "If other" / "Sonstige" / "Sonstiges:"
- *  Without a `relevant` expression the parent selection no longer hides it,
- *  so Kobo shows it to everyone (the bug from issue #47's follow-up). */
-export function looksLikeFollowUp(q: Question): boolean {
-	if (q.type !== 'text') return false;
-	if (q.relevant && q.relevant.trim()) return false;
-	if (/(?:^|_)(sonstiges|sonst|other)$/.test(q.name)) return true;
-	return /^(falls sonstige|falls sonstiges:|falls sonst:|sonstige|sonstiges:|if other|if other:)/i.test(
-		q.label.trim()
-	);
-}
-
 /** Problems the validator doesn't see but a repair can fix. They trigger a
  *  repair like validator errors do, but aren't reported as findings: the form
  *  is valid, just weaker. */
 export function qualityFeedback(questions: Question[], researchQuestionCount = 0): string[] {
 	const answerable = questions.filter((q) => q.type !== 'note');
-	const open = answerable.filter((q) => q.type === 'text');
+	const open = openQuestions(answerable);
 	const feedback: string[] = [];
 	for (const n of uncovered(questions, researchQuestionCount)) {
 		feedback.push(
@@ -50,32 +42,40 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
 	}
 	if (open.length > MAX_OPEN_QUESTIONS) {
 		feedback.push(
-			`${open.length} open text questions: keep at most ${MAX_OPEN_QUESTIONS} for answers that really can't be predefined, and turn the rest into select_one questions with a fitting answer scale (e.g. a 5-point scale). Open: ${open.map((q) => q.name).join(', ')}.`
+			`${open.length} open text questions: keep at most ${MAX_OPEN_QUESTIONS} for answers that really can't be predefined, and turn the rest into select_one questions with a fitting answer scale (e.g. a 5-point scale). Follow-ups with a relevant don't count. Open: ${open.map((q) => q.name).join(', ')}.`
 		);
 	}
-	// Follow-ups without `relevant` are valid XLSForm but the question then
-	// shows to every respondent. Validator can't catch this (it doesn't parse
-	// `relevant`), so we route it through the repair loop instead (#47 follow-up).
-	const orphaned = answerable.filter(looksLikeFollowUp);
+	// Follow-ups the code couldn't link (linkFollowUps): no select before them
+	// offers the answer, or several answers could open them. Valid XLSForm, but
+	// shown to every respondent (#51).
+	const orphaned = orphanedFollowUps(answerable);
 	if (orphaned.length > 0) {
 		feedback.push(
-			`Follow-up question(s) are missing a \`relevant\` expression and would show to every respondent in Kobo. Add the right \`relevant\` to each (use \`selected(\${parent}, '<sonst>')\` for select_multiple parents, \`\${parent} = '<sonst>'\` for select_one / yes-no parents). Affected: ${orphaned.map((q) => q.name).join(', ')}.`
+			`Follow-up question(s) without a parent answer: ${orphaned.map((q) => q.name).join(', ')}. Put each directly after the select it depends on, give that select the answer that opens it (code \`other\`, label "Sonstiges", or a yes answer), and set \`relevant\`: \`selected(\${parent}, 'other')\` for select_multiple, \`\${parent} = 'other'\` for select_one. If it doesn't depend on an answer, remove it.`
+		);
+	}
+	// Wording that applies to some respondents only, with nothing that hides
+	// it from the others (#46).
+	const unconditioned = unconditionedQuestions(answerable);
+	if (unconditioned.length > 0) {
+		feedback.push(
+			`Question(s) worded for some respondents only ("falls/wenn Sie …") but shown to everyone: ${unconditioned.map((q) => q.name).join(', ')}. Add a \`relevant\` that refers to the earlier question deciding it (add that filter question if there is none), or reword it so it applies to everyone.`
 		);
 	}
 	return feedback;
 }
 
-/** How far a questionnaire is from the quality targets: missing questions
- *  plus surplus open ones. 0 means nothing to fix. */
+/** How far a questionnaire is from the quality targets: missing questions,
+ *  surplus open ones, uncovered research questions, and questions that
+ *  should be conditional but aren't. 0 means nothing to fix. */
 export function qualityGap(questions: Question[], researchQuestionCount = 0): number {
 	const answerable = questions.filter((q) => q.type !== 'note');
-	const open = answerable.filter((q) => q.type === 'text').length;
-	const orphaned = answerable.filter(looksLikeFollowUp).length;
 	return (
 		Math.max(0, MIN_QUESTIONS - answerable.length) +
-		Math.max(0, open - MAX_OPEN_QUESTIONS) +
+		Math.max(0, openQuestions(answerable).length - MAX_OPEN_QUESTIONS) +
 		uncovered(questions, researchQuestionCount).length +
-		orphaned
+		orphanedFollowUps(answerable).length +
+		unconditionedQuestions(answerable).length
 	);
 }
 
@@ -117,6 +117,9 @@ function withResearchQuestions(questions: Question[], count: number): Question[]
  * mapped, demographics appended, names and codes sanitized. Exported so the
  * end-to-end tests run exactly this, without a model.
  *
+ * Follow-ups whose parent answer is clear get their `relevant` here, like
+ * any other mechanical fix (follow_ups.ts).
+ *
  * An opening note is named `welcome` and a closing note `end`: formtransform
  * turns those into LimeSurvey's welcome and end texts instead of questions.
  * Demographics go last (the UI promises it, and it is survey convention), but
@@ -127,7 +130,7 @@ export function assembleSurvey(
 	generated: Question[],
 	demographics: Question[]
 ): Survey {
-	const questions = withResearchQuestions(generated, base.researchQuestions.length);
+	const questions = linkFollowUps(withResearchQuestions(generated, base.researchQuestions.length));
 	const first = questions[0];
 	const last = questions.length > 1 ? questions[questions.length - 1] : undefined;
 	const body = questions.slice(
@@ -146,6 +149,7 @@ export function assembleSurvey(
 }
 
 interface Evaluated {
+	/** The generated part of `survey`: sanitized, without demographics. */
 	questions: Question[];
 	survey: Survey;
 	workbook: Uint8Array;
@@ -221,6 +225,7 @@ export class LeadAgent {
 			researchQuestions,
 			reasoning: generated.reasoning
 		};
+		const demographicIds = new Set(input.demographicQuestions.map((q) => q.id));
 		const evaluate = (parsed: Question[]): Evaluated => {
 			// The model is told `demographicsAddedSeparately`, but it sometimes
 			// still writes a birth-date / age / sex question and names it the
@@ -229,11 +234,17 @@ export class LeadAgent {
 			// user ends up with two questions sharing one label (#47). Drop
 			// the generated duplicate here so the demographic stays the only
 			// copy.
-			const questions = withResearchQuestions(
+			const survey = assembleSurvey(
+				base,
 				dedupAgainstDemographics(parsed, input.demographicQuestions),
-				rqCount
+				input.demographicQuestions
 			);
-			const survey = assembleSurvey(base, questions, input.demographicQuestions);
+			// The questions as delivered (sanitized, follow-ups linked) minus the
+			// demographics, found by qwac id rather than by position: they sit
+			// before a closing note (#56). Quality checks and the repair both work
+			// on these, so the names in the feedback are the names the model sees
+			// (#53).
+			const questions = survey.questions.filter((q) => !demographicIds.has(q.id));
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);
 			const errors = findings.filter((f) => f.severity === 'error');
@@ -253,12 +264,11 @@ export class LeadAgent {
 		while ((current.errors.length > 0 || current.gap > 0) && attempt < MAX_REPAIR_ATTEMPTS) {
 			attempt++;
 			onPhase?.({ phase: 'repairing', attempt });
-			// Repair the sanitized questions, so names in the findings match what
-			// the model sees; demographics stay out of it and are appended again.
+			// Demographics stay out of the repair and are appended again.
 			const repaired = await this.repairAgent.repair(
 				this.ai,
 				{
-					previousQuestions: current.survey.questions.slice(0, current.questions.length),
+					previousQuestions: current.questions,
 					researchQuestions,
 					validationFeedback: [
 						...current.errors.map((e) => e.message),

@@ -1,25 +1,136 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`'all-demographics' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'all-demographics' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'choice-shapes' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "note",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'choice-shapes' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'exclusive-answer' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'exclusive-answer' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'messy-names-and-logic' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "wochenstunden1",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'messy-names-and-logic' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'missing-relevant-on-follow-up' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'missing-relevant-on-follow-up' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'other-follow-up' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'other-follow-up' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'real-mitarbeiterzufriedenheit-formal' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "verbesserungsvorschl",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'real-mitarbeiterzufriedenheit-formal' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-nachbarschaftstreff-drei-forschu…' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "fehlendeangebote",
+    "sonstigesangebote",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'real-nachbarschaftstreff-drei-forschu…' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'real-vereinsmitglieder-bedarfserhebun…' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "feedback",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'real-vereinsmitglieder-bedarfserhebun…' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-wirkungsmessung-ngo-formal-kein-…' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "verbesserungsvorschl",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'real-wirkungsmessung-ngo-formal-kein-…' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'several-research-questions' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [
+    "fehlt",
+  ],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
 exports[`'several-research-questions' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'shared-list-names' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
 
 exports[`'shared-list-names' > passes the formtransform validator 1`] = `[]`;

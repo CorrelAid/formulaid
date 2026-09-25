@@ -26,6 +26,12 @@ import {
 	type Survey
 } from '../../src/lib/agents/index.js';
 import { demographicVariables } from '../../src/lib/constants.js';
+import {
+	findFollowUps,
+	openQuestions,
+	orphanedFollowUps,
+	unconditionedQuestions
+} from '../../src/lib/agents/follow_ups.js';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
 const OUTPUT = join(import.meta.dirname, 'output');
@@ -87,6 +93,7 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 		extractQuestions(fixture.generated),
 		demographicQuestions(demographics)
 	);
+	const demographicIds = new Set(demographicQuestions(demographics).map((q) => q.id));
 	const workbook = new XLSFormGenerator().generate(survey);
 	const buffer = workbook.buffer.slice(
 		workbook.byteOffset,
@@ -105,6 +112,22 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 	it('writes the workbook for the pyxform check', () => {
 		writeFileSync(join(OUTPUT, `${name}.xlsx`), workbook);
 		expect(survey.questions.length).toBeGreaterThan(0);
+	});
+
+	it('links follow-ups and records what the quality checks still find', () => {
+		const own = survey.questions.filter((q) => !demographicIds.has(q.id));
+		// Every follow-up the code could link has its relevant now.
+		for (const f of findFollowUps(own)) {
+			if (f.parent && f.codes.length === 1) {
+				expect(own[f.index].relevant, `relevant of ${own[f.index].name}`).toBeTruthy();
+			}
+		}
+		// What would go to the repair: a change here shows up in the diff.
+		expect({
+			orphanedFollowUps: orphanedFollowUps(own).map((q) => q.name),
+			unconditioned: unconditionedQuestions(own).map((q) => q.name),
+			open: openQuestions(own).map((q) => q.name)
+		}).toMatchSnapshot();
 	});
 
 	it('passes the formtransform validator', () => {

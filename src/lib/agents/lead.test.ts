@@ -5,7 +5,6 @@ import {
 	MAX_REPAIR_ATTEMPTS,
 	assembleSurvey,
 	dedupAgainstDemographics,
-	looksLikeFollowUp,
 	qualityFeedback
 } from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
@@ -54,6 +53,8 @@ function rejectFirst(n: number) {
  *  on the prompt. Keyword calls aren't counted. */
 function mockAI(generated: Partial<Question>[], repaired: Partial<Question>[]) {
 	const calls = { generate: 0, repair: 0 };
+	/** The full prompt of every repair call, to check what the model was shown. */
+	const repairPrompts: string[] = [];
 	const ai = new AxMockAIService<string>({
 		features: { functions: true, streaming: false },
 		chatResponse: async (req: Readonly<AxChatRequest<unknown>>) => {
@@ -64,15 +65,17 @@ function mockAI(generated: Partial<Question>[], repaired: Partial<Question>[]) {
 				return { results: [{ index: 0, content, finishReason: 'stop' as const }] };
 			}
 			const isRepair = system.includes('You repair');
-			if (isRepair) calls.repair++;
-			else calls.generate++;
+			if (isRepair) {
+				calls.repair++;
+				repairPrompts.push(JSON.stringify(req.chatPrompt));
+			} else calls.generate++;
 			const content = isRepair
 				? `Generated Questions: ${JSON.stringify(repaired)}`
 				: `Title: Zufriedenheit im Ehrenamt\nReasoning: Test\nGenerated Questions: ${JSON.stringify(generated)}`;
 			return { results: [{ index: 0, content, finishReason: 'stop' as const }] };
 		}
 	});
-	return { ai, calls };
+	return { ai, calls, repairPrompts };
 }
 
 describe('LeadAgent.run', () => {
@@ -231,7 +234,7 @@ describe('LeadAgent.run', () => {
 	 *  quality loop flags it, the repair agent adds the right expression.
 	 *  Without this loop, the file passes the validator and ships with no
 	 *  skip-logic, so Kobo shows the follow-up to everyone. */
-	it('repairs a Sonstiges follow-up that lacks `relevant` (#47 follow-up)', async () => {
+	it('links a Sonstiges follow-up that lacks `relevant` in code, without a repair (#51)', async () => {
 		const parent: Partial<Question> = {
 			name: 'bereich',
 			label: 'In welchen Bereichen?',
@@ -246,25 +249,71 @@ describe('LeadAgent.run', () => {
 			name: 'bereich_sonstiges',
 			label: 'Falls Sonstiges: bitte angeben',
 			type: 'text'
-			// no relevant, no rationale → quality loop must catch it
 		};
-		const fixed: Partial<Question> = {
-			name: 'bereich_sonstiges',
-			label: 'Falls Sonstiges: bitte angeben',
-			type: 'text',
-			relevant: "selected(${bereich}, 'sonst')",
-			rationale: 'Ergänzung zu Sonstiges'
-		};
-		const generated: Partial<Question>[] = [parent, broken, ...good.slice(0, 7)];
-		const { ai, calls } = mockAI(generated, [parent, fixed, ...good.slice(0, 7)]);
+		const { ai, calls } = mockAI([parent, broken, ...good.slice(0, 7)], []);
 		const result = await new LeadAgent(ai).run(input);
 
-		// The repair loop fired because the quality check flagged the broken follow-up.
-		expect(calls.repair).toBeGreaterThanOrEqual(1);
-		// The repaired follow-up is the one shipped — with its `relevant` set.
-		// (Name is sanitized: `bereich_sonstiges` -> `bereichsonstiges`.)
-		const followup = result.survey.questions.find((q) => /^bereich.*sonstiges$/.test(q.name));
+		expect(calls.repair).toBe(0);
+		// Sanitized: `bereich_sonstiges` -> `bereichsonstiges`.
+		const followup = result.survey.questions.find((q) => q.name === 'bereichsonstiges');
 		expect(followup?.relevant).toBe("selected(${bereich}, 'sonst')");
+	});
+
+	it('does not accept a repair that returns sanitized names and still no relevant (#53)', async () => {
+		// Two answers could open the follow-up, so the code can't link it and
+		// the repair has to.
+		const parent: Partial<Question> = {
+			name: 'bereich',
+			label: 'In welchen Bereichen?',
+			type: 'select_multiple',
+			rationale: 'r',
+			choices: [
+				{ name: 'lokal', label: 'Lokal' },
+				{ name: 'sonst', label: 'Sonstiges' },
+				{ name: 'andere', label: 'Andere Bereiche' }
+			]
+		};
+		const followUp = (name: string): Partial<Question> => ({
+			name,
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			rationale: 'r'
+		});
+		const { ai, calls, repairPrompts } = mockAI(
+			[parent, followUp('bereich_sonstiges'), ...good.slice(0, 7)],
+			[parent, followUp('bereichsonstiges'), ...good.slice(0, 7)]
+		);
+		const result = await new LeadAgent(ai).run(input);
+
+		expect(calls.repair).toBe(MAX_REPAIR_ATTEMPTS);
+		// The feedback names the question as the model sees it.
+		expect(repairPrompts[0]).toContain('bereichsonstiges');
+		expect(repairPrompts[0]).not.toContain('bereich_sonstiges');
+		const followup = result.survey.questions.find((q) => q.name === 'bereichsonstiges');
+		expect(followup?.relevant).toBeUndefined();
+	});
+
+	it('shows the repair the closing note and no demographic (#56)', async () => {
+		const note = (name: string, label: string): Partial<Question> => ({
+			name,
+			label,
+			type: 'note'
+		});
+		const generated = [note('intro', 'Hallo'), ...good.slice(0, 7), note('danke', 'Vielen Dank')];
+		const { ai, calls, repairPrompts } = mockAI(generated, generated);
+		const result = await new LeadAgent(ai).run({
+			...input,
+			selectedDemographics: ['age'],
+			demographicQuestions: [
+				{ id: 'qwac_age', name: 'age', label: 'Wie alt sind Sie?', type: 'integer', required: true }
+			]
+		});
+
+		// 7 answerable questions: the quality check asks for more.
+		expect(calls.repair).toBeGreaterThanOrEqual(1);
+		expect(repairPrompts[0]).toContain('Vielen Dank');
+		expect(repairPrompts[0]).not.toContain('Wie alt sind Sie?');
+		expect(result.survey.questions.map((q) => q.name).slice(-2)).toEqual(['age', 'end']);
 	});
 
 	/** The model is told `demographicsAddedSeparately`, but it still writes a
@@ -406,76 +455,6 @@ describe('qualityFeedback', () => {
 			relevant: "selected(${bereich}, 'sonst')"
 		};
 		expect(qualityFeedback([ok]).some((m) => m.includes('bereich_sonstiges'))).toBe(false);
-	});
-});
-
-describe('looksLikeFollowUp', () => {
-	it('matches the Sonstiges text-follow-up pattern by name suffix', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'anwendungsbereiche_sonstiges',
-			label: 'Falls Sonstiges: bitte angeben',
-			type: 'text',
-			required: false
-		};
-		expect(looksLikeFollowUp(q)).toBe(true);
-	});
-
-	it('matches by German "Falls Sonstiges" label prefix', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'weirdname',
-			label: 'Falls Sonstiges: bitte angeben',
-			type: 'text',
-			required: false
-		};
-		expect(looksLikeFollowUp(q)).toBe(true);
-	});
-
-	it('matches by English "If other" label prefix', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'weirdname',
-			label: 'If other: please specify',
-			type: 'text',
-			required: false
-		};
-		expect(looksLikeFollowUp(q)).toBe(true);
-	});
-
-	it('does not match a text question without the suffix or prefix', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'comment',
-			label: 'Anything else?',
-			type: 'text',
-			required: false
-		};
-		expect(looksLikeFollowUp(q)).toBe(false);
-	});
-
-	it('does not match a select_one question even with the right name', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'bereich_sonstiges',
-			label: 'Sonstiges',
-			type: 'select_one',
-			required: false,
-			choices: []
-		};
-		expect(looksLikeFollowUp(q)).toBe(false);
-	});
-
-	it('does not match when relevant is already set', () => {
-		const q: Question = {
-			id: 'f',
-			name: 'bereich_sonstiges',
-			label: 'Falls Sonstiges',
-			type: 'text',
-			required: false,
-			relevant: "selected(${bereich}, 'sonst')"
-		};
-		expect(looksLikeFollowUp(q)).toBe(false);
 	});
 });
 

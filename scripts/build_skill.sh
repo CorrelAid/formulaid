@@ -213,6 +213,8 @@ DEMO_FILE="$REFS/demographic-templates.md"
 cp "$CONTENT_DIR/demographic-header.md" "$DEMO_FILE"
 
 FOUND_RESULTS=false
+# Any fetch that fails makes this build's copy incomplete (see the end of 4).
+ALL_FETCHED=true
 
 # 4a. Fetch single demographic question
 q_result=$(fetch_json "$QWAC_API/questions/$DEMOGRAPHIC_QUESTION_ID" "Question: $DEMOGRAPHIC_QUESTION_ID")
@@ -223,6 +225,8 @@ if [[ -n "$q_result" && "$q_result" != "null" ]]; then
     printf '\n### XLSForm\n\n```json\n%s\n```\n' "$q_xlsform" >> "$DEMO_FILE"
   fi
   FOUND_RESULTS=true
+else
+  ALL_FETCHED=false
 fi
 sleep 0.3
 
@@ -234,19 +238,32 @@ if [[ -n "$meta" && "$meta" != "null" ]]; then
   title=$(echo "$meta" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('title',''))" 2>/dev/null || echo "$DEMOGRAPHIC_STUDY_ID")
   printf '\n## Study: %s (id: %s)\n\n```json\n%s\n```\n' "$title" "$DEMOGRAPHIC_STUDY_ID" "${meta:0:3000}" >> "$DEMO_FILE"
   FOUND_RESULTS=true
+else
+  ALL_FETCHED=false
 fi
 
 study_qs=$(fetch_json "$QWAC_API/studies/$DEMOGRAPHIC_STUDY_ID/questions?perPage=100" "  → Questions")
 if [[ -n "$study_qs" && "$study_qs" != "null" ]]; then
   printf '\n### Questions\n\n```json\n%s\n```\n' "${study_qs:0:15000}" >> "$DEMO_FILE"
+else
+  ALL_FETCHED=false
 fi
 
 xlsform=$(fetch_json "$QWAC_API/studies/$DEMOGRAPHIC_STUDY_ID/xlsform" "  → XLSForm export")
 if [[ -n "$xlsform" && "$xlsform" != "null" ]]; then
   printf '\n### XLSForm Export\n\n```json\n%s\n```\n' "${xlsform:0:10000}" >> "$DEMO_FILE"
+else
+  ALL_FETCHED=false
 fi
 
-if [[ "$FOUND_RESULTS" == "false" ]]; then
+# When qwac is down, don't replace a good copy with a partial one: the
+# pre-commit hook runs this build on every commit, and the result is staged.
+# Keep the committed version and say so.
+DEMO_REL="${DEMO_FILE#"$PROJECT_ROOT"/}"
+if [[ "$ALL_FETCHED" == "false" ]] && git -C "$PROJECT_ROOT" cat-file -e "HEAD:$DEMO_REL" 2>/dev/null; then
+  git -C "$PROJECT_ROOT" show "HEAD:$DEMO_REL" > "$DEMO_FILE"
+  warn "qwac unreachable or incomplete: kept the committed $DEMO_REL"
+elif [[ "$FOUND_RESULTS" == "false" ]]; then
   cat "$CONTENT_DIR/demographic-fallback.md" >> "$DEMO_FILE"
 fi
 
