@@ -95,6 +95,60 @@ Rebuild the skill with fresh reference data from qwac and civic-data.de:
 bun run build:skill
 ```
 
+## How a questionnaire is generated
+
+Everything runs in the browser. The model is called with the user's own API key, straight at the provider, and the qwac question bank is queried from the browser too. `LeadAgent.run` in [`src/lib/agents/lead.ts`](src/lib/agents/lead.ts) ties the steps together.
+
+```mermaid
+flowchart TD
+    W["Wizard input<br/>research questions, target group, use of results,<br/>du/Sie, selected demographics"] --> K
+
+    K["KeywordAgent<br/>6–14 keywords, German + English"]:::llm --> S
+    S["searchQuestionBank<br/>qwac REST API, top 30 hits"] --> G
+    Q[("qwac question bank")] -.-> S
+    G["SurveyGeneratorAgent<br/>generate-instructions.md + bank hits"]:::llm --> E
+
+    subgraph E["evaluate"]
+        direction TB
+        P["extractQuestions<br/>parse the model's JSON"] --> A
+        A["assembleSurvey<br/>map research questions, append demographics,<br/>welcome/end notes, sanitize names and codes"] --> X
+        X["XLSFormGenerator<br/>build the .xlsx"] --> V
+        V["XLSFormValidator + quality check<br/>formtransform subset rules, question count,<br/>open questions, research question coverage"]
+    end
+
+    E --> D{"errors or quality gap?"}
+    D -- "no" --> OUT
+    D -- "yes, fewer than 2 repairs" --> R["RepairAgent<br/>change only what the feedback names"]:::llm
+    R -- "kept only if strictly better" --> E
+    D -- "yes, 2 repairs done" --> OUT
+
+    OUT["Result<br/>.xlsx, title, reasoning, bank search,<br/>remaining findings"]
+
+    classDef llm fill:#e9d5ff,stroke:#7c3aed,stroke-width:2px
+```
+
+Purple steps call the model; everything else is deterministic code.
+
+| Step        | Model call | Progress shown as | File                                                  | What it does                                                                                                                      |
+| ----------- | ---------- | ----------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Keywords    | yes, short | `searching`       | `keyword_agent.ts`                                    | proposes the constructs to search for, in German and English                                                                      |
+| Bank search | no         | `searching`       | `qwacback.ts`                                         | stems the keywords, scores every bank question except the demographic standards, keeps the top 30; skipped if qwac is unreachable |
+| Generate    | yes        | `generating`      | `survey_generator.ts`                                 | writes the questions from the methodology prompt and the bank hits, tags each with the research questions it serves               |
+| Assemble    | no         | `validating`      | `lead.ts` (`assembleSurvey`), `sanitize.ts`           | adds demographics before the closing note, names the opening/closing notes, sanitizes names and codes                             |
+| Build       | no         | `validating`      | `xlsform_generator.ts`                                | writes the survey, choices, settings and explanations sheets                                                                      |
+| Validate    | no         | `validating`      | `xlsform_validator.ts`, `lead.ts` (`qualityFeedback`) | formtransform subset check plus the quality targets                                                                               |
+| Repair      | yes, ≤ 2×  | `repairing`       | `repair_agent.ts`                                     | fixes the listed problems, keeps everything else                                                                                  |
+
+Why it works this way:
+
+- **The bank search is a fixed step**, not a tool the model may skip. The model only proposes keywords; the search runs in code ([#33](https://github.com/CorrelAid/formulaid/issues/33)).
+- **Mechanical problems are fixed in code** before validation (names, choice codes, duplicates, references in skip logic), so only real problems reach the model ([#17](https://github.com/CorrelAid/formulaid/issues/17)).
+- **Validator errors and quality gaps both trigger a repair.** The gaps are fewer than 8 answerable questions, more than 3 open ones, and a research question no question serves ([#34](https://github.com/CorrelAid/formulaid/issues/34)).
+- **A repair fixes the previous attempt** instead of generating anew ([#16](https://github.com/CorrelAid/formulaid/issues/16)), at most `MAX_REPAIR_ATTEMPTS` = 2 times. A repaired version replaces the current one only if it is strictly better: fewer errors, or as many errors and a smaller quality gap.
+- **The result is always delivered**, together with the remaining findings, never silently ([#11](https://github.com/CorrelAid/formulaid/issues/11)).
+
+Everything inside `evaluate` is what the [end-to-end tests](#end-to-end-testse2e) run on their fixtures, so the diagram doubles as a map of what they cover.
+
 ## Architecture
 
 FormulAid ships in two forms — web app and Claude Code skill — that share the same prompts, reference data, and backend tools.
