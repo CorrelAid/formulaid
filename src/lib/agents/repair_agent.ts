@@ -5,7 +5,7 @@ import { numberResearchQuestions, type Question } from './types.js';
 import { extractQuestions } from './question_parser.js';
 
 const SIGNATURE =
-	'researchQuestions:string "numbered", previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
+	'researchQuestions:string "numbered", previousQuestions:json, validationFeedback:string, formOfAddress:string "du, Sie (German) or you (English); keep it" -> generatedQuestions:json';
 
 /** Built from the registry, so the repair prompt can never drift from what the
  *  validator accepts. */

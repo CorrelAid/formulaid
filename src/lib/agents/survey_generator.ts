@@ -8,10 +8,15 @@ import generateInstructions from '../../../skills/xlsform/generate-instructions.
 // runs "language: informal" still produced "Sie", and "demographics: age"
 // made the model write its own age question.
 const SIGNATURE =
-	'researchQuestions:string "numbered; cover every one and tag each question with the numbers it serves", targetGroup?:string, useOfResults?:string, furtherNotes?:string "free-form guidance from the user: things to keep short, terms to avoid, topics to focus on", formOfAddress:string "du or Sie: how every question addresses respondents", surveyLanguage:string "de or en: language of every question, label, hint, title and reasoning", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept | question | answer type" -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
+	'researchQuestions:string "numbered; cover every one and tag each question with the numbers it serves", targetGroup?:string, useOfResults?:string, furtherNotes?:string "free-form guidance from the user: things to keep short, terms to avoid, topics to focus on", formOfAddress:string "du, Sie (German) or you (English): how every question addresses respondents", surveyLanguage:string "de or en: language of every question, label, hint, title and reasoning", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept | question | answer type" -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
 
-/** "du" or "Sie", as the prompt and the model expect it. */
-export function formOfAddress(language: AgentInput['language']): string {
+/** "du" or "Sie" for German, "you" for English (no formal/informal split in
+ *  English), as the prompt and the model expect it. */
+export function formOfAddress(
+	language: AgentInput['language'],
+	surveyLanguage: AgentInput['surveyLanguage'] = 'de'
+): string {
+	if (surveyLanguage === 'en') return 'you';
 	return language === 'informal' ? 'du' : 'Sie';
 }
 
@@ -45,7 +50,7 @@ export class SurveyGeneratorAgent {
 				targetGroup: input.targetGroup,
 				useOfResults: input.useOfResults,
 				furtherNotes: input.furtherNotes,
-				formOfAddress: formOfAddress(input.language),
+				formOfAddress: formOfAddress(input.language, input.surveyLanguage),
 				surveyLanguage: input.surveyLanguage,
 				demographicsAddedSeparately: input.selectedDemographics.join(', ') || undefined,
 				questionBank: bankHits.length ? renderBankHits(bankHits) : undefined
