@@ -43,13 +43,15 @@ function normalizeChoices(raw: unknown[]): Choice[] {
 		}
 		if (typeof c !== 'object' || c === null) return [];
 		const o = c as Record<string, unknown>;
-		const label = firstOf(o, 'label', 'text', 'title');
-		const name = firstOf(o, 'name', 'value', 'code', 'id');
-		if (label == null && name == null) return [];
+		const label = firstOf(o, 'label', 'text', 'title')?.trim();
+		const name = firstOf(o, 'name', 'value', 'code', 'id')?.trim();
+		if (!label && !name) return [];
 		return [
 			{
-				name: name ?? String(i + 1),
-				label: label ?? name ?? '',
+				name: name || String(i + 1),
+				// An empty label is a validator warning since formtransform v0.1.5;
+				// the code is better than nothing for respondents.
+				label: label || name || '',
 				...(o.exclusive === true || o.exclusive === 'yes' ? { exclusive: true } : {})
 			}
 		];

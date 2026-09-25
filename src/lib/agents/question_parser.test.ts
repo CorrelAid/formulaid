@@ -31,6 +31,20 @@ describe('extractQuestions choices (#26)', () => {
 		]);
 	});
 
+	it('falls back to the code for an empty label and drops empty choices', () => {
+		const [q] = extractQuestions([
+			{
+				label: 'Stufe?',
+				type: 'select_one',
+				choices: [{ name: 'a1', label: '' }, { name: '', label: ' ' }, 'B']
+			}
+		]);
+		expect(q.choices).toEqual([
+			{ name: 'a1', label: 'a1' },
+			{ name: '3', label: 'B' }
+		]);
+	});
+
 	it('normalizes the options key too', () => {
 		const [q] = extractQuestions([{ label: 'Ja?', type: 'select_one', options: ['Ja', 'Nein'] }]);
 		expect(q.choices?.map((c) => c.label)).toEqual(['Ja', 'Nein']);
