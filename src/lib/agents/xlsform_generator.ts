@@ -35,6 +35,10 @@ export class XLSFormGenerator {
 	generate(survey: Survey): Uint8Array {
 		const surveyData = [['type', 'name', 'label', 'hint', 'required', 'relevant']];
 		const choicesData = [['list_name', 'name', 'label', 'exclusive']];
+		// Each list is written once, keyed by its choices. The prompt encourages
+		// reusing a scale ("select_one skala5"), but the model sometimes gives two
+		// questions the same list name with different answers (#25).
+		const lists = new Map<string, string>();
 
 		for (const q of survey.questions) {
 			let rowType: string = q.type;
@@ -45,10 +49,15 @@ export class XLSFormGenerator {
 				q.choices &&
 				q.choices.length > 0
 			) {
-				const listName = embeddedList ?? `${q.name}_list`;
+				const key = JSON.stringify(q.choices.map((c) => [c.name, c.label, !!c.exclusive]));
+				let listName = embeddedList ?? `${q.name}_list`;
+				if (lists.has(listName) && lists.get(listName) !== key) listName = `${q.name}_list`;
 				rowType = `${baseType} ${listName}`;
-				for (const choice of q.choices) {
-					choicesData.push([listName, choice.name, choice.label, choice.exclusive ? 'yes' : '']);
+				if (!lists.has(listName)) {
+					lists.set(listName, key);
+					for (const choice of q.choices) {
+						choicesData.push([listName, choice.name, choice.label, choice.exclusive ? 'yes' : '']);
+					}
 				}
 			}
 
