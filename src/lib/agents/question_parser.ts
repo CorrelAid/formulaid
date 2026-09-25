@@ -19,13 +19,41 @@ function slugify(text: string): string {
 		.slice(0, 40);
 }
 
-function inferType(text: string): QuestionType {
+const MULTI_CHOICE = /\b(welche.*alle|mehrere|alle.*die|auswählen|select all|all that apply)\b/;
+
+/** Type for a question whose type cell is missing or not in the registry.
+ *  With choices it is always a select; scale wording ("wie zufrieden") means
+ *  a select_one scale, never integer, which would drop the choices and work
+ *  against the quality check in lead.ts (#27). */
+function inferType(text: string, hasChoices = false): QuestionType {
 	const t = text.toLowerCase();
-	if (/\b(skala|bewert|1.*(bis|to).*10|zufrieden|wie (sehr|gut|häufig|oft))\b/.test(t))
-		return 'integer';
-	if (/\b(welche.*alle|mehrere|alle.*die|auswählen)\b/.test(t)) return 'select_multiple';
+	if (MULTI_CHOICE.test(t)) return 'select_multiple';
+	if (hasChoices) return 'select_one';
+	if (/\b(skala|bewert|zufrieden|wie (sehr|gut|häufig|oft))/.test(t)) return 'select_one';
 	if (/\b(welche[rs]?|wählen|trifft.*zu|falls ja)\b/.test(t)) return 'select_one';
 	return 'text';
+}
+
+/** The model writes choices as plain strings, {name, label}, {value, label} or
+ *  {code, label}; accept all of them (#26). */
+function normalizeChoices(raw: unknown[]): Choice[] {
+	return raw.flatMap((c, i): Choice[] => {
+		if (typeof c === 'string' || typeof c === 'number') {
+			return [{ name: String(i + 1), label: String(c) }];
+		}
+		if (typeof c !== 'object' || c === null) return [];
+		const o = c as Record<string, unknown>;
+		const label = firstOf(o, 'label', 'text', 'title');
+		const name = firstOf(o, 'name', 'value', 'code', 'id');
+		if (label == null && name == null) return [];
+		return [
+			{
+				name: name ?? String(i + 1),
+				label: label ?? name ?? '',
+				...(o.exclusive === true || o.exclusive === 'yes' ? { exclusive: true } : {})
+			}
+		];
+	});
 }
 
 function stringToQuestion(text: string, index: number): Question {
@@ -62,16 +90,17 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 	const rawType = str(obj.type)?.trim() ?? '';
 	// XLSForm types like "select_one list_name" or "select_multiple list_name" are valid
 	const baseType = rawType.split(' ')[0];
+	const rawChoices = Array.isArray(obj.choices)
+		? obj.choices
+		: Array.isArray(obj.options)
+			? obj.options
+			: [];
+	const choices = normalizeChoices(rawChoices);
 	const type: QuestionType = (
 		KNOWN_QUESTION_TYPES.has(baseType)
 			? rawType // preserve full type including list name (e.g. "select_one skala5")
-			: inferType(label)
+			: inferType(label, choices.length > 0)
 	) as QuestionType;
-	const choices: Choice[] = Array.isArray(obj.choices)
-		? obj.choices
-		: Array.isArray(obj.options)
-			? obj.options.map((o: unknown, i: number) => ({ name: `c_${i}`, label: String(o) }))
-			: [];
 	const relevant = str(obj.relevant) ?? str(obj.relevance);
 	// The model is asked for a justification per question (#5). It uses whichever
 	// of these key names it feels like, so accept all of them.

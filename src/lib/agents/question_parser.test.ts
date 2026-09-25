@@ -1,0 +1,64 @@
+import { describe, it, expect } from 'vitest';
+import { extractQuestions } from './question_parser.js';
+
+describe('extractQuestions choices (#26)', () => {
+	it('turns plain strings into labelled choices', () => {
+		const [q] = extractQuestions([
+			{ label: 'Farbe?', type: 'select_one', choices: ['Rot', 'Blau'] }
+		]);
+		expect(q.choices).toEqual([
+			{ name: '1', label: 'Rot' },
+			{ name: '2', label: 'Blau' }
+		]);
+	});
+
+	it('accepts {value, label}, {code, label} and keeps exclusive', () => {
+		const [q] = extractQuestions([
+			{
+				label: 'Was nutzt du?',
+				type: 'select_multiple',
+				choices: [
+					{ value: 'bus', label: 'Bus' },
+					{ code: 'rad', label: 'Rad' },
+					{ name: 'none', label: 'Nichts davon', exclusive: true }
+				]
+			}
+		]);
+		expect(q.choices).toEqual([
+			{ name: 'bus', label: 'Bus' },
+			{ name: 'rad', label: 'Rad' },
+			{ name: 'none', label: 'Nichts davon', exclusive: true }
+		]);
+	});
+
+	it('normalizes the options key too', () => {
+		const [q] = extractQuestions([{ label: 'Ja?', type: 'select_one', options: ['Ja', 'Nein'] }]);
+		expect(q.choices?.map((c) => c.label)).toEqual(['Ja', 'Nein']);
+	});
+});
+
+describe('extractQuestions unknown types (#27)', () => {
+	it('keeps the choices of an unknown type as select_one', () => {
+		const [q] = extractQuestions([
+			{ label: 'Wie zufrieden bist du?', type: 'likert', choices: ['gar nicht', 'sehr'] }
+		]);
+		expect(q.type).toBe('select_one');
+		expect(q.choices).toHaveLength(2);
+	});
+
+	it('uses select_multiple for multi-choice wording', () => {
+		const [q] = extractQuestions([
+			{
+				label: 'Welche Angebote nutzt du? Wähle alle, die zutreffen.',
+				type: 'checkbox',
+				choices: ['A', 'B']
+			}
+		]);
+		expect(q.type).toBe('select_multiple');
+	});
+
+	it('never infers integer for scale wording', () => {
+		const [q] = extractQuestions([{ label: 'Wie zufrieden bist du?', type: 'rating' }]);
+		expect(q.type).toBe('select_one');
+	});
+});
