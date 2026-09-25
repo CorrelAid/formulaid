@@ -37,11 +37,15 @@
 	let useOfResults = $state(
 		saved?.useOfResults ?? 'Annual donor report and internal programme evaluation'
 	);
+	// Free-form guidance for the generator (#40): length limits, terms to avoid,
+	// topics to focus on. Optional and persisted across reloads.
+	let furtherNotes = $state(saved?.furtherNotes ?? '');
 	$effect(() => {
 		saveWizardInputs({
 			researchQuestions: [...researchQuestions],
 			targetGroup,
 			useOfResults,
+			furtherNotes,
 			language,
 			selectedDemographics: [...selectedDemographics]
 		});
@@ -60,6 +64,7 @@
 		researchQuestions = [''];
 		targetGroup = '';
 		useOfResults = '';
+		furtherNotes = '';
 		language = null;
 		selectedDemographics = [];
 		resetResult();
@@ -164,7 +169,8 @@
 					useOfResults,
 					language: language || 'formal',
 					selectedDemographics,
-					demographicQuestions: demographicQuestions(selectedDemographics)
+					demographicQuestions: demographicQuestions(selectedDemographics),
+					furtherNotes: furtherNotes.trim() || undefined
 				},
 				{
 					signal: controller.signal,
@@ -295,6 +301,16 @@
 				bind:value={useOfResults}
 				placeholder={$t('wizard.useOfResultsPlaceholder')}
 			/>
+		</div>
+		<div class="input-group">
+			<label for="further-notes">{$t('wizard.furtherNotesLabel')}</label>
+			<textarea
+				id="further-notes"
+				rows="3"
+				bind:value={furtherNotes}
+				placeholder={$t('wizard.furtherNotesPlaceholder')}
+			></textarea>
+			<p class="field-hint">{$t('wizard.furtherNotesHint')}</p>
 		</div>
 	</section>
 

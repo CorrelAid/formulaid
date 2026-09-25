@@ -6,6 +6,9 @@ export interface WizardInputs {
 	useOfResults: string;
 	language: 'formal' | 'informal' | null;
 	selectedDemographics: string[];
+	/** Free-form extra guidance for the generator (#40): things to keep short,
+	 *  terms to avoid, topics to focus on. Persisted so reloads keep it. */
+	furtherNotes: string;
 }
 
 const STORAGE_KEY = 'formulaid_wizard_inputs';
@@ -18,7 +21,7 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 		if (!raw) return null;
 		const data = JSON.parse(raw) as Record<string, unknown>;
 		const inputs: Partial<WizardInputs> = {};
-		for (const key of ['targetGroup', 'useOfResults'] as const) {
+		for (const key of ['targetGroup', 'useOfResults', 'furtherNotes'] as const) {
 			if (typeof data[key] === 'string') inputs[key] = data[key];
 		}
 		if (isStringList(data.researchQuestions)) {

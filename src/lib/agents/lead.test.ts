@@ -146,6 +146,41 @@ describe('LeadAgent.run', () => {
 		controller.abort();
 		await expect(new LeadAgent(ai).run(input, { signal: controller.signal })).rejects.toThrow();
 	});
+
+	it('forwards furtherNotes to the keyword and generator steps (#40)', async () => {
+		const seen: string[] = [];
+		const ai = new AxMockAIService<string>({
+			features: { functions: true, streaming: false },
+			chatResponse: async (req: Readonly<AxChatRequest<unknown>>) => {
+				const first = req.chatPrompt[0];
+				const system = first && 'content' in first ? String(first.content) : '';
+				seen.push(system);
+				if (system.includes('You pick search terms')) {
+					return {
+						results: [
+							{
+								index: 0,
+								content: 'Keywords: ["Zufriedenheit"]',
+								finishReason: 'stop' as const
+							}
+						]
+					};
+				}
+				return {
+					results: [
+						{
+							index: 0,
+							content: `Title: Test\nReasoning: ok\nGenerated Questions: ${JSON.stringify(good)}`,
+							finishReason: 'stop' as const
+						}
+					]
+				};
+			}
+		});
+		await new LeadAgent(ai).run({ ...input, furtherNotes: 'Avoid double-barrelled questions.' });
+		// Both prompts see the user's note, in addition to the standard instructions.
+		expect(seen.some((s) => s.includes('furtherNotes'))).toBe(true);
+	});
 });
 
 describe('qualityFeedback', () => {

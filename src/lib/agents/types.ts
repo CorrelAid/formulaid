@@ -67,6 +67,10 @@ export interface AgentInput {
 	language: 'formal' | 'informal';
 	selectedDemographics: string[];
 	demographicQuestions: Question[];
+	/** Optional extra guidance from the wizard (#40): things to keep short,
+	 *  terms to avoid, topics to focus on. Forwarded to the keyword and
+	 *  generator prompts. */
+	furtherNotes?: string;
 }
 
 /** What a run is doing right now; the page turns it into status text and

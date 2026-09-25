@@ -2,7 +2,7 @@ import { AxGen, type AxAIService } from '@ax-llm/ax';
 import { numberResearchQuestions, type AgentInput } from './types.js';
 
 const SIGNATURE =
-	'researchQuestions:string "numbered", targetGroup?:string, useOfResults?:string -> keywords:string[] "6 to 14 single words: each construct to measure, in German and in English"';
+	'researchQuestions:string "numbered", targetGroup?:string, useOfResults?:string, furtherNotes?:string -> keywords:string[] "6 to 14 single words: each construct to measure, in German and in English"';
 
 const INSTRUCTIONS = [
 	'You pick search terms for a survey question bank.',
@@ -10,7 +10,8 @@ const INSTRUCTIONS = [
 	'One word per keyword, no phrases, no names of the organisation or the programme.',
 	'The bank has German and English items: give every construct in both languages, e.g. Selbstwirksamkeit and efficacy, Vertrauen and trust.',
 	'When the goal is to evaluate an offer, programme or event, include Zufriedenheit and Weiterempfehlung.',
-	'Do not list demographics (age, gender, education, income); they are handled separately.'
+	'Do not list demographics (age, gender, education, income); they are handled separately.',
+	'If furtherNotes mentions specific topics, terms or constructs to cover (or to avoid), include them or skip them accordingly.'
 ].join('\n');
 
 /**
@@ -30,7 +31,8 @@ export class KeywordAgent {
 			{
 				researchQuestions: numberResearchQuestions(input.researchQuestions),
 				targetGroup: input.targetGroup,
-				useOfResults: input.useOfResults
+				useOfResults: input.useOfResults,
+				furtherNotes: input.furtherNotes
 			},
 			{ abortSignal: signal }
 		);

@@ -61,6 +61,10 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.useOfResultsLabel': 'What happens with the results?',
 		'wizard.useOfResultsPlaceholder':
 			'e.g. Internal report, donor presentation, research publication',
+		'wizard.furtherNotesLabel': 'Anything else the AI should know?',
+		'wizard.furtherNotesPlaceholder':
+			'e.g. Keep it under 10 questions, avoid the word "training", focus on remote workers',
+		'wizard.furtherNotesHint': 'Optional. Extra guidance for the generator.',
 		'wizard.phase3Heading': '3. Settings',
 		'wizard.phase3Desc': 'Choose language tone and optional demographic variables.',
 		'wizard.languageLabel': 'Language & Tone',
@@ -200,6 +204,10 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.useOfResultsLabel': 'Was passiert mit den Ergebnissen?',
 		'wizard.useOfResultsPlaceholder':
 			'z. B. interner Bericht, Gebernachweis, Forschungsveröffentlichung',
+		'wizard.furtherNotesLabel': 'Sonstige Hinweise für die KI?',
+		'wizard.furtherNotesPlaceholder':
+			'z. B. Maximal 10 Fragen, das Wort „Schulung“ vermeiden, Fokus auf Remote-Mitarbeitende',
+		'wizard.furtherNotesHint': 'Optional. Zusätzliche Vorgaben für den Generator.',
 		'wizard.phase3Heading': '3. Einstellungen',
 		'wizard.phase3Desc': 'Wähle Anredeform und optionale demografische Merkmale.',
 		'wizard.languageLabel': 'Sprache & Tonalität',
