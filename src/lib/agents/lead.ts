@@ -20,10 +20,15 @@ const MAX_OPEN_QUESTIONS = 3;
 /** Problems the validator doesn't see but a repair can fix. They trigger a
  *  repair like validator errors do, but aren't reported as findings: the form
  *  is valid, just weaker. */
-export function qualityFeedback(questions: Question[]): string[] {
+export function qualityFeedback(questions: Question[], researchQuestionCount = 0): string[] {
 	const answerable = questions.filter((q) => q.type !== 'note');
 	const open = answerable.filter((q) => q.type === 'text');
 	const feedback: string[] = [];
+	for (const n of uncovered(questions, researchQuestionCount)) {
+		feedback.push(
+			`Research question ${n} is not covered by any question. Add at least one that serves it and list ${n} in its researchQuestions.`
+		);
+	}
 	if (answerable.length < MIN_QUESTIONS) {
 		feedback.push(
 			`Only ${answerable.length} answerable questions (notes don't count). Add ${MIN_QUESTIONS - answerable.length} more that serve the research goal, preferably closed questions with choices.`
@@ -39,10 +44,34 @@ export function qualityFeedback(questions: Question[]): string[] {
 
 /** How far a questionnaire is from the quality targets: missing questions
  *  plus surplus open ones. 0 means nothing to fix. */
-export function qualityGap(questions: Question[]): number {
+export function qualityGap(questions: Question[], researchQuestionCount = 0): number {
 	const answerable = questions.filter((q) => q.type !== 'note');
 	const open = answerable.filter((q) => q.type === 'text').length;
-	return Math.max(0, MIN_QUESTIONS - answerable.length) + Math.max(0, open - MAX_OPEN_QUESTIONS);
+	return (
+		Math.max(0, MIN_QUESTIONS - answerable.length) +
+		Math.max(0, open - MAX_OPEN_QUESTIONS) +
+		uncovered(questions, researchQuestionCount).length
+	);
+}
+
+/** Research question numbers (1-based) that no answerable question serves (#34). */
+function uncovered(questions: Question[], count: number): number[] {
+	const served = new Set(
+		questions.filter((q) => q.type !== 'note').flatMap((q) => q.researchQuestions ?? [])
+	);
+	return Array.from({ length: count }, (_, i) => i + 1).filter((n) => !served.has(n));
+}
+
+/** With a single research question every question serves it, whether or not
+ *  the model said so; numbers beyond the list are dropped. */
+function withResearchQuestions(questions: Question[], count: number): Question[] {
+	return questions.map((q) => {
+		const valid = (q.researchQuestions ?? []).filter((n) => n <= count);
+		const researchQuestions = valid.length === 0 && count === 1 && q.type !== 'note' ? [1] : valid;
+		const rest = { ...q };
+		delete rest.researchQuestions;
+		return researchQuestions.length ? { ...rest, researchQuestions } : rest;
+	});
 }
 
 interface Evaluated {
@@ -97,7 +126,12 @@ export class LeadAgent {
 
 	constructor(private ai: AxAIService) {}
 
-	async run(input: AgentInput, { signal, onPhase, onTrace }: RunOptions = {}): Promise<RunResult> {
+	async run(raw: AgentInput, { signal, onPhase, onTrace }: RunOptions = {}): Promise<RunResult> {
+		const researchQuestions = raw.researchQuestions.map((q) => q.trim()).filter(Boolean);
+		if (researchQuestions.length === 0) throw new Error('No research question given');
+		const input = { ...raw, researchQuestions };
+		const rqCount = researchQuestions.length;
+
 		// Search the bank as a fixed step, not a tool the model may skip (#33).
 		onPhase?.({ phase: 'searching' });
 		const keywords = await this.keywordAgent.keywords(this.ai, input, signal);
@@ -111,9 +145,11 @@ export class LeadAgent {
 		const base = {
 			title: generated.title,
 			formId: formIdFor(generated.title),
+			researchQuestions,
 			reasoning: generated.reasoning
 		};
-		const evaluate = (questions: Question[]): Evaluated => {
+		const evaluate = (parsed: Question[]): Evaluated => {
+			const questions = withResearchQuestions(parsed, rqCount);
 			// Demographics go last: the UI promises it, and it is survey convention.
 			const survey = sanitizeSurvey({
 				...base,
@@ -122,7 +158,14 @@ export class LeadAgent {
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);
 			const errors = findings.filter((f) => f.severity === 'error');
-			return { questions, survey, workbook, findings, errors, gap: qualityGap(questions) };
+			return {
+				questions,
+				survey,
+				workbook,
+				findings,
+				errors,
+				gap: qualityGap(questions, rqCount)
+			};
 		};
 
 		onPhase?.({ phase: 'validating', attempt: 0 });
@@ -137,10 +180,10 @@ export class LeadAgent {
 				this.ai,
 				{
 					previousQuestions: current.survey.questions.slice(0, current.questions.length),
-					researchGoal: input.researchQuestion,
+					researchQuestions,
 					validationFeedback: [
 						...current.errors.map((e) => e.message),
-						...qualityFeedback(current.questions)
+						...qualityFeedback(current.questions, rqCount)
 					]
 						.map((m) => `- ${m}`)
 						.join('\n'),

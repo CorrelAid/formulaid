@@ -31,9 +31,19 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelStreamError':
 			'The model dropped the connection mid-generation. This usually means the model does not support streaming or tool calling well. Try a different model.',
 		'wizard.modelLabel': 'Model',
-		'wizard.phase1Heading': '1. Research Goal',
-		'wizard.phase1Desc': 'Describe what you want to find out. One sentence is enough.',
-		'wizard.researchLabel': 'What do you want to find out?',
+		'wizard.phase1Heading': '1. Research Questions',
+		'wizard.phase1Desc':
+			'What do you want to find out? One research question per field; add more if the survey has to answer several.',
+		'wizard.researchLabel': 'Research question',
+		'wizard.researchGuide': 'How do I phrase a good research question?',
+		'wizard.researchGuideLink': 'Guide in the Umfragenwerkstatt (German)',
+		'wizard.researchAdd': 'Add research question',
+		'wizard.researchRemove': 'Remove research question',
+		'wizard.researchMax':
+			'That is the maximum. Fewer, clearer research questions make for a better questionnaire.',
+		'wizard.researchMissing': 'Enter at least one research question in section 1.',
+		'wizard.researchShort': 'RQ',
+		'wizard.reasoningServes': 'Serves',
 		'wizard.researchPlaceholder': 'e.g. Employee satisfaction in remote work',
 		'wizard.phase2Heading': '2. Context',
 		'wizard.phase2Desc':
@@ -61,8 +71,6 @@ const translations: Record<Locale, Record<string, string>> = {
 			'The generated questionnaire passed the CDL compatibility check with warnings.',
 		'wizard.validationFoot':
 			'You can still download it, but the file may fail when converted later. Generate again or adjust the questions.',
-		'wizard.researchHint':
-			'You can enter more than one question — put each on its own line. The generator covers all of them in a single questionnaire.',
 		'wizard.demographicsHint':
 			'Each box adds one standard demographic question to the questionnaire, taken verbatim from the CDL question bank. The demographic questions are added at the end of the questionnaire.',
 		'wizard.statusRepairing': 'Fixing validation errors…',
@@ -156,9 +164,19 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelStreamError':
 			'Das Modell hat die Verbindung während der Generierung abgebrochen. Wahrscheinlich unterstützt es Streaming oder Tool Calling nicht richtig. Versuche ein anderes Modell.',
 		'wizard.modelLabel': 'Modell',
-		'wizard.phase1Heading': '1. Forschungsziel',
-		'wizard.phase1Desc': 'Beschreibe, was du herausfinden möchtest. Ein Satz reicht.',
-		'wizard.researchLabel': 'Was willst du herausfinden?',
+		'wizard.phase1Heading': '1. Forschungsfragen',
+		'wizard.phase1Desc':
+			'Was willst du herausfinden? Eine Forschungsfrage pro Feld; füge weitere hinzu, wenn die Umfrage mehrere beantworten soll.',
+		'wizard.researchLabel': 'Forschungsfrage',
+		'wizard.researchGuide': 'Wie formuliere ich eine gute Forschungsfrage?',
+		'wizard.researchGuideLink': 'Anleitung in der Umfragenwerkstatt',
+		'wizard.researchAdd': 'Forschungsfrage hinzufügen',
+		'wizard.researchRemove': 'Forschungsfrage entfernen',
+		'wizard.researchMax':
+			'Mehr geht nicht. Wenige, klare Forschungsfragen ergeben einen besseren Fragebogen.',
+		'wizard.researchMissing': 'Gib in Abschnitt 1 mindestens eine Forschungsfrage ein.',
+		'wizard.researchShort': 'FF',
+		'wizard.reasoningServes': 'Dient',
 		'wizard.researchPlaceholder': 'z. B. Mitarbeiterzufriedenheit im Homeoffice',
 		'wizard.phase2Heading': '2. Kontext',
 		'wizard.phase2Desc':
@@ -186,8 +204,6 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Der generierte Fragebogen hat die CDL-Kompatibilitätsprüfung mit Warnungen bestanden.',
 		'wizard.validationFoot':
 			'Du kannst die Datei trotzdem herunterladen, sie kann aber bei der späteren Konvertierung fehlschlagen. Generiere den Fragebogen neu oder passe die Fragen an.',
-		'wizard.researchHint':
-			'Du kannst mehrere Fragen eingeben — jede in eine eigene Zeile. Der Generator deckt alle in einem Fragebogen ab.',
 		'wizard.demographicsHint':
 			'Jede Checkbox fügt eine soziodemografische Standardfrage wörtlich aus der CDL-Fragendatenbank hinzu. Fragen zu den demografischen Merkmalen werden am Ende hinzugefügt.',
 		'wizard.statusRepairing': 'Behebe Validierungsfehler…',

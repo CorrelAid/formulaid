@@ -32,6 +32,9 @@ export interface Question {
 	/** Where the question came from: a qwac question bank id, an instrument
 	 *  name, or 'generated' when the model wrote it itself. */
 	source?: string;
+	/** Which research questions (1-based, as numbered in the input) this
+	 *  question serves (#34). */
+	researchQuestions?: number[];
 }
 
 /** One generator step as reported to the UI's trace list. */
@@ -46,12 +49,19 @@ export interface Survey {
 	 *  don't collide (#22). */
 	formId?: string;
 	questions: Question[];
+	/** The research questions the survey was generated for, numbered from 1. */
+	researchQuestions?: string[];
 	/** The generator's own account of how it arrived at this set of questions. */
 	reasoning?: string;
 }
 
+/** At most this many research questions: the Umfragenwerkstatt warns against
+ *  too many, and each one needs its own questions (#34). */
+export const MAX_RESEARCH_QUESTIONS = 5;
+
 export interface AgentInput {
-	researchQuestion: string;
+	/** One research question per entry; empty entries are ignored. */
+	researchQuestions: string[];
 	targetGroup?: string;
 	useOfResults?: string;
 	language: 'formal' | 'informal';
@@ -67,3 +77,8 @@ export type RunPhase =
 	| { phase: 'generating' }
 	| { phase: 'validating'; attempt: number }
 	| { phase: 'repairing'; attempt: number };
+
+/** The research questions as the prompts number them: "1. …\n2. …". */
+export function numberResearchQuestions(questions: string[]): string {
+	return questions.map((q, i) => `${i + 1}. ${q}`).join('\n');
+}

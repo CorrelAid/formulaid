@@ -1,8 +1,8 @@
 import { AxGen, type AxAIService } from '@ax-llm/ax';
-import type { AgentInput } from './types.js';
+import { numberResearchQuestions, type AgentInput } from './types.js';
 
 const SIGNATURE =
-	'researchQuestion:string, targetGroup?:string, useOfResults?:string -> keywords:string[] "6 to 14 single words: each construct to measure, in German and in English"';
+	'researchQuestions:string "numbered", targetGroup?:string, useOfResults?:string -> keywords:string[] "6 to 14 single words: each construct to measure, in German and in English"';
 
 const INSTRUCTIONS = [
 	'You pick search terms for a survey question bank.',
@@ -28,7 +28,7 @@ export class KeywordAgent {
 		const result = await this.gen.forward(
 			ai,
 			{
-				researchQuestion: input.researchQuestion,
+				researchQuestions: numberResearchQuestions(input.researchQuestions),
 				targetGroup: input.targetGroup,
 				useOfResults: input.useOfResults
 			},

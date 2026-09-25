@@ -16,7 +16,8 @@
 		type RunPhase,
 		type Survey,
 		type Trace,
-		demographicQuestions
+		demographicQuestions,
+		MAX_RESEARCH_QUESTIONS
 	} from '$lib/agents/index.js';
 
 	// Form state
@@ -24,9 +25,11 @@
 	const saved = loadWizardInputs();
 	let language = $state<'formal' | 'informal' | null>(saved?.language ?? null);
 	let selectedDemographics = $state<string[]>(saved?.selectedDemographics ?? []);
-	let researchQuestion = $state(
-		saved?.researchQuestion ??
+	// One field per research question (#34), capped: each needs its own questions.
+	let researchQuestions = $state<string[]>(
+		saved?.researchQuestions ?? [
 			'How satisfied are volunteers with their engagement in our organization?'
+		]
 	);
 	let targetGroup = $state(
 		saved?.targetGroup ?? 'Active volunteers of a mid-sized environmental NGO'
@@ -36,7 +39,7 @@
 	);
 	$effect(() => {
 		saveWizardInputs({
-			researchQuestion,
+			researchQuestions: [...researchQuestions],
 			targetGroup,
 			useOfResults,
 			language,
@@ -44,8 +47,17 @@
 		});
 	});
 
+	function addResearchQuestion() {
+		if (researchQuestions.length < MAX_RESEARCH_QUESTIONS) researchQuestions.push('');
+	}
+
+	function removeResearchQuestion(i: number) {
+		researchQuestions.splice(i, 1);
+		if (researchQuestions.length === 0) researchQuestions.push('');
+	}
+
 	function resetInputs() {
-		researchQuestion = '';
+		researchQuestions = [''];
 		targetGroup = '';
 		useOfResults = '';
 		language = null;
@@ -132,6 +144,10 @@
 			wizardError = { kind: 'message', text: $t('wizard.apiKeyMissing') };
 			return;
 		}
+		if (!researchQuestions.some((q) => q.trim())) {
+			wizardError = { kind: 'message', text: $t('wizard.researchMissing') };
+			return;
+		}
 		resetResult();
 		wizardError = null;
 		aiLoading = true;
@@ -143,7 +159,7 @@
 			const ai = createModel(appSettings.apiKey, appSettings.model, appSettings.baseUrl);
 			const result = await new LeadAgent(ai).run(
 				{
-					researchQuestion,
+					researchQuestions,
 					targetGroup,
 					useOfResults,
 					language: language || 'formal',
@@ -222,16 +238,40 @@
 	<section>
 		<h2>{$t('wizard.phase1Heading')}</h2>
 		<p>{$t('wizard.phase1Desc')}</p>
-		<div class="input-group">
-			<label for="research-question">{$t('wizard.researchLabel')}</label>
-			<textarea
-				id="research-question"
-				rows="4"
-				bind:value={researchQuestion}
-				placeholder={$t('wizard.researchPlaceholder')}
-			></textarea>
-			<p class="field-hint">{$t('wizard.researchHint')}</p>
-		</div>
+		<p class="field-hint guide-hint">
+			{$t('wizard.researchGuide')}
+			<a href="https://umfragen.civic-data.de/forschungsfragen" target="_blank" rel="noopener"
+				>{$t('wizard.researchGuideLink')}</a
+			>
+		</p>
+		{#each researchQuestions.keys() as i (i)}
+			<div class="input-group research-question">
+				<label for="research-question-{i}">{$t('wizard.researchLabel')} {i + 1}</label>
+				<div class="research-row">
+					<textarea
+						id="research-question-{i}"
+						rows="2"
+						bind:value={researchQuestions[i]}
+						placeholder={$t('wizard.researchPlaceholder')}
+					></textarea>
+					{#if researchQuestions.length > 1}
+						<button
+							class="remove-research"
+							onclick={() => removeResearchQuestion(i)}
+							aria-label="{$t('wizard.researchRemove')} {i + 1}"
+							title={$t('wizard.researchRemove')}>×</button
+						>
+					{/if}
+				</div>
+			</div>
+		{/each}
+		{#if researchQuestions.length < MAX_RESEARCH_QUESTIONS}
+			<button class="add-research" onclick={addResearchQuestion}>
+				+ {$t('wizard.researchAdd')}
+			</button>
+		{:else}
+			<p class="field-hint">{$t('wizard.researchMax')}</p>
+		{/if}
 	</section>
 
 	<section>
@@ -380,6 +420,13 @@
 			<summary>{$t('wizard.reasoningHeading')}</summary>
 			<div class="reasoning-body">
 				<p class="field-hint">{$t('wizard.reasoningIntro')}</p>
+				{#if (generatedSurvey.researchQuestions?.length ?? 0) > 1}
+					<ol class="reasoning-rqs">
+						{#each generatedSurvey.researchQuestions ?? [] as rq, i (i)}
+							<li>{rq}</li>
+						{/each}
+					</ol>
+				{/if}
 				{#if generatedSurvey.reasoning}
 					<p class="reasoning-text">{generatedSurvey.reasoning}</p>
 				{/if}
@@ -392,6 +439,13 @@
 							{/if}
 							{#if q.source}
 								<span class="reasoning-source">{$t('wizard.reasoningSource')}: {q.source}</span>
+							{/if}
+							{#if q.researchQuestions?.length && (generatedSurvey.researchQuestions?.length ?? 0) > 1}
+								<span class="reasoning-source"
+									>{$t('wizard.reasoningServes')}: {q.researchQuestions
+										.map((n) => `${$t('wizard.researchShort')} ${n}`)
+										.join(', ')}</span
+								>
 							{/if}
 						</li>
 					{/each}
@@ -837,6 +891,57 @@
 	.reasoning-label {
 		display: block;
 		font-weight: var(--font-weight-medium);
+	}
+
+	.research-row {
+		display: flex;
+		gap: var(--spacing-xs);
+		align-items: flex-start;
+	}
+
+	.remove-research {
+		flex: none;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: var(--dimension-border-width) solid var(--color-text-primary);
+		border-radius: var(--radius-md);
+		background: var(--color-white);
+		font-size: 1.25rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.remove-research:hover {
+		border-color: var(--color-secondary);
+		color: var(--color-secondary);
+	}
+
+	.add-research {
+		margin-top: var(--spacing-xs);
+		padding: 0;
+		border: none;
+		background: none;
+		font-size: 0.9rem;
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-secondary);
+		cursor: pointer;
+	}
+
+	.add-research:hover {
+		text-decoration: underline;
+	}
+
+	.guide-hint {
+		margin-bottom: var(--spacing-base);
+	}
+
+	.guide-hint a {
+		color: var(--color-secondary);
+	}
+
+	.reasoning-rqs {
+		margin: var(--spacing-sm) 0;
+		padding-left: 1.5rem;
 	}
 
 	.reasoning-why,

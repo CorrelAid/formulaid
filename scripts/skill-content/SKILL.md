@@ -51,7 +51,7 @@ From whatever information is available, infer:
 
 ### Phase 1 — Goal
 
-If not clear from context, ask for the research goal in one sentence — in the user's language. Sharpen into 1–5 specific research questions. Infer constructs, target group, length, privacy needs.
+If not clear from context, ask for the research goal in one sentence — in the user's language. Sharpen into 1–5 specific research questions. Infer constructs, target group, length, privacy needs. If the user is unsure how to phrase research questions, point them to the Umfragenwerkstatt guide: https://umfragen.civic-data.de/forschungsfragen
 
 ### Phase 2 — Context
 

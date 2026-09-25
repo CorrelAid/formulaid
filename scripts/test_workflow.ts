@@ -20,7 +20,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 	{
 		label: 'Mitarbeiterzufriedenheit (formal)',
 		input: {
-			researchQuestion: 'Wie zufrieden sind die Mitarbeitenden mit der Arbeit im Homeoffice?',
+			researchQuestions: ['Wie zufrieden sind die Mitarbeitenden mit der Arbeit im Homeoffice?'],
 			targetGroup: 'Mitarbeitende eines mittelständischen IT-Unternehmens',
 			useOfResults: 'Interner HR-Bericht zur Verbesserung der Remote-Work-Richtlinien',
 			language: 'formal',
@@ -40,7 +40,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 	{
 		label: 'Vereinsmitglieder-Bedarfserhebung (informal)',
 		input: {
-			researchQuestion: 'Was brauchen Vereinsmitglieder, um aktiver mitzumachen?',
+			researchQuestions: ['Was brauchen Vereinsmitglieder, um aktiver mitzumachen?'],
 			targetGroup: 'Aktive und passive Mitglieder eines Sportvereins',
 			useOfResults: 'Vorstandspräsentation und Entscheidungsgrundlage für Jahresplanung',
 			language: 'informal',
@@ -51,9 +51,24 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 	{
 		label: 'Wirkungsmessung NGO (formal, kein Kontext)',
 		input: {
-			researchQuestion: 'Welche Wirkung hat das Bildungsprogramm auf die Teilnehmenden?',
+			researchQuestions: ['Welche Wirkung hat das Bildungsprogramm auf die Teilnehmenden?'],
 			language: 'formal',
 			selectedDemographics: ['school_education'],
+			demographicQuestions: []
+		}
+	},
+	{
+		label: 'Nachbarschaftstreff, drei Forschungsfragen (informal)',
+		input: {
+			researchQuestions: [
+				'Wie zufrieden sind die Besucher*innen mit den Angeboten des Nachbarschaftstreffs?',
+				'Wie gut kennen und vertrauen sich die Menschen im Viertel?',
+				'Welche Angebote fehlen und zu welchen Zeiten würden sie genutzt?'
+			],
+			targetGroup: 'Besucher*innen eines Nachbarschaftstreffs in einer Großstadt',
+			useOfResults: 'Jahresbericht an den Förderer und Programmplanung',
+			language: 'informal',
+			selectedDemographics: [],
 			demographicQuestions: []
 		}
 	}
@@ -64,7 +79,7 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`TEST: ${label}`);
 	console.log('─'.repeat(60));
 	console.log('Input:');
-	console.log(`  Forschungsfrage: ${input.researchQuestion}`);
+	input.researchQuestions.forEach((q, i) => console.log(`  Forschungsfrage ${i + 1}: ${q}`));
 	if (input.targetGroup) console.log(`  Zielgruppe:      ${input.targetGroup}`);
 	if (input.useOfResults) console.log(`  Verwendung:      ${input.useOfResults}`);
 	console.log(`  Sprache:         ${input.language}`);
@@ -98,7 +113,8 @@ async function runCase(label: string, input: AgentInput) {
 	for (const q of survey.questions) {
 		const choices = q.choices?.length ? ` [${q.choices.map((c) => c.label).join(' / ')}]` : '';
 		const source = q.source && q.source !== 'generated' ? ` (${q.source})` : '';
-		console.log(`  [${q.type}] ${q.label}${choices}${source}`);
+		const rq = q.researchQuestions?.length ? ` {FF ${q.researchQuestions.join(',')}}` : '';
+		console.log(`  [${q.type}] ${q.label}${choices}${source}${rq}`);
 	}
 
 	const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '_');

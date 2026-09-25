@@ -62,3 +62,15 @@ describe('extractQuestions unknown types (#27)', () => {
 		expect(q.type).toBe('select_one');
 	});
 });
+
+describe('extractQuestions research questions (#34)', () => {
+	it('reads the numbers in whatever shape the model sends', () => {
+		const qs = extractQuestions([
+			{ label: 'A?', type: 'text', researchQuestions: [2, 1, 2] },
+			{ label: 'B?', type: 'text', researchQuestion: 'FF 3' },
+			{ label: 'C?', type: 'text', rq: '1, 2' },
+			{ label: 'D?', type: 'text' }
+		]);
+		expect(qs.map((q) => q.researchQuestions)).toEqual([[1, 2], [3], [1, 2], undefined]);
+	});
+});

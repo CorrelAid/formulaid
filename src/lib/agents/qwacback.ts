@@ -105,7 +105,9 @@ function stem(keyword: string): string {
  * The bank questions that match any of `keywords`, best first (#33). The model
  * proposes the keywords, but the search runs here: in test runs one model
  * never called the search tool and another searched with phrases that a
- * substring search can't match.
+ * substring search can't match. qwac's own /api/search/questions only
+ * matches the whole query as one substring; once CorrelAid/qwacback#5 lands,
+ * this can call it instead of downloading every question.
  */
 export async function searchQuestionBank(
 	keywords: string[],

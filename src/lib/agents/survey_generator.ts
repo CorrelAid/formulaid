@@ -1,5 +1,5 @@
 import { AxGen, type AxAIService } from '@ax-llm/ax';
-import type { Question, AgentInput } from './types.js';
+import { numberResearchQuestions, type Question, type AgentInput } from './types.js';
 import { renderBankHits, type BankQuestion } from './qwacback.js';
 import { extractQuestions } from './question_parser.js';
 import generateInstructions from '../../../skills/xlsform/generate-instructions.md?raw';
@@ -8,7 +8,7 @@ import generateInstructions from '../../../skills/xlsform/generate-instructions.
 // runs "language: informal" still produced "Sie", and "demographics: age"
 // made the model write its own age question.
 const SIGNATURE =
-	'researchQuestion:string, targetGroup?:string, useOfResults?:string, formOfAddress:string "du or Sie: how every question addresses respondents", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept | question | answer type" -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
+	'researchQuestions:string "numbered; cover every one and tag each question with the numbers it serves", targetGroup?:string, useOfResults?:string, formOfAddress:string "du or Sie: how every question addresses respondents", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept | question | answer type" -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
 
 /** "du" or "Sie", as the prompt and the model expect it. */
 export function formOfAddress(language: AgentInput['language']): string {
@@ -38,7 +38,7 @@ export class SurveyGeneratorAgent {
 		const result = await this.gen.forward(
 			ai,
 			{
-				researchQuestion: input.researchQuestion,
+				researchQuestions: numberResearchQuestions(input.researchQuestions),
 				targetGroup: input.targetGroup,
 				useOfResults: input.useOfResults,
 				formOfAddress: formOfAddress(input.language),

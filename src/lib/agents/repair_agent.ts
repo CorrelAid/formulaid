@@ -1,11 +1,11 @@
 import { AxGen, type AxAIService } from '@ax-llm/ax';
 import { APPEARANCES, QUESTION_TYPES } from '@correlaid/formtransform';
 import { registryLimits } from './sanitize.js';
-import type { Question } from './types.js';
+import { numberResearchQuestions, type Question } from './types.js';
 import { extractQuestions } from './question_parser.js';
 
 const SIGNATURE =
-	'researchGoal:string, previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
+	'researchQuestions:string "numbered", previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
 
 /** Built from the registry, so the repair prompt can never drift from what the
  *  validator accepts. */
@@ -24,8 +24,8 @@ function buildInstructions(): string {
 	return [
 		'You repair an XLSForm questionnaire that a validator or a quality check rejected.',
 		'Return the questions as JSON, changing only what the feedback asks for.',
-		'Keep every question, its wording, its rationale and its source unless the feedback says otherwise.',
-		'Add questions only when the feedback asks for more; new ones must serve the research goal and get source "generated" and a rationale.',
+		'Keep every question, its wording, its rationale, its source and its researchQuestions unless the feedback says otherwise.',
+		'Add questions only when the feedback asks for more; new ones must serve a research question and get source "generated", a rationale and researchQuestions (the numbers of the research questions they serve).',
 		`Allowed question types: ${types.join(', ')}.`,
 		'select_one and select_multiple need a "choices" array of {name, label}.',
 		'select_one_from_file / select_multiple_from_file take a registered vocabulary file (e.g. "select_one_from_file iso_3166_1.csv") and no choices.',
@@ -50,7 +50,7 @@ export class RepairAgent {
 	async repair(
 		ai: AxAIService,
 		input: {
-			researchGoal: string;
+			researchQuestions: string[];
 			previousQuestions: Question[];
 			validationFeedback: string;
 			formOfAddress: string;
@@ -60,7 +60,7 @@ export class RepairAgent {
 		const result = await this.gen.forward(
 			ai,
 			{
-				researchGoal: input.researchGoal,
+				researchQuestions: numberResearchQuestions(input.researchQuestions),
 				previousQuestions: input.previousQuestions,
 				validationFeedback: input.validationFeedback,
 				formOfAddress: input.formOfAddress

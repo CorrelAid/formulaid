@@ -80,9 +80,24 @@ export class XLSFormGenerator {
 		]);
 		// Why each question is here, and where it came from (#5). Converters read
 		// only survey/choices/settings, so an extra sheet travels along harmlessly.
-		const explanationsData: string[][] = [['name', 'label', 'rationale', 'source']];
+		const explanationsData: string[][] = [
+			['name', 'label', 'rationale', 'source', 'research_questions']
+		];
 		for (const q of survey.questions) {
-			explanationsData.push([q.name, q.label, q.rationale ?? '', q.source ?? '']);
+			explanationsData.push([
+				q.name,
+				q.label,
+				q.rationale ?? '',
+				q.source ?? '',
+				(q.researchQuestions ?? []).join(', ')
+			]);
+		}
+		// Which number means which research question (#34).
+		if (survey.researchQuestions?.length) {
+			explanationsData.push([]);
+			survey.researchQuestions.forEach((rq, i) => {
+				explanationsData.push([`_research_question_${i + 1}`, rq]);
+			});
 		}
 		if (survey.reasoning) {
 			explanationsData.push([]);

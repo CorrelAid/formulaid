@@ -10,7 +10,7 @@ vi.mock('./qwacback.js', () => ({
 }));
 
 const input: AgentInput = {
-	researchQuestion: 'Wie zufrieden sind Ehrenamtliche?',
+	researchQuestions: ['Wie zufrieden sind Ehrenamtliche?'],
 	language: 'formal',
 	selectedDemographics: [],
 	demographicQuestions: [
@@ -121,6 +121,25 @@ describe('LeadAgent.run', () => {
 		expect(result.findings).toEqual([rejected]);
 	});
 
+	it('repairs until every research question is covered (#34)', async () => {
+		const two = { ...input, researchQuestions: ['Wie zufrieden?', 'Was fehlt?', ''] };
+		const onlyFirst = good.map((q) => ({ ...q, researchQuestions: [1] }));
+		const both = good.map((q, i) => ({ ...q, researchQuestions: [i < 4 ? 1 : 2] }));
+		const { ai, calls } = mockAI(onlyFirst, both);
+		const result = await new LeadAgent(ai).run(two);
+
+		expect(calls).toEqual({ generate: 1, repair: 1 });
+		// The empty third entry is dropped.
+		expect(result.survey.researchQuestions).toEqual(['Wie zufrieden?', 'Was fehlt?']);
+		expect(result.survey.questions.at(-2)?.researchQuestions).toEqual([2]);
+	});
+
+	it('maps every question to a single research question', async () => {
+		const { ai } = mockAI(good, []);
+		const result = await new LeadAgent(ai).run(input);
+		expect(result.survey.questions[0].researchQuestions).toEqual([1]);
+	});
+
 	it('rejects when the run is cancelled', async () => {
 		const { ai } = mockAI(good, []);
 		const controller = new AbortController();
@@ -143,5 +162,11 @@ describe('qualityFeedback', () => {
 		expect(feedback).toHaveLength(2);
 		expect(feedback[0]).toContain('Only 5 answerable');
 		expect(feedback[1]).toContain('open0');
+	});
+
+	it('names research questions no question serves', () => {
+		const q = { id: '1', name: 'a', label: 'A?', type: 'text' as const, required: false };
+		const feedback = qualityFeedback([{ ...q, researchQuestions: [1, 3] }], 3);
+		expect(feedback[0]).toContain('Research question 2 is not covered');
 	});
 });

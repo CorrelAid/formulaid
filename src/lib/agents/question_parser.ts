@@ -106,6 +106,9 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 	// of these key names it feels like, so accept all of them.
 	const rationale = firstOf(obj, 'rationale', 'reasoning', 'justification', 'why');
 	const source = firstOf(obj, 'source', 'question_id', 'qwac_id');
+	const researchQuestions = parseResearchQuestions(
+		obj.researchQuestions ?? obj.researchQuestion ?? obj.research_questions ?? obj.rq
+	);
 	return {
 		id,
 		name,
@@ -115,8 +118,18 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 		choices,
 		...(relevant ? { relevant } : {}),
 		...(rationale ? { rationale } : {}),
-		...(source ? { source } : {})
+		...(source ? { source } : {}),
+		...(researchQuestions.length ? { researchQuestions } : {})
 	};
+}
+
+/** 1, [1, 2], "1, 2", "RQ2" or "FF 1" → the research question numbers. */
+function parseResearchQuestions(raw: unknown): number[] {
+	const parts = Array.isArray(raw) ? raw : raw == null ? [] : [raw];
+	const numbers = parts.flatMap((p) =>
+		[...String(p).matchAll(/\d+/g)].map((m) => Number(m[0])).filter((n) => n >= 1)
+	);
+	return [...new Set(numbers)].sort((a, b) => a - b);
 }
 
 let counter = 0;
