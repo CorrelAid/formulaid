@@ -28,6 +28,9 @@ const server = Bun.serve({
 
 			const proxyHeaders = new Headers(req.headers);
 			proxyHeaders.set('Host', proxyTarget.host);
+			// Nothing of the formulaid origin goes to EUrouter but the request itself.
+			proxyHeaders.delete('cookie');
+			proxyHeaders.delete('referer');
 
 			if (proxyHeaders.has('Origin')) {
 				proxyHeaders.set('Origin', `https://${proxyTarget.host}`);
@@ -48,6 +51,7 @@ const server = Bun.serve({
 				// Create a new Response object to strip problematic headers
 				const responseHeaders = new Headers();
 				for (const [key, value] of response.headers.entries()) {
+					if (key.toLowerCase() === 'set-cookie') continue;
 					// Skip headers that Bun/Fetch might have already handled or that cause issues
 					if (
 						key.toLowerCase() === 'content-encoding' ||
@@ -76,7 +80,8 @@ const server = Bun.serve({
 					headers: responseHeaders
 				});
 			} catch (proxyErr) {
-				console.error(`Proxy error: ${proxyErr}`);
+				// No path, headers or body: the request carries the user's key and prompt.
+				console.error(`EUrouter proxy error: ${proxyErr.message}`);
 				return new Response(`Proxy error: ${proxyErr.message}`, { status: 502 });
 			}
 		}

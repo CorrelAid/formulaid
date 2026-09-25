@@ -13,13 +13,17 @@ In production, Coolify builds it with nixpacks (`nixpacks.toml`) and runs
 | --------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
 | OpenRouter      | browser, directly | sends `Access-Control-Allow-Origin: *`                                                                            |
 | Custom endpoint | browser, directly | the endpoint has to allow this origin via CORS                                                                    |
-| qwacback MCP    | browser, directly |                                                                                                                   |
+| qwacback API    | browser, directly | sends `Access-Control-Allow-Origin: *`                                                                            |
 | EUrouter        | `serve.js` proxy  | allows no origin but `https://www.eurouter.ai` via CORS ([#32](https://github.com/CorrelAid/formulaid/issues/32)) |
 
 The EUrouter proxy (`/api/eurouter/v1/*` → `https://api.eurouter.ai/api/v1/*`)
 is a fixed allowlist, not an open relay. It stores nothing, but EUrouter
 requests (including the key in the `Authorization` header) do pass through
-the formulaid host.
+the formulaid host. It drops cookies and the referrer on the way out and
+`Set-Cookie` on the way back, and logs only the error message when EUrouter
+can't be reached, never paths, headers or bodies. The UI says so when EUrouter
+is selected. If the platform in front of `serve.js` keeps access logs, turn
+them off for `/api/eurouter/`.
 
 ## Other hosts
 
