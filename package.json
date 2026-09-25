@@ -16,7 +16,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"test:e2e": "vitest run tests/e2e && uv run --directory tests/e2e pytest -q"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.3",

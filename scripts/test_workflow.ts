@@ -90,12 +90,10 @@ async function runCase(label: string, input: AgentInput) {
 	const agent = new LeadAgent(ai);
 
 	const start = Date.now();
-	const { survey, workbook, findings, repairAttempts, qwacAvailable, bankSearch } = await agent.run(
-		input,
-		{
+	const { survey, workbook, findings, repairAttempts, qwacAvailable, bankSearch, generatedRaw } =
+		await agent.run(input, {
 			onPhase: (p) => console.log(`  [phase] ${p.phase}${'attempt' in p ? ` ${p.attempt}` : ''}`)
-		}
-	);
+		});
 	const fromBank = survey.questions.filter((q) => q.source && q.source !== 'generated').length;
 
 	const elapsed = ((Date.now() - start) / 1000).toFixed(1);
@@ -125,7 +123,27 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`\nSaved to scripts/test_output/${slug}/`);
 	console.log(`  ${fileNameFor(survey)}  (${workbook.length} bytes)`);
 	console.log(`  questions.json      (${survey.questions.length} questions)`);
+
+	if (SAVE_FIXTURE) {
+		const fixture = {
+			description: `Real run: ${label}`,
+			source: `real: ${MODEL}, ${new Date().toISOString().slice(0, 10)}`,
+			title: survey.title,
+			researchQuestions: input.researchQuestions,
+			demographics: input.selectedDemographics,
+			generated: generatedRaw
+		};
+		const path = join(FIXTURES_DIR, `real-${slug.replace(/_+/g, '-').replace(/-$/, '')}.json`);
+		writeFileSync(path, JSON.stringify(fixture, null, '\t') + '\n');
+		console.log(`  fixture             ${path}`);
+	}
 }
+
+// --save-fixture keeps each run's raw model output as an end-to-end fixture
+// (tests/e2e/fixtures/real-<label>.json), so the pipeline is tested against it
+// on every CI run from then on.
+const SAVE_FIXTURE = process.argv.includes('--save-fixture');
+const FIXTURES_DIR = join(import.meta.dir, '..', 'tests', 'e2e', 'fixtures');
 
 // TEST_CASE=2 runs only the second case, to keep real API costs down.
 const only = process.env.TEST_CASE ? Number(process.env.TEST_CASE) : null;

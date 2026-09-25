@@ -1,0 +1,12 @@
+[project]
+name = "formulaid-e2e"
+version = "0"
+description = "Checks formulaid's generated workbooks with pyxform, the converter Kobo uses"
+requires-python = ">=3.10"
+dependencies = ["pyxform==4.5.0", "pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["."]

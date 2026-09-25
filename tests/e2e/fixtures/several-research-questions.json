@@ -1,0 +1,51 @@
+{
+	"description": "Three research questions; each question lists the ones it serves (#34).",
+	"source": "hand-written",
+	"researchQuestions": [
+		"Wie zufrieden sind Besucher?",
+		"Wie gut kennen sich Nachbarn?",
+		"Was fehlt?"
+	],
+	"generated": [
+		{
+			"name": "zufr",
+			"label": "Wie zufrieden bist du?",
+			"type": "select_one",
+			"choices": [
+				{
+					"name": "1",
+					"label": "gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "eher ja"
+				},
+				{
+					"name": "5",
+					"label": "voll und ganz"
+				}
+			],
+			"researchQuestions": [1]
+		},
+		{
+			"name": "kennen",
+			"label": "Wie viele Nachbarn kennst du?",
+			"type": "integer",
+			"researchQuestions": [2]
+		},
+		{
+			"name": "fehlt",
+			"label": "Was fehlt dir?",
+			"type": "text",
+			"researchQuestions": [3, 1]
+		}
+	]
+}

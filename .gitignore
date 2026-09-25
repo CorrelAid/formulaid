@@ -3,6 +3,10 @@ node_modules
 # Output
 .output
 scripts/test_output/
+tests/e2e/output/
+tests/e2e/.venv/
+__pycache__/
+.pytest_cache/
 .vercel
 .netlify
 .wrangler

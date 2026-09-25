@@ -1,0 +1,423 @@
+{
+	"description": "Real run: Mitarbeiterzufriedenheit (formal)",
+	"source": "real: mistralai/mistral-medium-3.1, 2026-09-25",
+	"title": "Zufriedenheit mit der Arbeit im Homeoffice",
+	"researchQuestions": ["Wie zufrieden sind die Mitarbeitenden mit der Arbeit im Homeoffice?"],
+	"demographics": ["age", "employment_status"],
+	"generated": [
+		{
+			"type": "note",
+			"name": "intro",
+			"label": "Herzlich willkommen zu unserer Umfrage zur Zufriedenheit mit der Arbeit im Homeoffice. Ihre Antworten helfen uns, die Remote-Work-Richtlinien zu verbessern. Die Befragung dauert ca. 5 Minuten. Alle Angaben werden anonym behandelt.",
+			"required": false,
+			"rationale": "Einleitungstext zur Motivation und Information der Teilnehmenden über Zweck, Dauer und Anonymität der Umfrage.",
+			"source": "generated",
+			"Research Questions": []
+		},
+		{
+			"type": "select_one",
+			"name": "technikzufriedenheit",
+			"label": "Wie zufrieden sind Sie mit der technischen Ausstattung (Hardware/Software) für Ihre Arbeit im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die Zufriedenheit mit der technischen Ausstattung als eine zentrale Dimension der Homeoffice-Arbeit.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "arbeitsumgebung",
+			"label": "Wie bewerten Sie Ihre Arbeitsumgebung (z. B. ergonomischer Arbeitsplatz, Lärmpegel) im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr schlecht"
+				},
+				{
+					"name": "2",
+					"label": "Schlecht"
+				},
+				{
+					"name": "3",
+					"label": "Akzeptabel"
+				},
+				{
+					"name": "4",
+					"label": "Gut"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut"
+				}
+			],
+			"required": true,
+			"rationale": "Erfasst die subjektive Bewertung der physischen Arbeitsbedingungen im Homeoffice.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "worklifebalance",
+			"label": "Wie gut gelingt es Ihnen, Berufs- und Privatleben im Homeoffice zu trennen?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr schlecht"
+				},
+				{
+					"name": "2",
+					"label": "Schlecht"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Gut"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die Work-Life-Balance als wichtigen Faktor für die Zufriedenheit im Homeoffice.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "kommunikation",
+			"label": "Wie zufrieden sind Sie mit der Kommunikation und Zusammenarbeit mit Kolleg:innen und Vorgesetzten im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Bewertet die Qualität der Kommunikation, die für die Teamarbeit im Homeoffice entscheidend ist.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "produktivitaet",
+			"label": "Wie schätzen Sie Ihre Produktivität im Homeoffice im Vergleich zur Arbeit im Büro ein?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Deutlich niedriger"
+				},
+				{
+					"name": "2",
+					"label": "Etwas niedriger"
+				},
+				{
+					"name": "3",
+					"label": "Gleich"
+				},
+				{
+					"name": "4",
+					"label": "Etwas höher"
+				},
+				{
+					"name": "5",
+					"label": "Deutlich höher"
+				}
+			],
+			"required": true,
+			"rationale": "Vergleicht die subjektiv wahrgenommene Produktivität zwischen Homeoffice und Büro.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "arbeitsbelastung",
+			"label": "Wie empfinden Sie die Arbeitsbelastung im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr gering"
+				},
+				{
+					"name": "2",
+					"label": "Gering"
+				},
+				{
+					"name": "3",
+					"label": "Angemessen"
+				},
+				{
+					"name": "4",
+					"label": "Hoch"
+				},
+				{
+					"name": "5",
+					"label": "Sehr hoch"
+				}
+			],
+			"required": true,
+			"rationale": "Erfasst die wahrgenommene Arbeitsbelastung, die die Zufriedenheit beeinflussen kann.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "flexibilitaet",
+			"label": "Wie zufrieden sind Sie mit der Flexibilität der Arbeitszeiten im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die Zufriedenheit mit der zeitlichen Flexibilität, ein zentraler Vorteil des Homeoffice.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "gesundheit",
+			"label": "Wie beurteilen Sie den Einfluss der Homeoffice-Arbeit auf Ihre körperliche und psychische Gesundheit?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr negativ"
+				},
+				{
+					"name": "2",
+					"label": "Negativ"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Positiv"
+				},
+				{
+					"name": "5",
+					"label": "Sehr positiv"
+				}
+			],
+			"required": true,
+			"rationale": "Untersucht den Einfluss der Homeoffice-Arbeit auf die Gesundheit der Mitarbeitenden.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "allgemeinezufriedenheit",
+			"label": "Wie zufrieden sind Sie insgesamt mit der Arbeit im Homeoffice?",
+			"hint": null,
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Neutral"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Fasst die allgemeine Zufriedenheit mit der Homeoffice-Arbeit in einer Frage zusammen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_multiple",
+			"name": "vorteile",
+			"label": "Welche Vorteile sehen Sie in der Arbeit im Homeoffice? (Mehrfachnennungen möglich)",
+			"hint": null,
+			"choices": [
+				{
+					"name": "zeitersparnis",
+					"label": "Zeitersparnis durch Wegfall des Arbeitswegs"
+				},
+				{
+					"name": "flexibilitaet",
+					"label": "Flexiblere Arbeitszeiten"
+				},
+				{
+					"name": "konzentration",
+					"label": "Bessere Konzentration"
+				},
+				{
+					"name": "umgebung",
+					"label": "Angenehmere Arbeitsumgebung"
+				},
+				{
+					"name": "familie",
+					"label": "Bessere Vereinbarkeit von Familie und Beruf"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Erfasst die wahrgenommenen Vorteile des Homeoffice, um Stärken zu identifizieren.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "vorteile_sonstiges",
+			"label": "Welche sonstigen Vorteile sehen Sie? (Falls \"Sonstiges\" ausgewählt)",
+			"hint": null,
+			"required": false,
+			"rationale": "Ermöglicht die Erfassung individueller Vorteile, die nicht in den vorgegebenen Optionen enthalten sind.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "selected(${vorteile}, 'sonstiges')"
+		},
+		{
+			"type": "select_multiple",
+			"name": "nachteile",
+			"label": "Welche Nachteile sehen Sie in der Arbeit im Homeoffice? (Mehrfachnennungen möglich)",
+			"hint": null,
+			"choices": [
+				{
+					"name": "isolation",
+					"label": "Soziale Isolation"
+				},
+				{
+					"name": "technik",
+					"label": "Technische Probleme"
+				},
+				{
+					"name": "abgrenzung",
+					"label": "Schwierigkeiten bei der Abgrenzung von Arbeit und Privatleben"
+				},
+				{
+					"name": "kommunikation",
+					"label": "Eingeschränkte Kommunikation mit Kolleg:innen"
+				},
+				{
+					"name": "arbeitsplatz",
+					"label": "Ungeeigneter Arbeitsplatz"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				},
+				{
+					"name": "keine",
+					"label": "Keine Nachteile"
+				}
+			],
+			"required": false,
+			"rationale": "Erfasst die wahrgenommenen Nachteile des Homeoffice, um Verbesserungspotenziale zu identifizieren.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "nachteile_sonstiges",
+			"label": "Welche sonstigen Nachteile sehen Sie? (Falls \"Sonstiges\" ausgewählt)",
+			"hint": null,
+			"required": false,
+			"rationale": "Ermöglicht die Erfassung individueller Nachteile, die nicht in den vorgegebenen Optionen enthalten sind.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "selected(${nachteile}, 'sonstiges')"
+		},
+		{
+			"type": "text",
+			"name": "verbesserungsvorschlaege",
+			"label": "Haben Sie konkrete Verbesserungsvorschläge für die Arbeit im Homeoffice? (Freiwillige Angabe)",
+			"hint": "Ihre Vorschläge helfen uns, die Rahmenbedingungen zu optimieren.",
+			"required": false,
+			"rationale": "Ermöglicht den Mitarbeitenden, konkrete Vorschläge zur Verbesserung der Homeoffice-Arbeit zu machen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "note",
+			"name": "end",
+			"label": "Vielen Dank für Ihre Teilnahme! Ihre Antworten helfen uns, die Remote-Work-Richtlinien zu verbessern.",
+			"required": false,
+			"rationale": "Abschluss der Umfrage mit Dank an die Teilnehmenden.",
+			"source": "generated",
+			"Research Questions": []
+		}
+	]
+}

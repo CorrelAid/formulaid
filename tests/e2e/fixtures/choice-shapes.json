@@ -1,0 +1,48 @@
+{
+	"description": "Answers as plain strings, {value,label}, {code,label}, an empty label, and unknown types with choices (#26, #27, formtransform v0.1.5 empty-label warning).",
+	"source": "hand-written",
+	"researchQuestions": ["Was nutzen Mitglieder?"],
+	"generated": [
+		{
+			"name": "farbe",
+			"label": "Welche Farbe?",
+			"type": "select_one",
+			"choices": ["Rot", "Blau"]
+		},
+		{
+			"name": "wege",
+			"label": "Wie kommst du her? Wähle alle, die zutreffen.",
+			"type": "checkbox",
+			"choices": [
+				{
+					"value": "bus",
+					"label": "Bus"
+				},
+				{
+					"code": "rad",
+					"label": "Rad"
+				}
+			]
+		},
+		{
+			"name": "zufr",
+			"label": "Wie zufrieden bist du?",
+			"type": "likert",
+			"choices": [
+				{
+					"name": "lo",
+					"label": ""
+				},
+				{
+					"name": "hi",
+					"label": "sehr"
+				}
+			]
+		},
+		{
+			"name": "note",
+			"label": "Wie oft kommst du?",
+			"type": "rating"
+		}
+	]
+}

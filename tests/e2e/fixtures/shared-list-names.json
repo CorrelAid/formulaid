@@ -1,0 +1,82 @@
+{
+	"description": "Two questions claim the same list name with different answers (#25); a third reuses it identically.",
+	"source": "hand-written",
+	"researchQuestions": ["Wie zufrieden sind Teilnehmende?"],
+	"generated": [
+		{
+			"name": "sat",
+			"label": "Wie zufrieden bist du?",
+			"type": "select_one skala5",
+			"choices": [
+				{
+					"name": "1",
+					"label": "gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "eher ja"
+				},
+				{
+					"name": "5",
+					"label": "voll und ganz"
+				}
+			],
+			"rationale": "r",
+			"source": "generated"
+		},
+		{
+			"name": "imp",
+			"label": "Wie wichtig ist dir das?",
+			"type": "select_one skala5",
+			"choices": [
+				{
+					"name": "1",
+					"label": "unwichtig"
+				},
+				{
+					"name": "2",
+					"label": "wichtig"
+				}
+			],
+			"rationale": "r",
+			"source": "generated"
+		},
+		{
+			"name": "sat2",
+			"label": "Und mit der Organisation?",
+			"type": "select_one skala5",
+			"choices": [
+				{
+					"name": "1",
+					"label": "gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "eher ja"
+				},
+				{
+					"name": "5",
+					"label": "voll und ganz"
+				}
+			],
+			"rationale": "r",
+			"source": "generated"
+		}
+	]
+}

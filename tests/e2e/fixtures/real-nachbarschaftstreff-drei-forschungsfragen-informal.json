@@ -1,0 +1,370 @@
+{
+	"description": "Real run: Nachbarschaftstreff, drei Forschungsfragen (informal)",
+	"source": "real: mistralai/mistral-medium-3.1, 2026-09-25",
+	"title": "Zufriedenheit und Gemeinschaft im Nachbarschaftstreff",
+	"researchQuestions": [
+		"Wie zufrieden sind die Besucher*innen mit den Angeboten des Nachbarschaftstreffs?",
+		"Wie gut kennen und vertrauen sich die Menschen im Viertel?",
+		"Welche Angebote fehlen und zu welchen Zeiten würden sie genutzt?"
+	],
+	"demographics": [],
+	"generated": [
+		{
+			"type": "note",
+			"name": "intro",
+			"label": "Herzlich willkommen zu unserer kurzen Umfrage! Deine Meinung hilft uns, den Nachbarschaftstreff noch besser zu machen. Die Befragung dauert ca. 5 Minuten. Alle Angaben sind anonym.",
+			"required": false,
+			"rationale": "Einleitung mit Zweck, Dauer und Anonymität zur Motivation der Teilnehmenden.",
+			"source": "generated",
+			"Research Questions": []
+		},
+		{
+			"type": "select_one",
+			"name": "zufriedenheitges",
+			"label": "Wie zufrieden bist du insgesamt mit den Angeboten des Nachbarschaftstreffs?",
+			"hint": "1 = sehr unzufrieden, 5 = sehr zufrieden",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst die globale Zufriedenheit mit den Angeboten als Kernindikator für RQ1.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "zufriedenheitworkshops",
+			"label": "Wie zufrieden bist du mit den Workshops im Nachbarschaftstreff?",
+			"hint": "1 = sehr unzufrieden, 5 = sehr zufrieden",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst die Zufriedenheit mit einem konkreten Angebotstyp (Workshops) für RQ1.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "nps",
+			"label": "Wie wahrscheinlich ist es, dass du den Nachbarschaftstreff einer Freundin oder einem Freund weiterempfiehlst?",
+			"hint": "0 = überhaupt nicht, 10 = auf jeden Fall",
+			"choices": [
+				{
+					"name": "0",
+					"label": "0"
+				},
+				{
+					"name": "1",
+					"label": "1"
+				},
+				{
+					"name": "2",
+					"label": "2"
+				},
+				{
+					"name": "3",
+					"label": "3"
+				},
+				{
+					"name": "4",
+					"label": "4"
+				},
+				{
+					"name": "5",
+					"label": "5"
+				},
+				{
+					"name": "6",
+					"label": "6"
+				},
+				{
+					"name": "7",
+					"label": "7"
+				},
+				{
+					"name": "8",
+					"label": "8"
+				},
+				{
+					"name": "9",
+					"label": "9"
+				},
+				{
+					"name": "10",
+					"label": "10"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Net Promoter Score als Indikator für Weiterempfehlungsbereitschaft und indirekte Zufriedenheit (RQ1). Adaptiert von jq77owc2giqkryi.",
+			"source": "jq77owc2giqkryi",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "vertraunachbarn",
+			"label": "Glaubst du, dass deine Nachbarn in deinem besten Interesse handeln?",
+			"choices": [
+				{
+					"name": "ja",
+					"label": "Ja"
+				},
+				{
+					"name": "nein",
+					"label": "Nein"
+				},
+				{
+					"name": "teils",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst interpersonales Vertrauen im Viertel (RQ2). Adaptiert von 4epbcqti75mvbfz (Form of Address und Kontext angepasst).",
+			"source": "4epbcqti75mvbfz",
+			"Research Questions": [2]
+		},
+		{
+			"type": "select_one",
+			"name": "hilfsbereitschaft",
+			"label": "Sind deine Nachbarn bereit, sich gegenseitig zu helfen?",
+			"choices": [
+				{
+					"name": "ja",
+					"label": "Ja"
+				},
+				{
+					"name": "nein",
+					"label": "Nein"
+				},
+				{
+					"name": "teils",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst soziale Reziprozität als Indikator für Gemeinschaftsgefühl (RQ2). Adaptiert von ikptsdo4b3e5jx4.",
+			"source": "ikptsdo4b3e5jx4",
+			"Research Questions": [2]
+		},
+		{
+			"type": "select_one",
+			"name": "freundeimviertel",
+			"label": "Leben die meisten deiner Freunde in diesem Viertel?",
+			"choices": [
+				{
+					"name": "ja",
+					"label": "Ja"
+				},
+				{
+					"name": "nein",
+					"label": "Nein"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst Bonding Social Capital als Indikator für soziale Einbindung im Viertel (RQ2). Adaptiert von lip2cpwsicmqqig.",
+			"source": "lip2cpwsicmqqig",
+			"Research Questions": [2]
+		},
+		{
+			"type": "select_one",
+			"name": "kenntnisnachbarn",
+			"label": "Wie gut kennst du deine Nachbarn persönlich?",
+			"hint": "1 = gar nicht, 5 = sehr gut",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "Kaum"
+				},
+				{
+					"name": "3",
+					"label": "Etwas"
+				},
+				{
+					"name": "4",
+					"label": "Gut"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Misst die persönliche Kenntnis der Nachbarn als Indikator für soziale Bindung (RQ2).",
+			"source": "generated",
+			"Research Questions": [2]
+		},
+		{
+			"type": "text",
+			"name": "fehlendeangebote",
+			"label": "Welche Angebote fehlen dir im Nachbarschaftstreff?",
+			"hint": "Nenne gerne mehrere, z. B. Kurse, Treffen, Beratung",
+			"required": false,
+			"rationale": "Erfasst konkrete Wünsche zu fehlenden Angeboten für RQ3 (offene Frage).",
+			"source": "generated",
+			"Research Questions": [3]
+		},
+		{
+			"type": "select_multiple",
+			"name": "wunschzeiten",
+			"label": "An welchen Wochentagen würdest du zusätzliche Angebote nutzen?",
+			"choices": [
+				{
+					"name": "mo",
+					"label": "Montag"
+				},
+				{
+					"name": "di",
+					"label": "Dienstag"
+				},
+				{
+					"name": "mi",
+					"label": "Mittwoch"
+				},
+				{
+					"name": "do",
+					"label": "Donnerstag"
+				},
+				{
+					"name": "fr",
+					"label": "Freitag"
+				},
+				{
+					"name": "sa",
+					"label": "Samstag"
+				},
+				{
+					"name": "so",
+					"label": "Sonntag"
+				},
+				{
+					"name": "keine",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Erfasst präferierte Zeiten für neue Angebote (RQ3). Inspiriert von nkmhm44vzokobka (Frequenzabfrage).",
+			"source": "generated",
+			"Research Questions": [3]
+		},
+		{
+			"type": "select_one",
+			"name": "wunschuhrzeit",
+			"label": "Zu welcher Tageszeit würdest du zusätzliche Angebote am ehesten nutzen?",
+			"choices": [
+				{
+					"name": "vormittag",
+					"label": "Vormittags (8–12 Uhr)"
+				},
+				{
+					"name": "mittag",
+					"label": "Mittags (12–15 Uhr)"
+				},
+				{
+					"name": "nachmittag",
+					"label": "Nachmittags (15–18 Uhr)"
+				},
+				{
+					"name": "abend",
+					"label": "Abends (18–21 Uhr)"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe"
+				}
+			],
+			"required": false,
+			"rationale": "Ergänzt die Wochentage um konkrete Uhrzeiten für RQ3.",
+			"source": "generated",
+			"Research Questions": [3]
+		},
+		{
+			"type": "text",
+			"name": "sonstigesangebote",
+			"label": "Hast du noch weitere Ideen oder Wünsche für den Nachbarschaftstreff?",
+			"hint": "z. B. Themen, Formate, Zielgruppen",
+			"required": false,
+			"rationale": "Offene Frage für zusätzliche qualitative Rückmeldungen zu RQ3.",
+			"source": "generated",
+			"Research Questions": [3]
+		},
+		{
+			"type": "note",
+			"name": "outro",
+			"label": "Vielen Dank für deine Teilnahme! Deine Antworten helfen uns, den Nachbarschaftstreff noch besser auf deine Bedürfnisse abzustimmen.",
+			"required": false,
+			"rationale": "Abschluss mit Dank und Zweck der Umfrage.",
+			"source": "generated",
+			"Research Questions": []
+		}
+	]
+}

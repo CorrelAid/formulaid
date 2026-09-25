@@ -1,0 +1,13 @@
+{
+	"description": "Every demographic standard at once, after one generated question with a clashing name.",
+	"source": "hand-written",
+	"researchQuestions": ["Wer nimmt teil?"],
+	"demographics": "all",
+	"generated": [
+		{
+			"name": "age",
+			"label": "Wie alt fühlst du dich?",
+			"type": "integer"
+		}
+	]
+}

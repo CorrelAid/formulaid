@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`'all-demographics' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'choice-shapes' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'exclusive-answer' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'messy-names-and-logic' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'other-follow-up' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-mitarbeiterzufriedenheit-formal' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-nachbarschaftstreff-drei-forschu…' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-vereinsmitglieder-bedarfserhebun…' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'real-wirkungsmessung-ngo-formal-kein-…' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'several-research-questions' > passes the formtransform validator 1`] = `[]`;
+
+exports[`'shared-list-names' > passes the formtransform validator 1`] = `[]`;

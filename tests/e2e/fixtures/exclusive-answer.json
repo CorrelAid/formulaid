@@ -1,0 +1,27 @@
+{
+	"description": "A 'Keine Angabe' answer that must exclude the others. formtransform can't express it yet (CorrelAid/formtransform#53).",
+	"source": "hand-written",
+	"researchQuestions": ["Welche Unterstützung nutzen Familien?"],
+	"generated": [
+		{
+			"name": "hilfe",
+			"label": "Welche Unterstützung nutzt du?",
+			"type": "select_multiple",
+			"choices": [
+				{
+					"name": "amt",
+					"label": "Jugendamt"
+				},
+				{
+					"name": "verein",
+					"label": "Verein"
+				},
+				{
+					"name": "ka",
+					"label": "Keine Angabe",
+					"exclusive": true
+				}
+			]
+		}
+	]
+}

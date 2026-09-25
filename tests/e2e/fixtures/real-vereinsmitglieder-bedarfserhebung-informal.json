@@ -1,0 +1,413 @@
+{
+	"description": "Real run: Vereinsmitglieder-Bedarfserhebung (informal)",
+	"source": "real: mistralai/mistral-medium-3.1, 2026-09-25",
+	"title": "Bedarfe für aktives Mitmachen im Sportverein",
+	"researchQuestions": ["Was brauchen Vereinsmitglieder, um aktiver mitzumachen?"],
+	"demographics": [],
+	"generated": [
+		{
+			"type": "note",
+			"name": "intro",
+			"label": "Hallo! Dieser kurze Fragebogen hilft uns zu verstehen, was du brauchst, um noch aktiver in unserem Sportverein mitzumachen. Deine Antworten sind anonym und werden nur für die Jahresplanung genutzt. Danke für deine Zeit (ca. 5 Minuten)!",
+			"required": false,
+			"rationale": "Einleitung mit Zweck, Anonymität und Dauer zur Motivation der Teilnehmer:innen.",
+			"source": "generated",
+			"Research Questions": []
+		},
+		{
+			"type": "select_one",
+			"name": "aktivitaet",
+			"label": "Wie aktiv bist du aktuell in unserem Verein?",
+			"hint": "Wähle die Option, die am besten auf dich zutrifft.",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Ich trainiere regelmäßig und nehme an Wettkämpfen teil"
+				},
+				{
+					"name": "2",
+					"label": "Ich trainiere regelmäßig, aber ohne Wettkämpfe"
+				},
+				{
+					"name": "3",
+					"label": "Ich komme unregelmäßig zum Training"
+				},
+				{
+					"name": "4",
+					"label": "Ich bin nur passives Mitglied (z. B. für Veranstaltungen)"
+				},
+				{
+					"name": "5",
+					"label": "Ich bin aktuell nicht aktiv"
+				}
+			],
+			"required": true,
+			"rationale": "Filterfrage zur Einordnung der aktuellen Aktivität, um spätere Fragen kontextualisieren zu können.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "zufriedenheit",
+			"label": "Wie zufrieden bist du insgesamt mit deinem aktuellen Engagement im Verein?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Sehr unzufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Eher unzufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Weder noch"
+				},
+				{
+					"name": "4",
+					"label": "Eher zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Sehr zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Messung der allgemeinen Zufriedenheit als Basis für die Identifikation von Verbesserungspotenzialen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_multiple",
+			"name": "motivation",
+			"label": "Was motiviert dich, aktiver im Verein mitzumachen? (Mehrere Antworten möglich)",
+			"hint": "Wähle alle Optionen, die auf dich zutreffen.",
+			"choices": [
+				{
+					"name": "spaß",
+					"label": "Spaß an der Aktivität"
+				},
+				{
+					"name": "gemeinschaft",
+					"label": "Gemeinschaftsgefühl"
+				},
+				{
+					"name": "fitness",
+					"label": "Fitness und Gesundheit"
+				},
+				{
+					"name": "wettkampf",
+					"label": "Wettkampf und Erfolgserlebnisse"
+				},
+				{
+					"name": "netzwerk",
+					"label": "Netzwerken und Kontakte knüpfen"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Identifikation der Hauptmotivationsfaktoren für aktives Engagement, um gezielte Angebote zu entwickeln.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "motivation_sonstiges",
+			"label": "Falls Sonstiges: Was genau?",
+			"hint": "Bitte kurz erläutern.",
+			"required": false,
+			"rationale": "Ergänzung zu 'Sonstiges' bei Motivation, um unerwartete Faktoren zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "${motivation} = 'sonstiges'"
+		},
+		{
+			"type": "select_multiple",
+			"name": "hindernisse",
+			"label": "Was hindert dich aktuell daran, aktiver mitzumachen? (Mehrere Antworten möglich)",
+			"hint": "Wähle alle Optionen, die auf dich zutreffen.",
+			"choices": [
+				{
+					"name": "zeit",
+					"label": "Fehlende Zeit"
+				},
+				{
+					"name": "kosten",
+					"label": "Zu hohe Kosten"
+				},
+				{
+					"name": "angebot",
+					"label": "Angebote passen nicht zu meinen Interessen"
+				},
+				{
+					"name": "ort",
+					"label": "Zu weite Anreise"
+				},
+				{
+					"name": "gesundheit",
+					"label": "Gesundheitliche Gründe"
+				},
+				{
+					"name": "keine",
+					"label": "Nichts – ich bin bereits so aktiv, wie ich möchte"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Identifikation von Barrieren, die die Aktivität einschränken, um gezielt Lösungen zu entwickeln.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "hindernisse_sonstiges",
+			"label": "Falls Sonstiges: Was genau?",
+			"hint": "Bitte kurz erläutern.",
+			"required": false,
+			"rationale": "Ergänzung zu 'Sonstiges' bei Hindernissen, um unerwartete Barrieren zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "${hindernisse} = 'sonstiges'"
+		},
+		{
+			"type": "select_one",
+			"name": "angebote_nutzung",
+			"label": "Wie oft nimmst du aktuell an Vereinsangeboten (Training, Events, etc.) teil?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Nie"
+				},
+				{
+					"name": "2",
+					"label": "Seltener als einmal im Monat"
+				},
+				{
+					"name": "3",
+					"label": "1–2 Mal im Monat"
+				},
+				{
+					"name": "4",
+					"label": "1 Mal pro Woche"
+				},
+				{
+					"name": "5",
+					"label": "Mehrmals pro Woche"
+				}
+			],
+			"required": true,
+			"rationale": "Messung der aktuellen Nutzungsfrequenz, um Bedarf und Potenzial für zusätzliche Angebote abzuschätzen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_multiple",
+			"name": "angebote_wuensche",
+			"label": "Welche zusätzlichen Angebote würdest du nutzen, um aktiver zu werden? (Mehrere Antworten möglich)",
+			"hint": "Wähle alle Optionen, die für dich interessant wären.",
+			"choices": [
+				{
+					"name": "kurse",
+					"label": "Spezialkurse (z. B. Technik-Training)"
+				},
+				{
+					"name": "events",
+					"label": "Gemeinschafts-Events (z. B. Stammtische, Ausflüge)"
+				},
+				{
+					"name": "online",
+					"label": "Online-Angebote (z. B. Live-Streaming von Training)"
+				},
+				{
+					"name": "mentoring",
+					"label": "Mentoring-Programme (z. B. für Neueinsteiger:innen)"
+				},
+				{
+					"name": "wettkampf",
+					"label": "Mehr Wettkampfmöglichkeiten"
+				},
+				{
+					"name": "familie",
+					"label": "Familienfreundliche Angebote (z. B. Kinderbetreuung)"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Ermittlung konkreter Wünsche für neue Angebote, um die Jahresplanung zielgerichtet zu gestalten.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "angebote_wuensche_sonstiges",
+			"label": "Falls Sonstiges: Was genau?",
+			"hint": "Bitte kurz erläutern.",
+			"required": false,
+			"rationale": "Ergänzung zu 'Sonstiges' bei Angebotswünschen, um unerwartete Ideen zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "${angebote_wuensche} = 'sonstiges'"
+		},
+		{
+			"type": "select_one",
+			"name": "info_erhalt",
+			"label": "Wie gut fühlst du dich über die Angebote und Aktivitäten des Vereins informiert?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht informiert"
+				},
+				{
+					"name": "2",
+					"label": "Schlecht informiert"
+				},
+				{
+					"name": "3",
+					"label": "Teilweise informiert"
+				},
+				{
+					"name": "4",
+					"label": "Gut informiert"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut informiert"
+				}
+			],
+			"required": true,
+			"rationale": "Bewertung der Informationspolitik, um Kommunikationslücken zu identifizieren.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one",
+			"name": "kommunikation",
+			"label": "Über welche Kanäle würdest du dich am liebsten über Vereinsaktivitäten informieren?",
+			"hint": "Wähle die Option, die für dich am besten passt.",
+			"choices": [
+				{
+					"name": "email",
+					"label": "E-Mail-Newsletter"
+				},
+				{
+					"name": "app",
+					"label": "Vereins-App"
+				},
+				{
+					"name": "social",
+					"label": "Soziale Medien (z. B. WhatsApp, Instagram)"
+				},
+				{
+					"name": "website",
+					"label": "Vereinswebsite"
+				},
+				{
+					"name": "aushang",
+					"label": "Aushänge im Vereinsheim"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Ermittlung der bevorzugten Kommunikationskanäle, um die Informationsverbreitung zu optimieren.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "kommunikation_sonstiges",
+			"label": "Falls Sonstiges: Welcher Kanal?",
+			"hint": "Bitte kurz angeben.",
+			"required": false,
+			"rationale": "Ergänzung zu 'Sonstiges' bei Kommunikationskanälen, um unerwartete Präferenzen zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "${kommunikation} = 'sonstiges'"
+		},
+		{
+			"type": "select_one",
+			"name": "empfehlung",
+			"label": "Wie wahrscheinlich ist es, dass du den Verein einer Freund:in oder Bekannten weiterempfiehlst?",
+			"choices": [
+				{
+					"name": "0",
+					"label": "0 – Überhaupt nicht wahrscheinlich"
+				},
+				{
+					"name": "1",
+					"label": "1"
+				},
+				{
+					"name": "2",
+					"label": "2"
+				},
+				{
+					"name": "3",
+					"label": "3"
+				},
+				{
+					"name": "4",
+					"label": "4"
+				},
+				{
+					"name": "5",
+					"label": "5"
+				},
+				{
+					"name": "6",
+					"label": "6"
+				},
+				{
+					"name": "7",
+					"label": "7"
+				},
+				{
+					"name": "8",
+					"label": "8"
+				},
+				{
+					"name": "9",
+					"label": "9"
+				},
+				{
+					"name": "10",
+					"label": "10 – Sehr wahrscheinlich"
+				}
+			],
+			"required": true,
+			"rationale": "Net Promoter Score als Indikator für Mitgliedszufriedenheit und -bindung, um die allgemeine Attraktivität des Vereins zu messen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "feedback",
+			"label": "Hast du noch weitere Ideen oder Feedback, wie der Verein aktives Mitmachen fördern kann?",
+			"hint": "Deine Meinung ist uns wichtig!",
+			"required": false,
+			"rationale": "Offene Frage für qualitative Rückmeldungen, um unerwartete Ideen oder Kritikpunkte zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "note",
+			"name": "end",
+			"label": "Vielen Dank für deine Teilnahme! Deine Antworten helfen uns, den Verein noch besser zu machen.",
+			"required": false,
+			"rationale": "Abschluss mit Dank für die Teilnahme.",
+			"source": "generated",
+			"Research Questions": []
+		}
+	]
+}

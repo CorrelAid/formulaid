@@ -1,0 +1,320 @@
+{
+	"description": "Real run: Wirkungsmessung NGO (formal, kein Kontext)",
+	"source": "real: mistralai/mistral-medium-3.1, 2026-09-25",
+	"title": "Wirkung des Bildungsprogramms auf Teilnehmende",
+	"researchQuestions": ["Welche Wirkung hat das Bildungsprogramm auf die Teilnehmenden?"],
+	"demographics": ["school_education"],
+	"generated": [
+		{
+			"type": "note",
+			"name": "intro",
+			"label": "Vielen Dank, dass Sie sich die Zeit nehmen, an dieser kurzen Befragung teilzunehmen. Ihre Rückmeldungen helfen uns, das Bildungsprogramm weiter zu verbessern. Die Befragung dauert ca. 3–4 Minuten. Alle Angaben werden anonym und vertraulich behandelt.",
+			"required": false,
+			"rationale": "Einleitung zur Motivation und Information der Teilnehmenden über Zweck, Dauer und Anonymität der Befragung.",
+			"source": "generated",
+			"Research Questions": []
+		},
+		{
+			"type": "select_one nps",
+			"name": "weiterempfehlung",
+			"label": "Wie wahrscheinlich ist es, dass Sie das Bildungsprogramm einer Freundin oder einem Freund weiterempfehlen?",
+			"hint": "0 = überhaupt nicht wahrscheinlich, 10 = extrem wahrscheinlich",
+			"choices": [
+				{
+					"name": "0",
+					"label": "0"
+				},
+				{
+					"name": "1",
+					"label": "1"
+				},
+				{
+					"name": "2",
+					"label": "2"
+				},
+				{
+					"name": "3",
+					"label": "3"
+				},
+				{
+					"name": "4",
+					"label": "4"
+				},
+				{
+					"name": "5",
+					"label": "5"
+				},
+				{
+					"name": "6",
+					"label": "6"
+				},
+				{
+					"name": "7",
+					"label": "7"
+				},
+				{
+					"name": "8",
+					"label": "8"
+				},
+				{
+					"name": "9",
+					"label": "9"
+				},
+				{
+					"name": "10",
+					"label": "10"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die Weiterempfehlungsbereitschaft als Indikator für die Gesamtzufriedenheit und wahrgenommene Qualität des Programms (Net Promoter Score).",
+			"source": "jq77owc2giqkryi",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one skala5",
+			"name": "lernzuwachs",
+			"label": "Inwiefern haben Sie durch das Bildungsprogramm neues Wissen oder neue Fähigkeiten erworben?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher ja"
+				},
+				{
+					"name": "5",
+					"label": "Vollständig"
+				}
+			],
+			"required": true,
+			"rationale": "Erfasst den subjektiv wahrgenommenen Lernzuwachs als zentrale kognitive Wirkungsdimension des Programms.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one skala5",
+			"name": "praxisrelevanz",
+			"label": "Inwiefern können Sie das Gelernte aus dem Bildungsprogramm in Ihrer Praxis anwenden?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher ja"
+				},
+				{
+					"name": "5",
+					"label": "Vollständig"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die Praxisrelevanz des Gelernten als Indikator für den Transfererfolg des Programms.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one skala5",
+			"name": "zufriedenheit",
+			"label": "Wie zufrieden sind Sie insgesamt mit dem Bildungsprogramm?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht zufrieden"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht zufrieden"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher zufrieden"
+				},
+				{
+					"name": "5",
+					"label": "Vollständig zufrieden"
+				}
+			],
+			"required": true,
+			"rationale": "Erfasst die allgemeine Zufriedenheit als affektive Wirkungsdimension des Programms.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one skala5",
+			"name": "erwartungserfuellung",
+			"label": "Inwiefern hat das Bildungsprogramm Ihre Erwartungen erfüllt?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher ja"
+				},
+				{
+					"name": "5",
+					"label": "Vollständig"
+				}
+			],
+			"required": true,
+			"rationale": "Misst, ob die Erwartungen der Teilnehmenden erfüllt wurden, als weitere affektive Wirkungsdimension.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_multiple anwendungsbereiche",
+			"name": "anwendungsbereiche",
+			"label": "In welchen Bereichen wenden Sie das Gelernte an? (Mehrfachnennungen möglich)",
+			"choices": [
+				{
+					"name": "beruf",
+					"label": "Beruflicher Kontext"
+				},
+				{
+					"name": "privat",
+					"label": "Privatleben"
+				},
+				{
+					"name": "ehrenamt",
+					"label": "Ehrenamtliches Engagement"
+				},
+				{
+					"name": "weiterbildung",
+					"label": "Weiterbildung/Studium"
+				},
+				{
+					"name": "sonstiges",
+					"label": "Sonstiges"
+				}
+			],
+			"required": false,
+			"rationale": "Erfasst die konkreten Anwendungsbereiche des Gelernten, um die Breitenwirkung des Programms zu verstehen.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "anwendungsbereiche_sonstiges",
+			"label": "Falls Sonstiges: Bitte spezifizieren",
+			"required": false,
+			"rationale": "Ergänzt die Multiple-Choice-Frage zu Anwendungsbereichen, um nicht vorab antizipierte Bereiche zu erfassen.",
+			"source": "generated",
+			"Research Questions": [1],
+			"relevant": "${anwendungsbereiche} = 'sonstiges'"
+		},
+		{
+			"type": "select_one skala5",
+			"name": "methodenvielfalt",
+			"label": "Wie bewerten Sie die Vielfalt der eingesetzten Methoden im Bildungsprogramm?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht gut"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht gut"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher gut"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut"
+				}
+			],
+			"required": true,
+			"rationale": "Misst die wahrgenommene Methodenvielfalt als Indikator für die didaktische Qualität des Programms.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "select_one skala5",
+			"name": "organisatorischequalitaet",
+			"label": "Wie bewerten Sie die organisatorische Qualität des Bildungsprogramms (z. B. Räumlichkeiten, Materialien, Ablauf)?",
+			"choices": [
+				{
+					"name": "1",
+					"label": "Gar nicht gut"
+				},
+				{
+					"name": "2",
+					"label": "Eher nicht gut"
+				},
+				{
+					"name": "3",
+					"label": "Teils/teils"
+				},
+				{
+					"name": "4",
+					"label": "Eher gut"
+				},
+				{
+					"name": "5",
+					"label": "Sehr gut"
+				}
+			],
+			"required": true,
+			"rationale": "Erfasst die organisatorische Qualität als Rahmenbedingung für die Wirkung des Programms.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "text",
+			"name": "verbesserungsvorschlaege",
+			"label": "Haben Sie konkrete Vorschläge zur Verbesserung des Bildungsprogramms?",
+			"hint": "Ihre Rückmeldungen helfen uns, das Programm weiterzuentwickeln.",
+			"required": false,
+			"rationale": "Offene Frage, um qualitative Rückmeldungen zu Verbesserungspotenzialen zu sammeln.",
+			"source": "generated",
+			"Research Questions": [1]
+		},
+		{
+			"type": "note",
+			"name": "end",
+			"label": "Vielen Dank für Ihre Teilnahme! Ihre Rückmeldungen sind für uns sehr wertvoll.",
+			"required": false,
+			"rationale": "Abschluss mit Dank an die Teilnehmenden.",
+			"source": "generated",
+			"Research Questions": []
+		}
+	]
+}

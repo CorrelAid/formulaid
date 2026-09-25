@@ -1,0 +1,43 @@
+{
+	"description": "The prompt's pattern for 'Sonstiges': a choice plus a text follow-up with relevant logic, and a note at start and end.",
+	"source": "hand-written",
+	"researchQuestions": ["Welche Angebote fehlen?"],
+	"generated": [
+		{
+			"name": "intro",
+			"label": "Danke, dass du mitmachst. Dauer: 3 Minuten.",
+			"type": "note"
+		},
+		{
+			"name": "fehlt",
+			"label": "Welche Angebote fehlen dir?",
+			"type": "select_multiple",
+			"choices": [
+				{
+					"name": "kurs",
+					"label": "Kurse"
+				},
+				{
+					"name": "treff",
+					"label": "Treffen"
+				},
+				{
+					"name": "sonst",
+					"label": "Sonstiges"
+				}
+			]
+		},
+		{
+			"name": "fehltsonst",
+			"label": "Welche sonstigen Angebote?",
+			"type": "text",
+			"required": false,
+			"relevant": "selected(${fehlt}, 'sonst')"
+		},
+		{
+			"name": "danke",
+			"label": "Vielen Dank!",
+			"type": "note"
+		}
+	]
+}

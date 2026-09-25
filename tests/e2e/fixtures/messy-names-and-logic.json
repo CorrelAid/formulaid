@@ -1,0 +1,52 @@
+{
+	"description": "Umlauts, long and duplicate names, over-long choice codes, and relevant expressions that must follow the renames.",
+	"source": "hand-written",
+	"researchQuestions": ["Wie arbeiten Beschäftigte?"],
+	"generated": [
+		{
+			"name": "erwerbsstatus_der_befragten_person",
+			"label": "Wie bist du beschäftigt?",
+			"type": "select_one",
+			"choices": [
+				{
+					"name": "vollzeit",
+					"label": "Vollzeit"
+				},
+				{
+					"name": "vollzeitnah",
+					"label": "Fast Vollzeit"
+				},
+				{
+					"name": "keine",
+					"label": "Keine"
+				}
+			]
+		},
+		{
+			"name": "wochenstunden",
+			"label": "Wie viele Stunden pro Woche?",
+			"type": "integer",
+			"relevant": "selected(${erwerbsstatus_der_befragten_person}, 'vollzeit') or ${erwerbsstatus_der_befragten_person} = 'vollzeitnah'"
+		},
+		{
+			"name": "aktivitätshäufigkeit",
+			"label": "Wie oft bist du aktiv?",
+			"type": "select_one",
+			"choices": [
+				{
+					"name": "täglich",
+					"label": "Täglich"
+				},
+				{
+					"name": "wöchentlich",
+					"label": "Wöchentlich"
+				}
+			]
+		},
+		{
+			"name": "wochenstunden",
+			"label": "Doppelter Name",
+			"type": "text"
+		}
+	]
+}

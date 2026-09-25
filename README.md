@@ -10,7 +10,8 @@ Also ships as a **Claude Code skill** for terminal/IDE use — see [Skills](#ski
 
 - [Bun](https://bun.sh/) (package manager and runtime)
 - [Node.js](https://nodejs.org/) >= 20
-- An [OpenRouter](https://openrouter.ai/) API key
+- An [OpenRouter](https://openrouter.ai/) API key (only for `test:workflow`)
+- For the end-to-end tests: [uv](https://docs.astral.sh/uv/), and Java for ODK Validate (optional locally)
 
 ## Setup
 
@@ -49,13 +50,37 @@ bun run preview
 
 Deployed via [Coolify](https://coolify.io/) using [nixpacks](https://nixpacks.com/). The `nixpacks.toml` pins the Node and Bun versions used in the build container. The production server runs `bun serve.js`.
 
-## Testing the AI workflow
+## Testing
 
 ```sh
-bun run test:workflow
+bun run test       # unit tests
+bun run test:e2e   # end-to-end: generated questionnaires → formtransform, LimeSurvey, Kobo
 ```
 
-Runs three test cases (employee satisfaction, NGO member survey, impact measurement) through the full pipeline and saves outputs to `scripts/test_output/` as `questionnaire.xlsx` + `questions.json`. Override the model with `TEST_MODEL=<openrouter-slug>`.
+Both run in CI (`.github/workflows/ci.yml`) without a model or any secret.
+
+### End-to-end (`tests/e2e/`)
+
+Every fixture in `tests/e2e/fixtures/` holds a model's raw `generatedQuestions` plus the research questions and demographics. `pipeline.test.ts` runs it through the same code as the app after the model step (parse → `assembleSurvey` → workbook) and checks that:
+
+- the formtransform validator reports no errors (warnings are snapshotted);
+- formtransform converts it to a LimeSurvey TSV with every question, answer code and skip condition, and the opening/closing notes as welcome/end texts;
+- the TSV converts back to XLSForm with the same questions and codes.
+
+It writes the workbooks to `tests/e2e/output/`, and `test_pyxform.py` converts them with [pyxform](https://github.com/XLSForm/pyxform), the converter Kobo and ODK use on import, failing on errors and warnings. With Java installed, ODK Validate runs as well (`E2E_ODK_VALIDATE=0` skips it).
+
+Fixtures are either hand-written for one known problem or saved from real runs (`real-*.json`, see below). A bug found in a real generation gets a fixture first, then a fix.
+
+Known gap: answers marked `exclusive` ("Keine Angabe") lose that flag in LimeSurvey ([formtransform#53](https://github.com/CorrelAid/formtransform/issues/53)); the test for it is marked as an expected failure.
+
+### Real generations
+
+```sh
+bun run test:workflow                  # all cases; TEST_CASE=2 runs one
+bun run test:workflow --save-fixture   # also saves each raw output as tests/e2e/fixtures/real-*.json
+```
+
+Runs the test cases through the full pipeline against OpenRouter (`OPENROUTER_API_KEY`, costs about $0.02 per case) and saves the outputs to `scripts/test_output/`. It prints the bank search, the questions and which research question each one serves. Override the model with `TEST_MODEL=<openrouter-slug>`.
 
 ## Skills
 
