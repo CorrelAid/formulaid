@@ -71,7 +71,7 @@ It writes the workbooks to `tests/e2e/output/`, and `test_pyxform.py` converts t
 
 Fixtures are either hand-written for one known problem or saved from real runs (`real-*.json`, see below). A bug found in a real generation gets a fixture first, then a fix.
 
-Known gap: answers marked `exclusive` ("Keine Angabe") lose that flag in LimeSurvey ([formtransform#53](https://github.com/CorrelAid/formtransform/issues/53)); the test for it is marked as an expected failure.
+Answers marked `exclusive` ("Keine Angabe" in a `select_multiple`) are checked too: formtransform turns them into LimeSurvey's `exclude_all_others` and back ([formtransform#53](https://github.com/CorrelAid/formtransform/issues/53)).
 
 ### Real generations
 

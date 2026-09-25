@@ -156,10 +156,9 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 	const exclusive = withChoices.filter(
 		(q) => q.type.startsWith('select_multiple') && q.choices!.some((c) => c.exclusive)
 	);
-	// Known gap until formtransform ships #53 (PR #57: an `exclusive` column
-	// mapped to exclude_all_others and restored by lstsvToXlsform). With that
-	// release this test starts passing and it.fails turns red: switch to it().
-	it.runIf(exclusive.length > 0).fails('keeps exclusive answers exclusive', async () => {
+	// formtransform maps the flag to LimeSurvey's exclude_all_others and back
+	// (CorrelAid/formtransform#53, v0.1.7).
+	it.runIf(exclusive.length > 0)('keeps exclusive answers exclusive', async () => {
 		const back = lstsvToXlsform(await convert());
 		for (const q of exclusive) {
 			const row = back.survey.find((r) => r.name === q.name)!;

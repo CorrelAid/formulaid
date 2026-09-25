@@ -5,7 +5,7 @@ description: "Generates XLSForm survey files for survey tools such as Kobo Toolb
 
 # XLSForm Generator
 
-Skill version: ceeffb3f (formtransform v0.1.5)
+Skill version: 2924bdd3 (formtransform v0.1.7)
 
 Output language: match the language the user writes in. Variable names always in English snake_case.
 
