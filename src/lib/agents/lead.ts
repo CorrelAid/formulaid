@@ -218,7 +218,7 @@ export class LeadAgent {
 					]
 						.map((m) => `- ${m}`)
 						.join('\n'),
-					formOfAddress: formOfAddress(input.language)
+					formOfAddress: formOfAddress(input.language, input.surveyLanguage)
 				},
 				signal
 			);

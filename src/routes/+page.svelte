@@ -352,10 +352,14 @@
 
 		<div class="setting-group">
 			<span class="setting-label">{$t('wizard.languageLabel')}</span>
+			{#if surveyLanguage === 'en'}
+				<p class="field-hint">{$t('wizard.formHintEnglish')}</p>
+			{/if}
 			<div class="toggle-group">
 				<button
 					class="toggle-btn"
 					class:selected={language === 'formal'}
+					disabled={surveyLanguage === 'en'}
 					onclick={() => {
 						language = 'formal';
 					}}
@@ -365,6 +369,7 @@
 				<button
 					class="toggle-btn"
 					class:selected={language === 'informal'}
+					disabled={surveyLanguage === 'en'}
 					onclick={() => {
 						language = 'informal';
 					}}
@@ -623,7 +628,17 @@
 		cursor: pointer;
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-primary);
-		transition: all 0.2s;
+		/* font-weight is left out: it can't be smoothly interpolated, so
+		 * `transition: all` made it snap while the colour kept fading, and
+		 * the two changes looked out of sync (#43). */
+		transition:
+			background-color 0.2s,
+			border-color 0.2s;
+	}
+
+	.toggle-btn:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
 	}
 
 	.toggle-btn:first-child {
