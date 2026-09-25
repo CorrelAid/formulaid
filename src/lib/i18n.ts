@@ -61,11 +61,20 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.useOfResultsLabel': 'What happens with the results?',
 		'wizard.useOfResultsPlaceholder':
 			'e.g. Internal report, donor presentation, research publication',
+		'wizard.furtherNotesLabel': 'Anything else the AI should know?',
+		'wizard.furtherNotesPlaceholder':
+			'e.g. Keep it under 10 questions, avoid the word "training", focus on remote workers',
+		'wizard.furtherNotesHint': 'Optional. Extra guidance for the generator.',
 		'wizard.phase3Heading': '3. Settings',
 		'wizard.phase3Desc': 'Choose language tone and optional demographic variables.',
 		'wizard.languageLabel': 'Language & Tone',
 		'wizard.formal': 'Formal (Sie)',
 		'wizard.informal': 'Informal (Du)',
+		'wizard.surveyLanguageLabel': 'Survey language',
+		'wizard.surveyLanguageGerman': 'German',
+		'wizard.surveyLanguageEnglish': 'English',
+		'wizard.surveyLanguageHint':
+			'German by default: the downstream tools (qwac, the question bank) are German-first, so English makes the handover a bit rougher.',
 		'wizard.demographicsLabel': 'Demographic Variables',
 		'wizard.generateBtn': 'Generate survey with AI',
 		'wizard.generateNew': 'Generate new',
@@ -200,11 +209,20 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.useOfResultsLabel': 'Was passiert mit den Ergebnissen?',
 		'wizard.useOfResultsPlaceholder':
 			'z. B. interner Bericht, Gebernachweis, Forschungsveröffentlichung',
+		'wizard.furtherNotesLabel': 'Sonstige Hinweise für die KI?',
+		'wizard.furtherNotesPlaceholder':
+			'z. B. Maximal 10 Fragen, das Wort „Schulung“ vermeiden, Fokus auf Remote-Mitarbeitende',
+		'wizard.furtherNotesHint': 'Optional. Zusätzliche Vorgaben für den Generator.',
 		'wizard.phase3Heading': '3. Einstellungen',
 		'wizard.phase3Desc': 'Wähle Anredeform und optionale demografische Merkmale.',
 		'wizard.languageLabel': 'Sprache & Tonalität',
 		'wizard.formal': 'Förmlich (Sie)',
 		'wizard.informal': 'Informell (Du)',
+		'wizard.surveyLanguageLabel': 'Sprache der Umfrage',
+		'wizard.surveyLanguageGerman': 'Deutsch',
+		'wizard.surveyLanguageEnglish': 'Englisch',
+		'wizard.surveyLanguageHint':
+			'Standard ist Deutsch: Die nachgelagerten Werkzeuge (qwac, Fragendatenbank) sind auf Deutsch ausgelegt – bei Englisch ist die Übergabe etwas holpriger.',
 		'wizard.demographicsLabel': 'Demografische Merkmale',
 		'wizard.generateBtn': 'Umfrage mit KI generieren',
 		'wizard.generateNew': 'Neu generieren',

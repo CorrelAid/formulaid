@@ -24,6 +24,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 			targetGroup: 'Mitarbeitende eines mittelständischen IT-Unternehmens',
 			useOfResults: 'Interner HR-Bericht zur Verbesserung der Remote-Work-Richtlinien',
 			language: 'formal',
+			surveyLanguage: 'de',
 			selectedDemographics: ['age', 'employment_status'],
 			demographicQuestions: [
 				{
@@ -44,6 +45,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 			targetGroup: 'Aktive und passive Mitglieder eines Sportvereins',
 			useOfResults: 'Vorstandspräsentation und Entscheidungsgrundlage für Jahresplanung',
 			language: 'informal',
+			surveyLanguage: 'de',
 			selectedDemographics: [],
 			demographicQuestions: []
 		}
@@ -53,6 +55,7 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 		input: {
 			researchQuestions: ['Welche Wirkung hat das Bildungsprogramm auf die Teilnehmenden?'],
 			language: 'formal',
+			surveyLanguage: 'de',
 			selectedDemographics: ['school_education'],
 			demographicQuestions: []
 		}
@@ -68,6 +71,19 @@ const testCases: Array<{ label: string; input: AgentInput }> = [
 			targetGroup: 'Besucher*innen eines Nachbarschaftstreffs in einer Großstadt',
 			useOfResults: 'Jahresbericht an den Förderer und Programmplanung',
 			language: 'informal',
+			surveyLanguage: 'de',
+			selectedDemographics: [],
+			demographicQuestions: []
+		}
+	},
+	{
+		label: 'English employee satisfaction (formal)',
+		input: {
+			researchQuestions: ['How satisfied are employees with their engagement in the programme?'],
+			targetGroup: 'Employees of a mid-sized NGO',
+			useOfResults: 'Annual report and internal programme evaluation',
+			language: 'formal',
+			surveyLanguage: 'en',
 			selectedDemographics: [],
 			demographicQuestions: []
 		}
@@ -83,6 +99,7 @@ async function runCase(label: string, input: AgentInput) {
 	if (input.targetGroup) console.log(`  Zielgruppe:      ${input.targetGroup}`);
 	if (input.useOfResults) console.log(`  Verwendung:      ${input.useOfResults}`);
 	console.log(`  Sprache:         ${input.language}`);
+	console.log(`  Umfragesprache:  ${input.surveyLanguage}`);
 	console.log(`  Demografik:      ${input.selectedDemographics.join(', ') || 'keine'}`);
 	console.log('─'.repeat(60));
 

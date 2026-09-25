@@ -6,6 +6,13 @@ export interface WizardInputs {
 	useOfResults: string;
 	language: 'formal' | 'informal' | null;
 	selectedDemographics: string[];
+	/** Free-form extra guidance for the generator (#40): things to keep short,
+	 *  terms to avoid, topics to focus on. Persisted so reloads keep it. */
+	furtherNotes: string;
+	/** Language of the generated questions and labels (#39). The form of
+	 *  address (Sie/Du) is a separate choice; a survey can be in English with
+	 *  either form, or — for now — in German with Sie. */
+	surveyLanguage: 'de' | 'en';
 }
 
 const STORAGE_KEY = 'formulaid_wizard_inputs';
@@ -18,7 +25,7 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 		if (!raw) return null;
 		const data = JSON.parse(raw) as Record<string, unknown>;
 		const inputs: Partial<WizardInputs> = {};
-		for (const key of ['targetGroup', 'useOfResults'] as const) {
+		for (const key of ['targetGroup', 'useOfResults', 'furtherNotes'] as const) {
 			if (typeof data[key] === 'string') inputs[key] = data[key];
 		}
 		if (isStringList(data.researchQuestions)) {
@@ -30,6 +37,9 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 		}
 		if (data.language === 'formal' || data.language === 'informal' || data.language === null) {
 			inputs.language = data.language;
+		}
+		if (data.surveyLanguage === 'de' || data.surveyLanguage === 'en') {
+			inputs.surveyLanguage = data.surveyLanguage;
 		}
 		if (isStringList(data.selectedDemographics)) {
 			inputs.selectedDemographics = data.selectedDemographics;

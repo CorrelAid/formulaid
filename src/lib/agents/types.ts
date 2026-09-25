@@ -64,9 +64,18 @@ export interface AgentInput {
 	researchQuestions: string[];
 	targetGroup?: string;
 	useOfResults?: string;
+	/** Form of address: "Sie" (formal) or "Du" (informal). */
 	language: 'formal' | 'informal';
+	/** Language of every generated question, label, hint and the title (#39).
+	 *  German by default: the downstream tools (qwac, the question bank) are
+	 *  German-first, so an English default made the handover jarring. */
+	surveyLanguage: 'de' | 'en';
 	selectedDemographics: string[];
 	demographicQuestions: Question[];
+	/** Optional extra guidance from the wizard (#40): things to keep short,
+	 *  terms to avoid, topics to focus on. Forwarded to the keyword and
+	 *  generator prompts. */
+	furtherNotes?: string;
 }
 
 /** What a run is doing right now; the page turns it into status text and

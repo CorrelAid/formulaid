@@ -24,6 +24,9 @@
 	// Restored from the last visit (#23); the examples only fill a first visit.
 	const saved = loadWizardInputs();
 	let language = $state<'formal' | 'informal' | null>(saved?.language ?? null);
+	// Language of every question, label, hint and title (#39). Defaults to
+	// German to match the rest of the toolchain.
+	let surveyLanguage = $state<'de' | 'en'>(saved?.surveyLanguage ?? 'de');
 	let selectedDemographics = $state<string[]>(saved?.selectedDemographics ?? []);
 	// One field per research question (#34), capped: each needs its own questions.
 	let researchQuestions = $state<string[]>(
@@ -37,12 +40,17 @@
 	let useOfResults = $state(
 		saved?.useOfResults ?? 'Annual donor report and internal programme evaluation'
 	);
+	// Free-form guidance for the generator (#40): length limits, terms to avoid,
+	// topics to focus on. Optional and persisted across reloads.
+	let furtherNotes = $state(saved?.furtherNotes ?? '');
 	$effect(() => {
 		saveWizardInputs({
 			researchQuestions: [...researchQuestions],
 			targetGroup,
 			useOfResults,
+			furtherNotes,
 			language,
+			surveyLanguage,
 			selectedDemographics: [...selectedDemographics]
 		});
 	});
@@ -60,7 +68,9 @@
 		researchQuestions = [''];
 		targetGroup = '';
 		useOfResults = '';
+		furtherNotes = '';
 		language = null;
+		surveyLanguage = 'de';
 		selectedDemographics = [];
 		resetResult();
 	}
@@ -163,8 +173,10 @@
 					targetGroup,
 					useOfResults,
 					language: language || 'formal',
+					surveyLanguage,
 					selectedDemographics,
-					demographicQuestions: demographicQuestions(selectedDemographics)
+					demographicQuestions: demographicQuestions(selectedDemographics),
+					furtherNotes: furtherNotes.trim() || undefined
 				},
 				{
 					signal: controller.signal,
@@ -296,11 +308,46 @@
 				placeholder={$t('wizard.useOfResultsPlaceholder')}
 			/>
 		</div>
+		<div class="input-group">
+			<label for="further-notes">{$t('wizard.furtherNotesLabel')}</label>
+			<textarea
+				id="further-notes"
+				rows="3"
+				bind:value={furtherNotes}
+				placeholder={$t('wizard.furtherNotesPlaceholder')}
+			></textarea>
+			<p class="field-hint">{$t('wizard.furtherNotesHint')}</p>
+		</div>
 	</section>
 
 	<section>
 		<h2>{$t('wizard.phase3Heading')}</h2>
 		<p>{$t('wizard.phase3Desc')}</p>
+
+		<div class="setting-group">
+			<span class="setting-label">{$t('wizard.surveyLanguageLabel')}</span>
+			<p class="field-hint">{$t('wizard.surveyLanguageHint')}</p>
+			<div class="toggle-group">
+				<button
+					class="toggle-btn"
+					class:selected={surveyLanguage === 'de'}
+					onclick={() => {
+						surveyLanguage = 'de';
+					}}
+				>
+					{$t('wizard.surveyLanguageGerman')}
+				</button>
+				<button
+					class="toggle-btn"
+					class:selected={surveyLanguage === 'en'}
+					onclick={() => {
+						surveyLanguage = 'en';
+					}}
+				>
+					{$t('wizard.surveyLanguageEnglish')}
+				</button>
+			</div>
+		</div>
 
 		<div class="setting-group">
 			<span class="setting-label">{$t('wizard.languageLabel')}</span>
