@@ -1,5 +1,6 @@
 import { LeadAgent, createModel, fileNameFor } from '../src/lib/agents/index.js';
 import type { AgentInput } from '../src/lib/agents/types.js';
+import { CHAT_MODEL } from '../src/lib/constants.js';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -7,7 +8,7 @@ const OUTPUT_DIR = process.env.TEST_OUTPUT_DIR ?? join(import.meta.dir, 'test_ou
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = process.env.TEST_MODEL ?? 'mistralai/mistral-small-2603';
+const MODEL = process.env.TEST_MODEL ?? CHAT_MODEL;
 
 if (!API_KEY) {
 	console.error('OPENROUTER_API_KEY not set');

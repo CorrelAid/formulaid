@@ -1,4 +1,6 @@
-export const CHAT_MODEL = 'mistralai/mistral-small-2603';
+// Mid-size by default: in test runs small models wrote too few, too open and
+// ill-fitting questions, and mistral-small-2603 was often rate-limited upstream.
+export const CHAT_MODEL = 'mistralai/mistral-medium-3.1';
 
 export type ProviderId = 'openrouter' | 'eurouter' | 'custom';
 
@@ -29,7 +31,7 @@ export const PROVIDERS: Provider[] = [
 		id: 'eurouter',
 		label: 'EUrouter (EU / GDPR)',
 		baseUrl: '/api/eurouter/v1',
-		defaultModel: 'mistral-small-2603',
+		defaultModel: 'mistral-medium-3.1',
 		keysUrl: 'https://www.eurouter.ai/',
 		modelsUrl: 'https://www.eurouter.ai/models'
 	},

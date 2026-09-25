@@ -19,7 +19,7 @@ export function createModel(
 		apiKey,
 		apiURL,
 		config: {
-			// Gateway model ids (e.g. mistralai/mistral-small-2603) are not in ax's
+			// Gateway model ids (e.g. mistralai/mistral-medium-3.1) are not in ax's
 			// list of OpenAI model names, but the endpoint accepts them.
 			model: model as AxAIOpenAIModel
 		},
