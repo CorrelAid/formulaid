@@ -1,0 +1,33 @@
+{
+	"description": "Sonstiges text follow-up WITHOUT `relevant` — the bug from #47 follow-up. The pipeline preserves the broken skip-logic end-to-end because there's no rule yet to catch it; this fixture documents the failure mode so it's visible in snapshots.",
+	"source": "hand-written",
+	"researchQuestions": ["Welche Angebote fehlen?"],
+	"generated": [
+		{
+			"name": "intro",
+			"label": "Danke, dass du mitmachst.",
+			"type": "note"
+		},
+		{
+			"name": "fehlt",
+			"label": "Welche Angebote fehlen dir?",
+			"type": "select_multiple",
+			"choices": [
+				{ "name": "kurs", "label": "Kurse" },
+				{ "name": "treff", "label": "Treffen" },
+				{ "name": "sonst", "label": "Sonstiges" }
+			]
+		},
+		{
+			"name": "fehltsonst",
+			"label": "Welche sonstigen Angebote?",
+			"type": "text",
+			"required": false
+		},
+		{
+			"name": "danke",
+			"label": "Vielen Dank!",
+			"type": "note"
+		}
+	]
+}
