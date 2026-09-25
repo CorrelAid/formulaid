@@ -20,6 +20,9 @@ export interface GeneratedSurvey {
 	questions: Question[];
 	/** Free-text account of why these questions, in the requested UI language. */
 	reasoning: string;
+	/** `generatedQuestions` exactly as the model returned it, before parsing;
+	 *  saved as an end-to-end fixture by scripts/test_workflow.ts. */
+	raw: unknown;
 }
 
 export class SurveyGeneratorAgent {
@@ -51,7 +54,8 @@ export class SurveyGeneratorAgent {
 		return {
 			title: typeof result.title === 'string' ? result.title.trim() : '',
 			questions: result.generatedQuestions ? extractQuestions(result.generatedQuestions) : [],
-			reasoning: typeof result.reasoning === 'string' ? result.reasoning : ''
+			reasoning: typeof result.reasoning === 'string' ? result.reasoning : '',
+			raw: result.generatedQuestions
 		};
 	}
 

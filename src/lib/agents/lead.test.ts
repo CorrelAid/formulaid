@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AxMockAIService, type AxChatRequest } from '@ax-llm/ax';
-import { LeadAgent, MAX_REPAIR_ATTEMPTS, qualityFeedback } from './lead.js';
+import { LeadAgent, MAX_REPAIR_ATTEMPTS, assembleSurvey, qualityFeedback } from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question } from './types.js';
 
@@ -168,5 +168,31 @@ describe('qualityFeedback', () => {
 		const q = { id: '1', name: 'a', label: 'A?', type: 'text' as const, required: false };
 		const feedback = qualityFeedback([{ ...q, researchQuestions: [1, 3] }], 3);
 		expect(feedback[0]).toContain('Research question 2 is not covered');
+	});
+});
+
+describe('assembleSurvey', () => {
+	it('names the opening and closing notes, and puts demographics before the closing one', () => {
+		const note = (name: string) => ({
+			id: name,
+			name,
+			label: name,
+			type: 'note' as const,
+			required: false
+		});
+		const q = { id: 'q', name: 'q', label: 'Q?', type: 'text' as const, required: true };
+		const age = {
+			id: 'age',
+			name: 'age',
+			label: 'Alter?',
+			type: 'integer' as const,
+			required: true
+		};
+		const survey = assembleSurvey(
+			{ title: 't', researchQuestions: ['RQ'] },
+			[note('intro'), q, note('danke')],
+			[age]
+		);
+		expect(survey.questions.map((x) => x.name)).toEqual(['welcome', 'q', 'age', 'end']);
 	});
 });

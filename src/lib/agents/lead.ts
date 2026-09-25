@@ -74,6 +74,39 @@ function withResearchQuestions(questions: Question[], count: number): Question[]
 	});
 }
 
+/**
+ * The survey as delivered, from the generated questions: research questions
+ * mapped, demographics appended, names and codes sanitized. Exported so the
+ * end-to-end tests run exactly this, without a model.
+ *
+ * An opening note is named `welcome` and a closing note `end`: formtransform
+ * turns those into LimeSurvey's welcome and end texts instead of questions.
+ * Demographics go last (the UI promises it, and it is survey convention), but
+ * before the closing note, so the thank-you really comes at the end.
+ */
+export function assembleSurvey(
+	base: Omit<Survey, 'questions'> & { researchQuestions: string[] },
+	generated: Question[],
+	demographics: Question[]
+): Survey {
+	const questions = withResearchQuestions(generated, base.researchQuestions.length);
+	const first = questions[0];
+	const last = questions.length > 1 ? questions[questions.length - 1] : undefined;
+	const body = questions.slice(
+		first?.type === 'note' ? 1 : 0,
+		last?.type === 'note' ? -1 : undefined
+	);
+	return sanitizeSurvey({
+		...base,
+		questions: [
+			...(first?.type === 'note' ? [{ ...first, name: 'welcome' }] : []),
+			...body,
+			...demographics,
+			...(last?.type === 'note' ? [{ ...last, name: 'end' }] : [])
+		]
+	});
+}
+
 interface Evaluated {
 	questions: Question[];
 	survey: Survey;
@@ -107,6 +140,8 @@ export interface RunResult {
 	repairAttempts: number;
 	/** False when qwac was unreachable and every question is model-written. */
 	qwacAvailable: boolean;
+	/** The first generation as the model returned it (see GeneratedSurvey.raw). */
+	generatedRaw: unknown;
 	/** What the bank was searched for, and what the generator was offered. */
 	bankSearch: { keywords: string[]; hits: BankQuestion[] };
 }
@@ -150,11 +185,7 @@ export class LeadAgent {
 		};
 		const evaluate = (parsed: Question[]): Evaluated => {
 			const questions = withResearchQuestions(parsed, rqCount);
-			// Demographics go last: the UI promises it, and it is survey convention.
-			const survey = sanitizeSurvey({
-				...base,
-				questions: [...questions, ...input.demographicQuestions]
-			});
+			const survey = assembleSurvey(base, questions, input.demographicQuestions);
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);
 			const errors = findings.filter((f) => f.severity === 'error');
@@ -203,7 +234,8 @@ export class LeadAgent {
 			findings: current.findings,
 			repairAttempts: attempt,
 			qwacAvailable: bank.available,
-			bankSearch: { keywords, hits: bank.hits }
+			bankSearch: { keywords, hits: bank.hits },
+			generatedRaw: generated.raw
 		};
 	}
 

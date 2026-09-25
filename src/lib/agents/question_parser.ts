@@ -22,16 +22,13 @@ function slugify(text: string): string {
 const MULTI_CHOICE = /\b(welche.*alle|mehrere|alle.*die|auswählen|select all|all that apply)\b/;
 
 /** Type for a question whose type cell is missing or not in the registry.
- *  With choices it is always a select; scale wording ("wie zufrieden") means
- *  a select_one scale, never integer, which would drop the choices and work
- *  against the quality check in lead.ts (#27). */
+ *  With choices it is a select (select_multiple for multi-choice wording).
+ *  Without choices it is text: a select needs a choice list, and integer would
+ *  work against the quality check in lead.ts, which then asks the repair to
+ *  turn open questions into scales (#27). */
 function inferType(text: string, hasChoices = false): QuestionType {
-	const t = text.toLowerCase();
-	if (MULTI_CHOICE.test(t)) return 'select_multiple';
-	if (hasChoices) return 'select_one';
-	if (/\b(skala|bewert|zufrieden|wie (sehr|gut|häufig|oft))/.test(t)) return 'select_one';
-	if (/\b(welche[rs]?|wählen|trifft.*zu|falls ja)\b/.test(t)) return 'select_one';
-	return 'text';
+	if (!hasChoices) return 'text';
+	return MULTI_CHOICE.test(text.toLowerCase()) ? 'select_multiple' : 'select_one';
 }
 
 /** The model writes choices as plain strings, {name, label}, {value, label} or

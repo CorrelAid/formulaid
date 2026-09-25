@@ -71,9 +71,9 @@ describe('extractQuestions unknown types (#27)', () => {
 		expect(q.type).toBe('select_multiple');
 	});
 
-	it('never infers integer for scale wording', () => {
+	it('uses text, never integer or a select without choices, when there are no choices', () => {
 		const [q] = extractQuestions([{ label: 'Wie zufrieden bist du?', type: 'rating' }]);
-		expect(q.type).toBe('select_one');
+		expect(q.type).toBe('text');
 	});
 });
 
