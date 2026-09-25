@@ -75,21 +75,30 @@ async function runCase(label: string, input: AgentInput) {
 	const agent = new LeadAgent(ai);
 
 	const start = Date.now();
-	const { survey, workbook, findings, repairAttempts, qwacAvailable } = await agent.run(input, {
-		onPhase: (p) => console.log(`  [phase] ${p.phase}${'attempt' in p ? ` ${p.attempt}` : ''}`)
-	});
+	const { survey, workbook, findings, repairAttempts, qwacAvailable, bankSearch } = await agent.run(
+		input,
+		{
+			onPhase: (p) => console.log(`  [phase] ${p.phase}${'attempt' in p ? ` ${p.attempt}` : ''}`)
+		}
+	);
+	const fromBank = survey.questions.filter((q) => q.source && q.source !== 'generated').length;
 
 	const elapsed = ((Date.now() - start) / 1000).toFixed(1);
 	console.log(`\nGenerated "${survey.title}": ${survey.questions.length} questions in ${elapsed}s`);
 	const { promptTokens, completionTokens } = agent.usage();
-	console.log(`  repairs: ${repairAttempts}, qwac: ${qwacAvailable ? 'yes' : 'unavailable'}`);
+	console.log(
+		`  repairs: ${repairAttempts}, qwac: ${qwacAvailable ? 'yes' : 'unavailable'}, from bank: ${fromBank}`
+	);
 	console.log(`  tokens: ${promptTokens} in, ${completionTokens} out`);
+	console.log(`  keywords: ${bankSearch.keywords.join(', ')}`);
+	for (const h of bankSearch.hits) console.log(`  hit ${h.id}: ${h.concept} | ${h.question}`);
 	for (const f of findings) console.log(`  [${f.severity}] ${f.message}`);
 	console.log();
 
 	for (const q of survey.questions) {
 		const choices = q.choices?.length ? ` [${q.choices.map((c) => c.label).join(' / ')}]` : '';
-		console.log(`  [${q.type}] ${q.label}${choices}`);
+		const source = q.source && q.source !== 'generated' ? ` (${q.source})` : '';
+		console.log(`  [${q.type}] ${q.label}${choices}${source}`);
 	}
 
 	const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '_');
@@ -102,7 +111,10 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`  questions.json      (${survey.questions.length} questions)`);
 }
 
-for (const { label, input } of testCases) {
+// TEST_CASE=2 runs only the second case, to keep real API costs down.
+const only = process.env.TEST_CASE ? Number(process.env.TEST_CASE) : null;
+for (const [i, { label, input }] of testCases.entries()) {
+	if (only !== null && i + 1 !== only) continue;
 	try {
 		await runCase(label, input);
 	} catch (e) {

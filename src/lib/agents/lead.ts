@@ -2,7 +2,7 @@ import type { AxAIService } from '@ax-llm/ax';
 import { SurveyGeneratorAgent, formOfAddress } from './survey_generator.js';
 import { RepairAgent } from './repair_agent.js';
 import { KeywordAgent } from './keyword_agent.js';
-import { searchQuestionBank } from './qwacback.js';
+import { searchQuestionBank, type BankQuestion } from './qwacback.js';
 import { sanitizeSurvey } from './sanitize.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
@@ -78,6 +78,8 @@ export interface RunResult {
 	repairAttempts: number;
 	/** False when qwac was unreachable and every question is model-written. */
 	qwacAvailable: boolean;
+	/** What the bank was searched for, and what the generator was offered. */
+	bankSearch: { keywords: string[]; hits: BankQuestion[] };
 }
 
 /**
@@ -157,7 +159,8 @@ export class LeadAgent {
 			workbook: current.workbook,
 			findings: current.findings,
 			repairAttempts: attempt,
-			qwacAvailable: bank.available
+			qwacAvailable: bank.available,
+			bankSearch: { keywords, hits: bank.hits }
 		};
 	}
 
