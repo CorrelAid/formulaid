@@ -62,6 +62,19 @@ function uncovered(questions: Question[], count: number): number[] {
 	return Array.from({ length: count }, (_, i) => i + 1).filter((n) => !served.has(n));
 }
 
+/** Drop generated questions whose `name` collides with a demographic; the
+ *  qwac copy is the canonical one and will be appended by `assembleSurvey`.
+ *  Same-label duplicates would survive sanitization as `age` + `age2`, both
+ *  with the same German label, which is what users reported (#47). */
+export function dedupAgainstDemographics(
+	generated: Question[],
+	demographics: Question[]
+): Question[] {
+	if (demographics.length === 0) return generated;
+	const names = new Set(demographics.map((d) => d.name));
+	return generated.filter((q) => !names.has(q.name));
+}
+
 /** With a single research question every question serves it, whether or not
  *  the model said so; numbers beyond the list are dropped. */
 function withResearchQuestions(questions: Question[], count: number): Question[] {
@@ -184,7 +197,17 @@ export class LeadAgent {
 			reasoning: generated.reasoning
 		};
 		const evaluate = (parsed: Question[]): Evaluated => {
-			const questions = withResearchQuestions(parsed, rqCount);
+			// The model is told `demographicsAddedSeparately`, but it sometimes
+			// still writes a birth-date / age / sex question and names it the
+			// same as a demographic. assembleSurvey appends the qwac demographic
+			// alongside, sanitizeSurvey then renames the duplicate, and the
+			// user ends up with two questions sharing one label (#47). Drop
+			// the generated duplicate here so the demographic stays the only
+			// copy.
+			const questions = withResearchQuestions(
+				dedupAgainstDemographics(parsed, input.demographicQuestions),
+				rqCount
+			);
 			const survey = assembleSurvey(base, questions, input.demographicQuestions);
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AxMockAIService, type AxChatRequest } from '@ax-llm/ax';
-import { LeadAgent, MAX_REPAIR_ATTEMPTS, assembleSurvey, qualityFeedback } from './lead.js';
+import {
+	LeadAgent,
+	MAX_REPAIR_ATTEMPTS,
+	assembleSurvey,
+	dedupAgainstDemographics,
+	qualityFeedback
+} from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question } from './types.js';
 
@@ -217,6 +223,78 @@ describe('LeadAgent.run', () => {
 		// The generator step is the one that needs the language, so it sees it
 		// in its rendered prompt (system or user message).
 		expect(rendered.some((s) => s.includes('Survey Language'))).toBe(true);
+	});
+
+	/** The model is told `demographicsAddedSeparately`, but it still writes a
+	 *  birth-date question and names it `age` sometimes. Without dedup the
+	 *  survey ends up with two `age` rows and the same "Wann sind Sie
+	 *  geboren?" label (#47 follow-up). */
+	it('drops a generated question whose name collides with a demographic (#47)', async () => {
+		const dup: Partial<Question>[] = [
+			{ name: 'age', label: 'Wann sind Sie geboren?', type: 'date', rationale: 'selbst' },
+			...good.slice(0, 7)
+		];
+		const { ai } = mockAI(dup, []);
+		const result = await new LeadAgent(ai).run({
+			...input,
+			selectedDemographics: ['age'],
+			demographicQuestions: [
+				{
+					id: 'qwac_age',
+					name: 'age',
+					label: 'Wann sind Sie geboren?',
+					type: 'date',
+					required: true
+				}
+			]
+		});
+		// Exactly one `age` survives: the qwac copy appended by assembleSurvey.
+		const ages = result.survey.questions.filter((q) => q.name === 'age' || /^age\d/.test(q.name));
+		expect(ages).toHaveLength(1);
+		expect(ages[0].id).toBe('qwac_age');
+	});
+});
+
+describe('dedupAgainstDemographics', () => {
+	const age: Question = {
+		id: 'qwac_age',
+		name: 'age',
+		label: 'Wann sind Sie geboren?',
+		type: 'date',
+		required: true
+	};
+	const sex: Question = {
+		id: 'qwac_sex',
+		name: 'sex',
+		label: 'Geschlecht?',
+		type: 'select_one',
+		required: true,
+		choices: []
+	};
+
+	it('returns the list unchanged when there are no demographics', () => {
+		const generated: Question[] = [
+			{ id: 'g1', name: 'age', label: 'l', type: 'text', required: true }
+		];
+		expect(dedupAgainstDemographics(generated, [])).toBe(generated);
+	});
+
+	it('drops a generated question whose name matches any demographic name', () => {
+		const generated: Question[] = [
+			{ id: 'g1', name: 'age', label: 'l', type: 'text', required: true, rationale: 'x' },
+			{ id: 'g2', name: 'satisfaction', label: 'l', type: 'text', required: true, rationale: 'x' }
+		];
+		expect(dedupAgainstDemographics(generated, [age, sex]).map((q) => q.name)).toEqual([
+			'satisfaction'
+		]);
+	});
+
+	it('keeps generated questions whose name does not collide', () => {
+		const generated: Question[] = [
+			{ id: 'g1', name: 'satisfaction', label: 'l', type: 'text', required: true, rationale: 'x' },
+			{ id: 'g2', name: 'birthyear', label: 'l', type: 'text', required: true, rationale: 'x' }
+		];
+		expect(dedupAgainstDemographics(generated, [age, sex])).toEqual(generated);
 	});
 });
 
