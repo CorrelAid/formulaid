@@ -113,8 +113,6 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Credit limit must be $5 or less. Please lower it in your OpenRouter key settings.',
 		'page.footer': 'This tool is open source and available on',
 		'wizard.modelInfoActive': 'Requests currently go to',
-		'wizard.modelInfoEurouterRelay':
-			'EUrouter does not accept requests straight from the browser, so they are relayed through the FormulAid server. Your API key, the research goal and the generated questions pass through it. FormulAid neither stores nor logs them.',
 		'wizard.modelInfoKeys': 'Create an API key at',
 		'wizard.modelInfoModels': 'and find available model names at',
 		'wizard.modelInfoCustom':
@@ -252,8 +250,6 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Das Ausgabenlimit darf höchstens 5 $ betragen. Passe es in den Einstellungen deines OpenRouter-Keys an.',
 		'page.footer': 'Dieses Tool ist Open Source und verfügbar auf',
 		'wizard.modelInfoActive': 'Anfragen gehen aktuell an',
-		'wizard.modelInfoEurouterRelay':
-			'EUrouter nimmt keine Anfragen direkt aus dem Browser an, deshalb werden sie über den FormulAid-Server weitergeleitet. Dein API-Key, das Forschungsziel und die generierten Fragen laufen darüber. FormulAid speichert und protokolliert davon nichts.',
 		'wizard.modelInfoKeys': 'Einen API-Key erstellst du unter',
 		'wizard.modelInfoModels': 'verfügbare Modellnamen findest du unter',
 		'wizard.modelInfoCustom':

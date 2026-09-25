@@ -370,8 +370,6 @@
 					>{$t('wizard.modelInfoPrivacyLink')}</a
 				>.
 			</p>
-		{:else if activeProvider.id === 'eurouter'}
-			<p class="model-info">{$t('wizard.modelInfoEurouterRelay')}</p>
 		{/if}
 		<div class="input-group">
 			<label for="model-select">{$t('wizard.modelLabel')}</label>

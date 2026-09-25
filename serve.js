@@ -7,6 +7,8 @@ if (!existsSync('./build')) {
 	console.error(`❌ build directory not found in ${process.cwd()} — run "bun run build" first`);
 }
 
+// Static files only. Every provider is called straight from the browser, so
+// no API key or prompt ever reaches this server (#31, #32).
 const server = Bun.serve({
 	port: PORT,
 	hostname: HOST,
@@ -14,77 +16,6 @@ const server = Bun.serve({
 	async fetch(req) {
 		const url = new URL(req.url);
 		let pathname = url.pathname;
-
-		// Proxy EUrouter requests: it allows no origin but its own via CORS, so the
-		// browser cannot call it directly (#32). OpenRouter and custom endpoints
-		// are called straight from the browser and never go through here (#31) —
-		// this proxy stays a fixed allowlist, not an open relay.
-		const proxyTarget = pathname.startsWith('/api/eurouter/v1/')
-			? { host: 'api.eurouter.ai', path: pathname.replace('/api/eurouter/v1/', '/api/v1/') }
-			: null;
-
-		if (proxyTarget) {
-			const targetUrl = `https://${proxyTarget.host}${proxyTarget.path}${url.search}`;
-
-			const proxyHeaders = new Headers(req.headers);
-			proxyHeaders.set('Host', proxyTarget.host);
-			// Nothing of the formulaid origin goes to EUrouter but the request itself.
-			proxyHeaders.delete('cookie');
-			proxyHeaders.delete('referer');
-
-			if (proxyHeaders.has('Origin')) {
-				proxyHeaders.set('Origin', `https://${proxyTarget.host}`);
-			}
-
-			// Remove accept-encoding to avoid receiving compressed data that we might fail to decode
-			// Bun fetch will handle decompression anyway, but sometimes the headers get mixed up.
-			proxyHeaders.delete('accept-encoding');
-
-			try {
-				const response = await fetch(targetUrl, {
-					method: req.method,
-					headers: proxyHeaders,
-					body: req.body,
-					redirect: 'follow'
-				});
-
-				// Create a new Response object to strip problematic headers
-				const responseHeaders = new Headers();
-				for (const [key, value] of response.headers.entries()) {
-					if (key.toLowerCase() === 'set-cookie') continue;
-					// Skip headers that Bun/Fetch might have already handled or that cause issues
-					if (
-						key.toLowerCase() === 'content-encoding' ||
-						key.toLowerCase() === 'transfer-encoding' ||
-						key.toLowerCase() === 'content-length'
-					) {
-						continue;
-					}
-
-					// Ensure JSON has charset=utf-8
-					if (
-						key.toLowerCase() === 'content-type' &&
-						value.includes('application/json') &&
-						!value.includes('charset')
-					) {
-						responseHeaders.set(key, 'application/json; charset=utf-8');
-						continue;
-					}
-
-					responseHeaders.set(key, value);
-				}
-
-				return new Response(response.body, {
-					status: response.status,
-					statusText: response.statusText,
-					headers: responseHeaders
-				});
-			} catch (proxyErr) {
-				// No path, headers or body: the request carries the user's key and prompt.
-				console.error(`EUrouter proxy error: ${proxyErr.message}`);
-				return new Response(`Proxy error: ${proxyErr.message}`, { status: 502 });
-			}
-		}
 
 		// Default to index.html for directory requests
 		if (pathname.endsWith('/')) {

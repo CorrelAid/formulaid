@@ -77,12 +77,18 @@ class AppSettings {
 			this.storageMode = saved.mode;
 			this.isKeySet = true;
 		}
-		const provider = localStorage.getItem(PROVIDER_KEY) as ProviderId | null;
-		if (provider === 'openrouter' || provider === 'eurouter' || provider === 'custom') {
+		const provider = localStorage.getItem(PROVIDER_KEY);
+		if (provider === 'openrouter' || provider === 'custom') {
 			this.provider = provider;
+		} else if (provider) {
+			// A provider that was removed (EUrouter, #32): its key belongs to it,
+			// so don't send it to the default provider; ask for a new one.
+			localStorage.removeItem(PROVIDER_KEY);
+			localStorage.removeItem(modelKey(provider as ProviderId));
+			this.clear();
 		}
 		this.customBaseUrl = localStorage.getItem(CUSTOM_URL_KEY) ?? '';
-		for (const id of ['openrouter', 'eurouter', 'custom'] as const) {
+		for (const id of ['openrouter', 'custom'] as const) {
 			const saved = localStorage.getItem(modelKey(id));
 			if (saved) this.models[id] = saved;
 		}

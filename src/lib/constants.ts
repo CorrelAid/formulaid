@@ -6,15 +6,15 @@ export const CHAT_MODEL = 'mistralai/mistral-medium-3.1';
  *  directly and the key and prompts never pass through the formulaid host (#31). */
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
-export type ProviderId = 'openrouter' | 'eurouter' | 'custom';
+export type ProviderId = 'openrouter' | 'custom';
 
 export interface Provider {
 	id: ProviderId;
 	label: string;
-	/** Base URL passed to the OpenAI-compatible client. Absolute URLs are called
-	 *  straight from the browser. Same-origin paths go through the app's own
-	 *  proxy (dev: vite, prod: serve.js); only EUrouter needs that, because it
-	 *  allows no origin but its own via CORS (#32). */
+	/** Base URL passed to the OpenAI-compatible client, called straight from the
+	 *  browser: the provider has to allow this origin via CORS. There is no
+	 *  server-side proxy, so the key and prompts never touch the formulaid host.
+	 *  EUrouter was removed for that reason (#32). */
 	baseUrl: string;
 	defaultModel: string;
 	/** Where the user creates an API key. */
@@ -31,14 +31,6 @@ export const PROVIDERS: Provider[] = [
 		defaultModel: CHAT_MODEL,
 		keysUrl: 'https://openrouter.ai/settings/keys',
 		modelsUrl: 'https://openrouter.ai/models'
-	},
-	{
-		id: 'eurouter',
-		label: 'EUrouter (EU / GDPR)',
-		baseUrl: '/api/eurouter/v1',
-		defaultModel: 'mistral-medium-3.1',
-		keysUrl: 'https://www.eurouter.ai/',
-		modelsUrl: 'https://www.eurouter.ai/models'
 	},
 	{
 		id: 'custom',

@@ -18,9 +18,8 @@ const corsSafeFetch: typeof fetch = (input, init) => {
 /**
  * Build the OpenAI-compatible client.
  *
- * `baseUrl` is either an absolute URL, called directly from the browser
- * (OpenRouter, or a user-supplied endpoint), or a same-origin path served by
- * the app's proxy (`/api/eurouter/v1` → EUrouter).
+ * `baseUrl` is an absolute URL, called directly from the browser: OpenRouter,
+ * or an endpoint the user supplies.
  */
 export function createModel(
 	apiKey: string,
