@@ -9,7 +9,7 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 | Field       | Description                                                                                                                                                                                                                                                                                  |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`      | XLSForm type — pick from the allowlist in `cdl-survey-types/references/question-types.md` (`text`, `integer`, `decimal`, `date`, `time`, `note`, `select_one`, `select_multiple`, `select_one_from_file`, `select_multiple_from_file`, plus variants). Anything else is rejected downstream. |
-| `name`      | English `snake_case` variable name, ≤ 20 chars, `^[a-zA-Z0-9]+$` after stripping.                                                                                                                                                                                                            |
+| `name`      | Short English variable name of lowercase letters and digits only, ≤ 20 chars, e.g. `jobsatisfaction` (no underscores, no umlauts).                                                                                                                                                           |
 | `label`     | German question text — address respondents as given in `formOfAddress` (**"du"** or **"Sie"**), consistently in every question                                                                                                                                                               |
 | `hint`      | Optional short German hint (omit if not helpful)                                                                                                                                                                                                                                             |
 | `choices`   | Array of `{name, label}` objects — only for `select_one` / `select_multiple`. Choice codes ≤ 5 chars, `^[a-zA-Z0-9]+$`.                                                                                                                                                                      |
@@ -19,12 +19,16 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 
 ## Rules
 
-- Target **8–15 questions** total
+- Write **8–15 answerable questions**; `note` rows don't count. If the research goal lists several questions, cover each of them with at least one question
+- Every question must serve the research goal for this target group and the stated use of the results. Leave out anything that doesn't
+- **Notes:** at most one short introduction at the start (purpose, duration, anonymity) and one thank-you at the end. No notes as section headings or dividers
+- `text` is an input field respondents type into. Never use it for introductions, thanks or other text nobody answers; that is a `note`
 - Do **not** generate demographic questions — the ones in `demographicsAddedSeparately` are appended automatically, and asking them again duplicates them
 - Follow the XLSForm syntax rules in `cdl-survey-types/references/xlsform-syntax.md` (allowlist of types, appearances, naming, choice sheet, skip logic, settings sheet)
 - Follow the survey-methodology guide in `references/survey-methodology.md`
-- Prefer validated scale patterns over open-ended questions where appropriate
+- Prefer validated scale patterns over open-ended questions: satisfaction, agreement, frequency and importance are `select_one` with an answer scale, never `text`. Use at most 3 `text` questions, for answers that really can't be predefined
 - Use qwac MCP tools (`search_questions`, `search_studies`) to find validated instruments **before** writing questions from scratch — **search at most 3 times total**; if searches return no results, proceed immediately with generating questions from scratch
+- Take a question-bank item **only if it measures what this research goal needs for this target group**. A search hit is not a reason to include it. Adapt what you take: use the given form of address, and remove references that belong to the original study (years, organisation types, programme names). Keep the qwac id in `source` for adapted items; everything else is `generated`
 - Add `"Keine Angabe"` as a choice (with `exclusive: yes`) for sensitive questions
 - Use `"Sonstiges"` + a follow-up `text` question with `relevant` logic instead of `or_other`
 - Fill `reasoning` with a short German account of how the set of questions was arrived at: which construct is covered by which block, what was taken from the question bank and what was written from scratch. The user sees this text — it is the questionnaire's audit trail

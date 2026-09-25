@@ -3,7 +3,7 @@ import type { AgentInput } from '../src/lib/agents/types.js';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const OUTPUT_DIR = join(import.meta.dir, 'test_output');
+const OUTPUT_DIR = process.env.TEST_OUTPUT_DIR ?? join(import.meta.dir, 'test_output');
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const API_KEY = process.env.OPENROUTER_API_KEY;

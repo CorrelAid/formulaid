@@ -5,7 +5,7 @@ import type { Question } from './types.js';
 import { extractQuestions } from './question_parser.js';
 
 const SIGNATURE =
-	'previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
+	'researchGoal:string, previousQuestions:json, validationFeedback:string, formOfAddress:string "du or Sie; keep it" -> generatedQuestions:json';
 
 /** Built from the registry, so the repair prompt can never drift from what the
  *  validator accepts. */
@@ -22,10 +22,10 @@ function buildInstructions(): string {
 		.map(([name, a]) => `${name} (${(a.validForTypes ?? []).join(', ')})`);
 	const { maxName, maxCode } = registryLimits();
 	return [
-		'You repair an XLSForm questionnaire that a validator rejected.',
-		'Return the same questions as JSON, changing only what the validation feedback asks for.',
+		'You repair an XLSForm questionnaire that a validator or a quality check rejected.',
+		'Return the questions as JSON, changing only what the feedback asks for.',
 		'Keep every question, its wording, its rationale and its source unless the feedback says otherwise.',
-		'Do not add new questions.',
+		'Add questions only when the feedback asks for more; new ones must serve the research goal and get source "generated" and a rationale.',
 		`Allowed question types: ${types.join(', ')}.`,
 		'select_one and select_multiple need a "choices" array of {name, label}.',
 		'select_one_from_file / select_multiple_from_file take a registered vocabulary file (e.g. "select_one_from_file iso_3166_1.csv") and no choices.',
@@ -49,12 +49,18 @@ export class RepairAgent {
 
 	async repair(
 		ai: AxAIService,
-		input: { previousQuestions: Question[]; validationFeedback: string; formOfAddress: string },
+		input: {
+			researchGoal: string;
+			previousQuestions: Question[];
+			validationFeedback: string;
+			formOfAddress: string;
+		},
 		signal?: AbortSignal
 	): Promise<Question[]> {
 		const result = await this.gen.forward(
 			ai,
 			{
+				researchGoal: input.researchGoal,
 				previousQuestions: input.previousQuestions,
 				validationFeedback: input.validationFeedback,
 				formOfAddress: input.formOfAddress

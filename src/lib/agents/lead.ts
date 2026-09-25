@@ -10,6 +10,58 @@ import type { AgentInput, Question, RunPhase, Survey, Trace } from './types.js';
  *  delivered with the remaining findings shown (#11). */
 export const MAX_REPAIR_ATTEMPTS = 2;
 
+/** The prompt asks for 8–15 answerable questions; small models often stop
+ *  short, or write everything as open text. */
+const MIN_QUESTIONS = 8;
+const MAX_OPEN_QUESTIONS = 3;
+
+/** Problems the validator doesn't see but a repair can fix. They trigger a
+ *  repair like validator errors do, but aren't reported as findings: the form
+ *  is valid, just weaker. */
+export function qualityFeedback(questions: Question[]): string[] {
+	const answerable = questions.filter((q) => q.type !== 'note');
+	const open = answerable.filter((q) => q.type === 'text');
+	const feedback: string[] = [];
+	if (answerable.length < MIN_QUESTIONS) {
+		feedback.push(
+			`Only ${answerable.length} answerable questions (notes don't count). Add ${MIN_QUESTIONS - answerable.length} more that serve the research goal, preferably closed questions with choices.`
+		);
+	}
+	if (open.length > MAX_OPEN_QUESTIONS) {
+		feedback.push(
+			`${open.length} open text questions: keep at most ${MAX_OPEN_QUESTIONS} for answers that really can't be predefined, and turn the rest into select_one questions with a fitting answer scale (e.g. a 5-point scale). Open: ${open.map((q) => q.name).join(', ')}.`
+		);
+	}
+	return feedback;
+}
+
+/** How far a questionnaire is from the quality targets: missing questions
+ *  plus surplus open ones. 0 means nothing to fix. */
+export function qualityGap(questions: Question[]): number {
+	const answerable = questions.filter((q) => q.type !== 'note');
+	const open = answerable.filter((q) => q.type === 'text').length;
+	return Math.max(0, MIN_QUESTIONS - answerable.length) + Math.max(0, open - MAX_OPEN_QUESTIONS);
+}
+
+interface Evaluated {
+	questions: Question[];
+	survey: Survey;
+	workbook: Uint8Array;
+	findings: ValidationFinding[];
+	errors: ValidationFinding[];
+	gap: number;
+}
+
+/** A repair only replaces what we have if it is strictly better: fewer
+ *  validator errors, or as many errors and a smaller quality gap. In real runs
+ *  small models sometimes "repair" by dropping questions. */
+function isBetter(candidate: Evaluated, current: Evaluated): boolean {
+	if (candidate.errors.length !== current.errors.length) {
+		return candidate.errors.length < current.errors.length;
+	}
+	return candidate.gap < current.gap;
+}
+
 export interface RunOptions {
 	signal?: AbortSignal;
 	onPhase?: (phase: RunPhase) => void;
@@ -50,10 +102,7 @@ export class LeadAgent {
 			formId: formIdFor(generated.title),
 			reasoning: generated.reasoning
 		};
-		let questions: Question[] = generated.questions;
-
-		for (let attempt = 0; ; attempt++) {
-			onPhase?.({ phase: 'validating', attempt });
+		const evaluate = (questions: Question[]): Evaluated => {
 			// Demographics go last: the UI promises it, and it is survey convention.
 			const survey = sanitizeSurvey({
 				...base,
@@ -62,33 +111,45 @@ export class LeadAgent {
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);
 			const errors = findings.filter((f) => f.severity === 'error');
+			return { questions, survey, workbook, findings, errors, gap: qualityGap(questions) };
+		};
 
-			if (errors.length === 0 || attempt === MAX_REPAIR_ATTEMPTS) {
-				return {
-					survey,
-					workbook,
-					findings,
-					repairAttempts: attempt,
-					qwacAvailable: generated.qwacAvailable
-				};
-			}
-
-			onPhase?.({ phase: 'repairing', attempt: attempt + 1 });
+		onPhase?.({ phase: 'validating', attempt: 0 });
+		let current = evaluate(generated.questions);
+		let attempt = 0;
+		while ((current.errors.length > 0 || current.gap > 0) && attempt < MAX_REPAIR_ATTEMPTS) {
+			attempt++;
+			onPhase?.({ phase: 'repairing', attempt });
 			// Repair the sanitized questions, so names in the findings match what
 			// the model sees; demographics stay out of it and are appended again.
 			const repaired = await this.repairAgent.repair(
 				this.ai,
 				{
-					previousQuestions: survey.questions.slice(0, questions.length),
-					validationFeedback: errors.map((e) => `- ${e.message}`).join('\n'),
+					previousQuestions: current.survey.questions.slice(0, current.questions.length),
+					researchGoal: input.researchQuestion,
+					validationFeedback: [
+						...current.errors.map((e) => e.message),
+						...qualityFeedback(current.questions)
+					]
+						.map((m) => `- ${m}`)
+						.join('\n'),
 					formOfAddress: formOfAddress(input.language)
 				},
 				signal
 			);
 			this.reportTrace(this.repairAgent, onTrace);
-			// An empty answer would throw away the questionnaire; keep the old one.
-			if (repaired.length > 0) questions = repaired;
+			onPhase?.({ phase: 'validating', attempt });
+			const candidate = evaluate(repaired);
+			if (repaired.length > 0 && isBetter(candidate, current)) current = candidate;
 		}
+
+		return {
+			survey: current.survey,
+			workbook: current.workbook,
+			findings: current.findings,
+			repairAttempts: attempt,
+			qwacAvailable: generated.qwacAvailable
+		};
 	}
 
 	/** Tokens used by all runs of this agent so far, summed over both

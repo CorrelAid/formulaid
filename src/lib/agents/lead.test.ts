@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AxMockAIService, type AxChatRequest } from '@ax-llm/ax';
-import { LeadAgent, MAX_REPAIR_ATTEMPTS } from './lead.js';
+import { LeadAgent, MAX_REPAIR_ATTEMPTS, qualityFeedback } from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question } from './types.js';
 
@@ -17,9 +17,15 @@ const input: AgentInput = {
 	]
 };
 
-const good: Partial<Question>[] = [
-	{ name: 'satisfaction', label: 'Wie zufrieden sind Sie?', type: 'integer', rationale: 'Kern' }
-];
+const scale = [1, 2, 3, 4, 5].map((n) => ({ name: `s${n}`, label: String(n) }));
+/** Passes the validator and the quality checks: 8 closed questions. */
+const good: Partial<Question>[] = Array.from({ length: 8 }, (_, i) => ({
+	name: `item${i + 1}`,
+	label: `Frage ${i + 1}?`,
+	type: 'select_one',
+	choices: scale,
+	rationale: 'Kern'
+}));
 const rejected: ValidationFinding = { severity: 'error', message: 'rejected for the test' };
 
 /** After parsing and sanitizing, hardly anything still fails the validator,
@@ -65,7 +71,7 @@ describe('LeadAgent.run', () => {
 		expect(result.survey.title).toBe('Zufriedenheit im Ehrenamt');
 		expect(result.survey.formId).toMatch(/^zufriedenheit_im_ehrenamt_\d{12}$/);
 		// Demographics last.
-		expect(result.survey.questions.map((q) => q.name)).toEqual(['satisfaction', 'age']);
+		expect(result.survey.questions.map((q) => q.name).slice(-2)).toEqual(['item8', 'age']);
 		expect(result.qwacAvailable).toBe(false);
 	});
 
@@ -78,6 +84,24 @@ describe('LeadAgent.run', () => {
 		expect(calls).toEqual({ generate: 1, repair: 1 });
 		expect(result.repairAttempts).toBe(1);
 		expect(result.findings.filter((f) => f.severity === 'error')).toEqual([]);
+	});
+
+	it('repairs a questionnaire that is too short, without reporting it as a finding', async () => {
+		const { ai, calls } = mockAI(good.slice(0, 3), good);
+		const result = await new LeadAgent(ai).run(input);
+
+		expect(calls).toEqual({ generate: 1, repair: 1 });
+		expect(result.survey.questions).toHaveLength(9);
+		expect(result.findings).toEqual([]);
+	});
+
+	it('keeps the previous version when a repair makes it worse', async () => {
+		// 6 questions are too few; the "repair" drops to 2.
+		const { ai, calls } = mockAI(good.slice(0, 6), good.slice(0, 2));
+		const result = await new LeadAgent(ai).run(input);
+
+		expect(calls.repair).toBe(MAX_REPAIR_ATTEMPTS);
+		expect(result.survey.questions).toHaveLength(7);
 	});
 
 	it('stops after MAX_REPAIR_ATTEMPTS and returns the remaining findings', async () => {
@@ -96,5 +120,22 @@ describe('LeadAgent.run', () => {
 		const controller = new AbortController();
 		controller.abort();
 		await expect(new LeadAgent(ai).run(input, { signal: controller.signal })).rejects.toThrow();
+	});
+});
+
+describe('qualityFeedback', () => {
+	it('asks for more questions and fewer open ones', () => {
+		const open = Array.from({ length: 5 }, (_, i) => ({
+			id: String(i),
+			name: `open${i}`,
+			label: 'Warum?',
+			type: 'text' as const,
+			required: false
+		}));
+		const note = { id: 'n', name: 'intro', label: 'Hallo', type: 'note' as const, required: false };
+		const feedback = qualityFeedback([note, ...open]);
+		expect(feedback).toHaveLength(2);
+		expect(feedback[0]).toContain('Only 5 answerable');
+		expect(feedback[1]).toContain('open0');
 	});
 });
