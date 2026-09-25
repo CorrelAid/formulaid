@@ -44,17 +44,14 @@ export function sanitizeSurvey(survey: Survey): Survey {
 	};
 }
 
-/** FieldSanitizer strips only underscores and hyphens, but the validator
- *  wants ASCII letters and digits, so German names like "häufigkeit" would
- *  still fail. Spell out umlauts and drop whatever else is left first. */
-function toAscii(raw: string): string {
-	return raw
-		.replace(
-			/[äöüÄÖÜß]/g,
-			(c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue', ß: 'ss' })[c] ?? c
-		)
-		.normalize('NFKD')
-		.replace(/[^a-zA-Z0-9_-]/g, '');
+/** FieldSanitizer throws when nothing usable is left (e.g. a name of only
+ *  punctuation); fall back to a generated one then. */
+function attempt(fn: () => string): string {
+	try {
+		return fn();
+	} catch {
+		return '';
+	}
 }
 
 /** Name and choice-code length limits, from the registry's constraints. */
@@ -72,7 +69,7 @@ function sanitizeName(
 	const isOther = raw.endsWith(OTHER_SUFFIX);
 	const base = isOther ? raw.slice(0, -OTHER_SUFFIX.length) : raw;
 	const name =
-		sanitizer.sanitizeNameUnique(toAscii(base)) || sanitizer.sanitizeNameUnique(fallback);
+		attempt(() => sanitizer.sanitizeNameUnique(base)) || sanitizer.sanitizeNameUnique(fallback);
 	// LimeSurvey appends "other" to the base, so the base has to leave room.
 	return isOther ? name.slice(0, maxName - 'other'.length) + OTHER_SUFFIX : name;
 }
@@ -86,7 +83,7 @@ function sanitizeChoices(
 	const used = new Set<string>();
 	return choices.map((c, i) => {
 		const original = String(c.name ?? '');
-		let code = sanitizer.sanitizeAnswerCode(toAscii(original)) || `c${i + 1}`;
+		let code = attempt(() => sanitizer.sanitizeAnswerCode(original)) || `c${i + 1}`;
 		// Truncating to the code limit can collide within one list.
 		for (let n = 1; used.has(code); n++) {
 			const suffix = String(n);

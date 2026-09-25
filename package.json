@@ -43,7 +43,7 @@
 	"dependencies": {
 		"@ax-llm/ax": "^19.0.38",
 		"@correlaid/cdl-design": "github:CorrelAid/cdl-design",
-		"@correlaid/formtransform": "https://github.com/CorrelAid/formtransform/releases/download/v0.1.3/correlaid-formtransform-0.1.3.tgz",
+		"@correlaid/formtransform": "https://github.com/CorrelAid/formtransform/releases/download/v0.1.4/correlaid-formtransform-0.1.4.tgz",
 		"xlsx": "^0.18.5"
 	}
 }
