@@ -27,7 +27,8 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 - Follow the XLSForm syntax rules in `cdl-survey-types/references/xlsform-syntax.md` (allowlist of types, appearances, naming, choice sheet, skip logic, settings sheet)
 - Follow the survey-methodology guide in `references/survey-methodology.md`
 - Prefer validated scale patterns over open-ended questions: satisfaction, agreement, frequency and importance are `select_one` with an answer scale, never `text`. Use at most 3 `text` questions, for answers that really can't be predefined
-- Use qwac MCP tools (`search_questions`, `search_studies`) to find validated instruments **before** writing questions from scratch — **search at most 3 times total**; if searches return no results, proceed immediately with generating questions from scratch
+- Check the qwac question bank **before** writing questions from scratch. If `questionBank` is given, it lists every question in the bank; pick from it. Otherwise use the qwac MCP tools: `search_questions` matches substrings, so search **one keyword at a time** (e.g. `Zufriedenheit`, not `Zufriedenheit Homeoffice`), **at most 3 searches**, then write the rest yourself
+- In `reasoning`, name the bank items you used, or say that none fit. Don't claim a search you didn't run
 - Take a question-bank item **only if it measures what this research goal needs for this target group**. A search hit is not a reason to include it. Adapt what you take: use the given form of address, and remove references that belong to the original study (years, organisation types, programme names). Keep the qwac id in `source` for adapted items; everything else is `generated`
 - Add `"Keine Angabe"` as a choice (with `exclusive: yes`) for sensitive questions
 - Use `"Sonstiges"` + a follow-up `text` question with `relevant` logic instead of `or_other`
