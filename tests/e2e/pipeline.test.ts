@@ -152,11 +152,13 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 		}
 	});
 
-	const exclusive = withChoices.filter((q) => q.choices!.some((c) => c.exclusive));
-	// Known gap: formtransform ignores the exclusive column and can't convert
-	// the count-selected() constraint either (CorrelAid/formtransform#53).
-	// When that is fixed this test starts passing, and it.fails turns red:
-	// switch it to it() then.
+	// Only select_multiple carries the flag (LimeSurvey's exclude_all_others).
+	const exclusive = withChoices.filter(
+		(q) => q.type.startsWith('select_multiple') && q.choices!.some((c) => c.exclusive)
+	);
+	// Known gap until formtransform ships #53 (PR #57: an `exclusive` column
+	// mapped to exclude_all_others and restored by lstsvToXlsform). With that
+	// release this test starts passing and it.fails turns red: switch to it().
 	it.runIf(exclusive.length > 0).fails('keeps exclusive answers exclusive', async () => {
 		const back = lstsvToXlsform(await convert());
 		for (const q of exclusive) {

@@ -51,4 +51,22 @@ describe('XLSFormGenerator choice lists (#25)', () => {
 		expect(rows.map((r) => r.type)).toEqual(['select_one freq', 'select_one freq']);
 		expect(choices).toHaveLength(3);
 	});
+
+	it('writes exclusive only for select_multiple', () => {
+		const choices = [
+			{ name: 'a', label: 'A' },
+			{ name: 'ka', label: 'Keine Angabe', exclusive: true }
+		];
+		const { choices: rows } = sheets({
+			title: 'Exclusive',
+			questions: [
+				{ id: 'm', type: 'select_multiple', name: 'm', label: 'M?', required: true, choices },
+				{ id: 'o', type: 'select_one', name: 'o', label: 'O?', required: true, choices }
+			]
+		});
+		const flag = (list: string) =>
+			rows.filter((r) => r.list_name === list).map((r) => r.exclusive ?? '');
+		expect(flag('m_list')).toEqual(['', 'yes']);
+		expect(flag('o_list')).toEqual(['', '']);
+	});
 });

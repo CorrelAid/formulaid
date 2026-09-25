@@ -1,4 +1,4 @@
-import type { Survey } from './types.js';
+import type { Choice, Survey } from './types.js';
 import * as XLSX from 'xlsx';
 
 const FALLBACK_SLUG = 'questionnaire';
@@ -53,14 +53,18 @@ export class XLSFormGenerator {
 				q.choices &&
 				q.choices.length > 0
 			) {
-				const key = JSON.stringify(q.choices.map((c) => [c.name, c.label, !!c.exclusive]));
+				// "Exclusive" only means something on select_multiple (LimeSurvey's
+				// exclude_all_others); on select_one it does nothing and formtransform
+				// warns about it.
+				const exclusive = (c: Choice) => baseType === 'select_multiple' && !!c.exclusive;
+				const key = JSON.stringify(q.choices.map((c) => [c.name, c.label, exclusive(c)]));
 				let listName = embeddedList ?? `${q.name}_list`;
 				if (lists.has(listName) && lists.get(listName) !== key) listName = `${q.name}_list`;
 				rowType = `${baseType} ${listName}`;
 				if (!lists.has(listName)) {
 					lists.set(listName, key);
 					for (const choice of q.choices) {
-						choicesData.push([listName, choice.name, choice.label, choice.exclusive ? 'yes' : '']);
+						choicesData.push([listName, choice.name, choice.label, exclusive(choice) ? 'yes' : '']);
 					}
 				}
 			}
