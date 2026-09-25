@@ -2,7 +2,7 @@
 	import favicon from '@correlaid/cdl-design/favicons/favicon.svg';
 	import '$lib/styles/main.css';
 	import { appSettings } from '$lib/settings.svelte';
-	import { PROVIDERS, getProvider, type ProviderId } from '$lib/constants';
+	import { OPENROUTER_API_URL, PROVIDERS, getProvider, type ProviderId } from '$lib/constants';
 	import { locale, t, type Locale } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import { LanguageSwitcher } from '@correlaid/cdl-design';
@@ -51,7 +51,7 @@
 		validationError = null;
 		try {
 			if (localProvider === 'openrouter') {
-				const response = await fetch('/api/v1/key', {
+				const response = await fetch(`${OPENROUTER_API_URL}/key`, {
 					headers: { Authorization: `Bearer ${localKey}` }
 				});
 				if (!response.ok) throw new Error(get(t)('header.apiKeyError'));

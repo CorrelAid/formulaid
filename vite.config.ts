@@ -51,33 +51,25 @@ export default defineConfig({
 			allow: ['..']
 		},
 		proxy: {
-			// EUrouter must be matched before the OpenRouter catch-all.
+			// EUrouter allows no origin but its own via CORS (#32). OpenRouter is
+			// called directly from the browser and needs no proxy (#31).
 			'/api/eurouter/v1': {
 				target: 'https://api.eurouter.ai',
 				changeOrigin: true,
 				secure: true,
 				rewrite: (path: string) => path.replace(/^\/api\/eurouter\/v1/, '/api/v1')
-			},
-			'/api/v1': {
-				target: 'https://openrouter.ai',
-				changeOrigin: true,
-				secure: true
 			}
 		}
 	},
 	preview: {
 		proxy: {
-			// EUrouter must be matched before the OpenRouter catch-all.
+			// EUrouter allows no origin but its own via CORS (#32). OpenRouter is
+			// called directly from the browser and needs no proxy (#31).
 			'/api/eurouter/v1': {
 				target: 'https://api.eurouter.ai',
 				changeOrigin: true,
 				secure: true,
 				rewrite: (path: string) => path.replace(/^\/api\/eurouter\/v1/, '/api/v1')
-			},
-			'/api/v1': {
-				target: 'https://openrouter.ai',
-				changeOrigin: true,
-				secure: true
 			}
 		}
 	},

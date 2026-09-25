@@ -1,47 +1,40 @@
-# Deployment (Coolify / Static)
+# Deployment
 
-To avoid CORS issues with OpenRouter in a static deployment, you must configure a reverse proxy on your web server.
+formulaid is a static SvelteKit build (`adapter-static`). All generation logic
+runs in the browser; the user's API key never leaves it except to go to the
+LLM provider the user picked.
 
-## Coolify / Nginx Configuration
+In production, Coolify builds it with nixpacks (`nixpacks.toml`) and runs
+`bun serve.js`, which serves `build/` and proxies one route.
 
-Add this block to your Nginx configuration (usually under "Base Config" -> "Nginx Config" in Coolify) to support OpenRouter proxy and WebAssembly (DuckDB-Wasm) with SharedArrayBuffer:
+## Where requests go
+
+| Provider        | Called from       | Why                                                                                                               |
+| --------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| OpenRouter      | browser, directly | sends `Access-Control-Allow-Origin: *`                                                                            |
+| Custom endpoint | browser, directly | the endpoint has to allow this origin via CORS                                                                    |
+| qwacback MCP    | browser, directly |                                                                                                                   |
+| EUrouter        | `serve.js` proxy  | allows no origin but `https://www.eurouter.ai` via CORS ([#32](https://github.com/CorrelAid/formulaid/issues/32)) |
+
+The EUrouter proxy (`/api/eurouter/v1/*` → `https://api.eurouter.ai/api/v1/*`)
+is a fixed allowlist, not an open relay. It stores nothing, but EUrouter
+requests (including the key in the `Authorization` header) do pass through
+the formulaid host.
+
+## Other hosts
+
+Any static host works if EUrouter support is not needed. Otherwise, forward
+`/api/eurouter/v1/` to `https://api.eurouter.ai/api/v1/`, e.g. with nginx:
 
 ```nginx
-# OpenRouter API Proxy
-location /api/v1/ {
-    proxy_pass https://openrouter.ai/api/v1/;
-    proxy_set_header Host openrouter.ai;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    # Enable CORS for the proxy
-    add_header 'Access-Control-Allow-Origin' '*' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-    add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
-}
-
-# General headers for Cross-Origin Isolation (Required for DuckDB-Wasm)
-add_header Cross-Origin-Embedder-Policy "require-corp" always;
-add_header Cross-Origin-Opener-Policy "same-origin" always;
-
-# Ensure correct MIME type for .wasm files
-location ~* \.wasm$ {
-    types {
-        application/wasm wasm;
-    }
-    add_header Content-Type application/wasm;
-    add_header Cross-Origin-Embedder-Policy "require-corp" always;
-    add_header Cross-Origin-Opener-Policy "same-origin" always;
+location /api/eurouter/v1/ {
+    proxy_pass https://api.eurouter.ai/api/v1/;
+    proxy_set_header Host api.eurouter.ai;
+    proxy_ssl_server_name on;
 }
 ```
 
-## Local Development
+## Local development
 
-The project is already configured to use a Vite proxy for local development. Simply run:
-
-```bash
-npm run dev
-```
-
-For the local Bun server (`bun serve.js`), the headers are already handled in the script.
+`bun run dev` and `bun run preview` proxy the EUrouter route through Vite
+(`vite.config.ts`); nothing else needs setting up.

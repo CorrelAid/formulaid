@@ -15,16 +15,13 @@ const server = Bun.serve({
 		const url = new URL(req.url);
 		let pathname = url.pathname;
 
-		// Proxy API requests to the supported LLM gateways. Neither sends CORS
-		// headers this origin may use, so the browser cannot call them directly.
-		// Custom OpenAI-compatible endpoints are called straight from the browser
-		// and never go through here — this proxy stays a fixed allowlist, not an
-		// open relay.
+		// Proxy EUrouter requests: it allows no origin but its own via CORS, so the
+		// browser cannot call it directly (#32). OpenRouter and custom endpoints
+		// are called straight from the browser and never go through here (#31) —
+		// this proxy stays a fixed allowlist, not an open relay.
 		const proxyTarget = pathname.startsWith('/api/eurouter/v1/')
 			? { host: 'api.eurouter.ai', path: pathname.replace('/api/eurouter/v1/', '/api/v1/') }
-			: pathname.startsWith('/api/v1/')
-				? { host: 'openrouter.ai', path: pathname }
-				: null;
+			: null;
 
 		if (proxyTarget) {
 			const targetUrl = `https://${proxyTarget.host}${proxyTarget.path}${url.search}`;

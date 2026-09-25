@@ -2,14 +2,19 @@
 // ill-fitting questions, and mistral-small-2603 was often rate-limited upstream.
 export const CHAT_MODEL = 'mistralai/mistral-medium-3.1';
 
+/** OpenRouter sends `Access-Control-Allow-Origin: *`, so the browser calls it
+ *  directly and the key and prompts never pass through the formulaid host (#31). */
+export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
+
 export type ProviderId = 'openrouter' | 'eurouter' | 'custom';
 
 export interface Provider {
 	id: ProviderId;
 	label: string;
-	/** Base URL passed to the OpenAI-compatible client. Same-origin paths are
-	 *  served by the app's own proxy (dev: vite, prod: serve.js) because neither
-	 *  gateway sends permissive CORS headers for a browser-side call. */
+	/** Base URL passed to the OpenAI-compatible client. Absolute URLs are called
+	 *  straight from the browser. Same-origin paths go through the app's own
+	 *  proxy (dev: vite, prod: serve.js); only EUrouter needs that, because it
+	 *  allows no origin but its own via CORS (#32). */
 	baseUrl: string;
 	defaultModel: string;
 	/** Where the user creates an API key. */
@@ -22,7 +27,7 @@ export const PROVIDERS: Provider[] = [
 	{
 		id: 'openrouter',
 		label: 'OpenRouter',
-		baseUrl: '/api/v1',
+		baseUrl: OPENROUTER_API_URL,
 		defaultModel: CHAT_MODEL,
 		keysUrl: 'https://openrouter.ai/settings/keys',
 		modelsUrl: 'https://openrouter.ai/models'

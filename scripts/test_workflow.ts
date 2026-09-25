@@ -1,4 +1,5 @@
 import { LeadAgent, createModel, fileNameFor } from '../src/lib/agents/index.js';
+import { OPENROUTER_API_URL } from '../src/lib/constants.js';
 import type { AgentInput } from '../src/lib/agents/types.js';
 import { CHAT_MODEL } from '../src/lib/constants.js';
 import { mkdirSync, writeFileSync } from 'fs';
@@ -70,8 +71,7 @@ async function runCase(label: string, input: AgentInput) {
 	console.log(`  Demografik:      ${input.selectedDemographics.join(', ') || 'keine'}`);
 	console.log('─'.repeat(60));
 
-	// Outside the browser there is no same-origin proxy, so call OpenRouter directly.
-	const ai = createModel(API_KEY!, MODEL, 'https://openrouter.ai/api/v1');
+	const ai = createModel(API_KEY!, MODEL, OPENROUTER_API_URL);
 	const agent = new LeadAgent(ai);
 
 	const start = Date.now();
