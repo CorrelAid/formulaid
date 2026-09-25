@@ -24,7 +24,10 @@
 	// Form state
 	// Restored from the last visit (#23); the examples only fill a first visit.
 	const saved = loadWizardInputs();
-	let language = $state<'formal' | 'informal' | null>(saved?.language ?? null);
+	// Pre-select "formal" so the Sie/Du buttons never start empty — the agent
+	// would default to it anyway, and the previous "nothing selected" state
+	// left the user guessing which side of the toggle was active.
+	let language = $state<'formal' | 'informal'>(saved?.language ?? 'formal');
 	// Language of every question, label, hint and title (#39). Defaults to
 	// German to match the rest of the toolchain.
 	let surveyLanguage = $state<'de' | 'en'>(saved?.surveyLanguage ?? 'de');
@@ -70,7 +73,7 @@
 		targetGroup = '';
 		useOfResults = '';
 		furtherNotes = '';
-		language = null;
+		language = 'formal';
 		surveyLanguage = 'de';
 		selectedDemographics = [];
 		resetResult();
@@ -173,7 +176,7 @@
 					researchQuestions,
 					targetGroup,
 					useOfResults,
-					language: language || 'formal',
+					language,
 					surveyLanguage,
 					selectedDemographics,
 					demographicQuestions: demographicQuestions(selectedDemographics),
