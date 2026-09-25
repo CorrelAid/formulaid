@@ -32,6 +32,14 @@
 	// German to match the rest of the toolchain.
 	let surveyLanguage = $state<'de' | 'en'>(saved?.surveyLanguage ?? 'de');
 	let selectedDemographics = $state<string[]>(saved?.selectedDemographics ?? []);
+	// qwac ids of the selected demographics, for the survey preview to group
+	// them under their own heading without false positives on a model question
+	// that happens to share a name (#47).
+	let selectedDemographicIds = $derived(
+		selectedDemographics
+			.map((name) => demographicVariables.find((v) => v.question_name === name)?.question_id)
+			.filter((id): id is string => Boolean(id))
+	);
 	// One field per research question (#34), capped: each needs its own questions.
 	let researchQuestions = $state<string[]>(
 		saved?.researchQuestions ?? [
@@ -471,7 +479,7 @@
 	{/if}
 
 	{#if generatedSurvey && (generatedSurvey.reasoning || generatedSurvey.questions.some((q) => q.rationale))}
-		<SurveyView survey={generatedSurvey} demographicNames={selectedDemographics} />
+		<SurveyView survey={generatedSurvey} demographicIds={selectedDemographicIds} />
 	{/if}
 
 	{#if generatedFile && !qwacAvailable}
