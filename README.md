@@ -84,16 +84,36 @@ Runs the test cases through the full pipeline against OpenRouter (`OPENROUTER_AP
 
 ## Skills
 
-The survey generation logic is also packaged as a Claude Code skill for use in the Claude web app:
+The survey generation logic is also packaged as an [Agent Skill](https://agentskills.io/home), `generating-xlsforms`. It works in the Claude apps (web, desktop) and in Claude Code, independently of this web app.
 
-1. **Add the MCP connector** — go to **Customize → Add custom connector**, enter `https://qwacback.correlaid.org/mcp`
-2. **Install the skill** — download [`skills/xlsform.zip`](https://github.com/CorrelAid/formulaid/raw/main/skills/xlsform.zip), then go to **Customize → Skills → upload** the zip file
+### Installing
 
-Rebuild the skill with fresh reference data from qwac and civic-data.de:
+**Claude apps:**
+
+1. **Add the MCP connector:** go to **Customize → Add custom connector** and enter `https://qwacback.correlaid.org/mcp`.
+2. **Install the skill:** download [`skills/xlsform.zip`](https://github.com/CorrelAid/formulaid/raw/main/skills/xlsform.zip), then go to **Customize → Skills → + → Create skill → Upload a skill** and choose the zip ([help](https://support.claude.com/en/articles/12512180-use-skills-in-claude)).
+
+**Claude Code:** unpack the zip into `~/.claude/skills/` (for yourself) or `.claude/skills/` in a project, so that `SKILL.md` ends up in `~/.claude/skills/xlsform/`. Add the MCP connector with `claude mcp add --transport http qwacback https://qwacback.correlaid.org/mcp`.
+
+**For a whole organization (Team/Enterprise):** an owner uploads the zip under **Organization settings → Plugins & skills**. It then shows up for every member, in the Claude apps and in Claude Code ([help](https://support.claude.com/en/articles/13119606-provision-and-manage-skills-for-your-organization)).
+
+### Updating
+
+The skill changes when it is rebuilt: new reference data from qwac and civic-data.de, prompt changes, or a formtransform update. An installed copy doesn't update itself.
+
+**Which version do I have?** `SKILL.md` has a line `Skill version: <hash> (formtransform v<x.y.z>)` below its heading. Compare it with [the current one](skills/xlsform/SKILL.md). The hash only changes when the skill's content does.
+
+- **Claude apps:** delete the old skill (**Customize → Skills**, ⋯ menu → delete), then upload the new zip as above. Whether uploading over an existing skill with the same name replaces it is not documented, so delete it first.
+- **Claude Code:** replace the folder with the new zip's contents and start a new session. If you work in this repo, you can link the folder instead: `ln -s "$PWD/skills/xlsform" ~/.claude/skills/xlsform`. A `git pull` then updates it.
+- **Organization-provisioned:** only an owner can update it: they upload the new version under **Organization settings → Plugins & skills**. Once it is approved, every member gets it automatically. Members who want a newer version have to ask their owner.
+
+### Rebuilding (maintainers)
 
 ```sh
 bun run build:skill
 ```
+
+This fetches fresh reference data, writes `skills/xlsform/` and `skills/xlsform.zip`, and stages both. The pre-commit hook runs it too. The zip is reproducible: an unchanged skill gives a byte-identical zip, so when `skills/xlsform.zip` shows up in `git status`, the skill really changed. Commit and push it, since the download link above serves the zip from `main`.
 
 ## How a questionnaire is generated
 

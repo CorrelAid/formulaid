@@ -20,6 +20,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'page.skillsStep1Link': 'Download xlsform.zip',
 		'page.skillsStep2': 'In Claude, go to Customize → Skills and upload the downloaded zip file.',
 		'page.skillsStep3Label': 'Required:',
+		'page.skillsUpdate':
+			'Installed it before? Claude does not update the skill by itself. To get the current version, delete the old skill under Customize → Skills and upload the new zip.',
 		'page.skillsStep3':
 			'In Claude, go to Customize → Add custom connector and enter the MCP server URL below. The skill needs this connector to search the qwac question bank:',
 
@@ -157,6 +159,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'page.skillsStep1Link': 'xlsform.zip herunterladen',
 		'page.skillsStep2': 'In Claude: Anpassen → Skills → heruntergeladene Zip-Datei hochladen.',
 		'page.skillsStep3Label': 'Erforderlich:',
+		'page.skillsUpdate':
+			'Schon einmal installiert? Claude aktualisiert den Skill nicht von selbst. Für die aktuelle Version lösche den alten Skill unter Anpassen → Skills und lade die neue Zip-Datei hoch.',
 		'page.skillsStep3':
 			'In Claude: Anpassen → Benutzerdefinierten Connector hinzufügen → folgende MCP-Server-URL eingeben. Der Skill benötigt diesen Connector, um die qwac-Fragendatenbank zu durchsuchen:',
 

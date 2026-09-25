@@ -232,6 +232,7 @@
 					<div class="skill-install"><code>https://qwacback.correlaid.org/mcp</code></div>
 				</li>
 			</ol>
+			<p class="field-hint">{$t('page.skillsUpdate')}</p>
 		</div>
 	</details>
 

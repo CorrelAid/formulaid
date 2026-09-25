@@ -304,8 +304,23 @@ SKILLS_DIR="$(dirname "$OUT")"
 SKILL_NAME="$(basename "$OUT")"
 ZIP_PATH="$SKILLS_DIR/${SKILL_NAME}.zip"
 
+# Version line in SKILL.md, so users can compare what they have installed with
+# the repo (README → Updating the skill). It hashes the skill's content, not the
+# build time: rebuilding unchanged content gives the same version.
+CONTENT_HASH=$(cd "$OUT" && find . -type f ! -name SKILL.md -print0 | LC_ALL=C sort -z \
+  | xargs -0 sha256sum | cat - SKILL.md | sha256sum | cut -c1-8)
+SKILL_VERSION="$CONTENT_HASH (formtransform v$FORMTRANSFORM_VERSION)"
+awk -v v="$SKILL_VERSION" '
+  !done && /^# / { print; print ""; print "Skill version: " v; done = 1; next }
+  { print }' "$OUT/SKILL.md" > "$OUT/SKILL.md.tmp" && mv "$OUT/SKILL.md.tmp" "$OUT/SKILL.md"
+ok "version $SKILL_VERSION"
+
+# Reproducible zip: fixed timestamps, sorted entries, no extra attributes.
+# Unchanged content gives a byte-identical zip, so a rebuild only shows up in
+# git when the skill really changed.
+find "$OUT" -exec touch -h -d '2000-01-01T00:00:00Z' {} +
 rm -f "$ZIP_PATH"
-(cd "$SKILLS_DIR" && zip -rq "$ZIP_PATH" "$SKILL_NAME")
+(cd "$SKILLS_DIR" && find "$SKILL_NAME" | LC_ALL=C sort | zip -qX "$ZIP_PATH" -@)
 ok "$ZIP_PATH"
 
 # ── 7. Stage outputs ────────────────────────────────────────────────────────
