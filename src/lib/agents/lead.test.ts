@@ -5,6 +5,7 @@ import {
 	MAX_REPAIR_ATTEMPTS,
 	assembleSurvey,
 	dedupAgainstDemographics,
+	looksLikeFollowUp,
 	qualityFeedback
 } from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
@@ -225,6 +226,47 @@ describe('LeadAgent.run', () => {
 		expect(rendered.some((s) => s.includes('Survey Language'))).toBe(true);
 	});
 
+	/** End-to-end regression for the user's Kobo import bug (#47 follow-up):
+	 *  the model writes a Sonstiges text follow-up without `relevant`, the
+	 *  quality loop flags it, the repair agent adds the right expression.
+	 *  Without this loop, the file passes the validator and ships with no
+	 *  skip-logic, so Kobo shows the follow-up to everyone. */
+	it('repairs a Sonstiges follow-up that lacks `relevant` (#47 follow-up)', async () => {
+		const parent: Partial<Question> = {
+			name: 'bereich',
+			label: 'In welchen Bereichen?',
+			type: 'select_multiple',
+			rationale: 'Anwendungsbereiche',
+			choices: [
+				{ name: 'lokal', label: 'Lokal' },
+				{ name: 'sonst', label: 'Sonstiges' }
+			]
+		};
+		const broken: Partial<Question> = {
+			name: 'bereich_sonstiges',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text'
+			// no relevant, no rationale → quality loop must catch it
+		};
+		const fixed: Partial<Question> = {
+			name: 'bereich_sonstiges',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			relevant: "selected(${bereich}, 'sonst')",
+			rationale: 'Ergänzung zu Sonstiges'
+		};
+		const generated: Partial<Question>[] = [parent, broken, ...good.slice(0, 7)];
+		const { ai, calls } = mockAI(generated, [parent, fixed, ...good.slice(0, 7)]);
+		const result = await new LeadAgent(ai).run(input);
+
+		// The repair loop fired because the quality check flagged the broken follow-up.
+		expect(calls.repair).toBeGreaterThanOrEqual(1);
+		// The repaired follow-up is the one shipped — with its `relevant` set.
+		// (Name is sanitized: `bereich_sonstiges` -> `bereichsonstiges`.)
+		const followup = result.survey.questions.find((q) => /^bereich.*sonstiges$/.test(q.name));
+		expect(followup?.relevant).toBe("selected(${bereich}, 'sonst')");
+	});
+
 	/** The model is told `demographicsAddedSeparately`, but it still writes a
 	 *  birth-date question and names it `age` sometimes. Without dedup the
 	 *  survey ends up with two `age` rows and the same "Wann sind Sie
@@ -318,6 +360,122 @@ describe('qualityFeedback', () => {
 		const q = { id: '1', name: 'a', label: 'A?', type: 'text' as const, required: false };
 		const feedback = qualityFeedback([{ ...q, researchQuestions: [1, 3] }], 3);
 		expect(feedback[0]).toContain('Research question 2 is not covered');
+	});
+
+	/** Follow-ups without `relevant` are the bug from the user's Kobo import
+	 *  (#47 follow-up): Kobo showed the Sonstiges text to everyone because
+	 *  the file had no skip-logic. The validator can't catch this (it doesn't
+	 *  parse `relevant`), so `qualityFeedback` routes it through the repair
+	 *  loop. */
+	it('flags a Sonstiges follow-up that has no relevant (#47 follow-up)', () => {
+		const parent: Question = {
+			id: 'p1',
+			name: 'bereich',
+			label: 'Bereich',
+			type: 'select_multiple',
+			required: true,
+			choices: [],
+			rationale: 'kern'
+		};
+		const orphaned: Question = {
+			id: 'f1',
+			name: 'bereich_sonstiges',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			required: false
+		};
+		const filler = Array.from({ length: 7 }, (_, i) => ({
+			id: `f${i}`,
+			name: `q${i}`,
+			label: `Frage ${i}?`,
+			type: 'text' as const,
+			required: true,
+			rationale: 'kern'
+		}));
+		const feedback = qualityFeedback([parent, orphaned, ...filler]);
+		expect(feedback.some((m) => m.includes('bereich_sonstiges'))).toBe(true);
+	});
+
+	it('does not flag a follow-up that already has relevant', () => {
+		const ok: Question = {
+			id: 'f1',
+			name: 'bereich_sonstiges',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			required: false,
+			relevant: "selected(${bereich}, 'sonst')"
+		};
+		expect(qualityFeedback([ok]).some((m) => m.includes('bereich_sonstiges'))).toBe(false);
+	});
+});
+
+describe('looksLikeFollowUp', () => {
+	it('matches the Sonstiges text-follow-up pattern by name suffix', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'anwendungsbereiche_sonstiges',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			required: false
+		};
+		expect(looksLikeFollowUp(q)).toBe(true);
+	});
+
+	it('matches by German "Falls Sonstiges" label prefix', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'weirdname',
+			label: 'Falls Sonstiges: bitte angeben',
+			type: 'text',
+			required: false
+		};
+		expect(looksLikeFollowUp(q)).toBe(true);
+	});
+
+	it('matches by English "If other" label prefix', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'weirdname',
+			label: 'If other: please specify',
+			type: 'text',
+			required: false
+		};
+		expect(looksLikeFollowUp(q)).toBe(true);
+	});
+
+	it('does not match a text question without the suffix or prefix', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'comment',
+			label: 'Anything else?',
+			type: 'text',
+			required: false
+		};
+		expect(looksLikeFollowUp(q)).toBe(false);
+	});
+
+	it('does not match a select_one question even with the right name', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'bereich_sonstiges',
+			label: 'Sonstiges',
+			type: 'select_one',
+			required: false,
+			choices: []
+		};
+		expect(looksLikeFollowUp(q)).toBe(false);
+	});
+
+	it('does not match when relevant is already set', () => {
+		const q: Question = {
+			id: 'f',
+			name: 'bereich_sonstiges',
+			label: 'Falls Sonstiges',
+			type: 'text',
+			required: false,
+			relevant: "selected(${bereich}, 'sonst')"
+		};
+		expect(looksLikeFollowUp(q)).toBe(false);
 	});
 });
 

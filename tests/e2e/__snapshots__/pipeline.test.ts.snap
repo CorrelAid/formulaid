@@ -8,6 +8,8 @@ exports[`'exclusive-answer' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'messy-names-and-logic' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'missing-relevant-on-follow-up' > passes the formtransform validator 1`] = `[]`;
+
 exports[`'other-follow-up' > passes the formtransform validator 1`] = `[]`;
 
 exports[`'real-mitarbeiterzufriedenheit-formal' > passes the formtransform validator 1`] = `[]`;

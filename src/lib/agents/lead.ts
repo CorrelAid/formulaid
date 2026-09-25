@@ -17,6 +17,20 @@ export const MAX_REPAIR_ATTEMPTS = 2;
 const MIN_QUESTIONS = 8;
 const MAX_OPEN_QUESTIONS = 3;
 
+/** A text question that looks like a Sonstiges / yes-no follow-up is one of:
+ *    * name ends in _sonstiges / _sonst / _other
+ *    * label starts with "Falls Sonstiges" / "If other" / "Sonstige" / "Sonstiges:"
+ *  Without a `relevant` expression the parent selection no longer hides it,
+ *  so Kobo shows it to everyone (the bug from issue #47's follow-up). */
+export function looksLikeFollowUp(q: Question): boolean {
+	if (q.type !== 'text') return false;
+	if (q.relevant && q.relevant.trim()) return false;
+	if (/(?:^|_)(sonstiges|sonst|other)$/.test(q.name)) return true;
+	return /^(falls sonstige|falls sonstiges:|falls sonst:|sonstige|sonstiges:|if other|if other:)/i.test(
+		q.label.trim()
+	);
+}
+
 /** Problems the validator doesn't see but a repair can fix. They trigger a
  *  repair like validator errors do, but aren't reported as findings: the form
  *  is valid, just weaker. */
@@ -39,6 +53,15 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
 			`${open.length} open text questions: keep at most ${MAX_OPEN_QUESTIONS} for answers that really can't be predefined, and turn the rest into select_one questions with a fitting answer scale (e.g. a 5-point scale). Open: ${open.map((q) => q.name).join(', ')}.`
 		);
 	}
+	// Follow-ups without `relevant` are valid XLSForm but the question then
+	// shows to every respondent. Validator can't catch this (it doesn't parse
+	// `relevant`), so we route it through the repair loop instead (#47 follow-up).
+	const orphaned = answerable.filter(looksLikeFollowUp);
+	if (orphaned.length > 0) {
+		feedback.push(
+			`Follow-up question(s) are missing a \`relevant\` expression and would show to every respondent in Kobo. Add the right \`relevant\` to each (use \`selected(\${parent}, '<sonst>')\` for select_multiple parents, \`\${parent} = '<sonst>'\` for select_one / yes-no parents). Affected: ${orphaned.map((q) => q.name).join(', ')}.`
+		);
+	}
 	return feedback;
 }
 
@@ -47,10 +70,12 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
 export function qualityGap(questions: Question[], researchQuestionCount = 0): number {
 	const answerable = questions.filter((q) => q.type !== 'note');
 	const open = answerable.filter((q) => q.type === 'text').length;
+	const orphaned = answerable.filter(looksLikeFollowUp).length;
 	return (
 		Math.max(0, MIN_QUESTIONS - answerable.length) +
 		Math.max(0, open - MAX_OPEN_QUESTIONS) +
-		uncovered(questions, researchQuestionCount).length
+		uncovered(questions, researchQuestionCount).length +
+		orphaned
 	);
 }
 
