@@ -6,6 +6,7 @@
 	import { locale, t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import StepResults from '$lib/components/StepResults.svelte';
+	import SurveyView from '$lib/components/SurveyView.svelte';
 	import { descriptionHtml } from 'virtual:cdl-content';
 	import {
 		LeadAgent,
@@ -462,42 +463,7 @@
 	{/if}
 
 	{#if generatedSurvey && (generatedSurvey.reasoning || generatedSurvey.questions.some((q) => q.rationale))}
-		<details class="reasoning-section" open>
-			<summary>{$t('wizard.reasoningHeading')}</summary>
-			<div class="reasoning-body">
-				<p class="field-hint">{$t('wizard.reasoningIntro')}</p>
-				{#if (generatedSurvey.researchQuestions?.length ?? 0) > 1}
-					<ol class="reasoning-rqs">
-						{#each generatedSurvey.researchQuestions ?? [] as rq, i (i)}
-							<li>{rq}</li>
-						{/each}
-					</ol>
-				{/if}
-				{#if generatedSurvey.reasoning}
-					<p class="reasoning-text">{generatedSurvey.reasoning}</p>
-				{/if}
-				<ul class="reasoning-list">
-					{#each generatedSurvey.questions as q (q.name)}
-						<li>
-							<span class="reasoning-label">{q.label}</span>
-							{#if q.rationale}
-								<span class="reasoning-why">{q.rationale}</span>
-							{/if}
-							{#if q.source}
-								<span class="reasoning-source">{$t('wizard.reasoningSource')}: {q.source}</span>
-							{/if}
-							{#if q.researchQuestions?.length && (generatedSurvey.researchQuestions?.length ?? 0) > 1}
-								<span class="reasoning-source"
-									>{$t('wizard.reasoningServes')}: {q.researchQuestions
-										.map((n) => `${$t('wizard.researchShort')} ${n}`)
-										.join(', ')}</span
-								>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			</div>
-		</details>
+		<SurveyView survey={generatedSurvey} demographicNames={selectedDemographics} />
 	{/if}
 
 	{#if generatedFile && !qwacAvailable}
@@ -904,41 +870,6 @@
 		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
 	}
 
-	.reasoning-section {
-		background: var(--color-white);
-		border: var(--dimension-border-width) solid var(--color-text-primary);
-		border-radius: var(--radius-lg);
-		padding: var(--spacing-base) var(--spacing-lg);
-	}
-
-	.reasoning-section summary {
-		cursor: pointer;
-		font-weight: var(--font-weight-semibold);
-	}
-
-	.reasoning-text {
-		white-space: pre-wrap;
-	}
-
-	.reasoning-list {
-		list-style: none;
-		padding: 0;
-		margin: var(--spacing-sm) 0 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-sm);
-	}
-
-	.reasoning-list li {
-		border-left: 3px solid var(--color-tertiary);
-		padding-left: var(--spacing-sm);
-	}
-
-	.reasoning-label {
-		display: block;
-		font-weight: var(--font-weight-medium);
-	}
-
 	.research-row {
 		display: flex;
 		gap: var(--spacing-xs);
@@ -983,17 +914,5 @@
 
 	.guide-hint a {
 		color: var(--color-secondary);
-	}
-
-	.reasoning-rqs {
-		margin: var(--spacing-sm) 0;
-		padding-left: 1.5rem;
-	}
-
-	.reasoning-why,
-	.reasoning-source {
-		display: block;
-		font-size: 0.85rem;
-		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
 	}
 </style>
