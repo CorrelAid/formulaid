@@ -9,6 +9,10 @@ export interface WizardInputs {
 	/** Free-form extra guidance for the generator (#40): things to keep short,
 	 *  terms to avoid, topics to focus on. Persisted so reloads keep it. */
 	furtherNotes: string;
+	/** Language of the generated questions and labels (#39). The form of
+	 *  address (Sie/Du) is a separate choice; a survey can be in English with
+	 *  either form, or — for now — in German with Sie. */
+	surveyLanguage: 'de' | 'en';
 }
 
 const STORAGE_KEY = 'formulaid_wizard_inputs';
@@ -33,6 +37,9 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 		}
 		if (data.language === 'formal' || data.language === 'informal' || data.language === null) {
 			inputs.language = data.language;
+		}
+		if (data.surveyLanguage === 'de' || data.surveyLanguage === 'en') {
+			inputs.surveyLanguage = data.surveyLanguage;
 		}
 		if (isStringList(data.selectedDemographics)) {
 			inputs.selectedDemographics = data.selectedDemographics;

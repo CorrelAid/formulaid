@@ -70,6 +70,11 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.languageLabel': 'Language & Tone',
 		'wizard.formal': 'Formal (Sie)',
 		'wizard.informal': 'Informal (Du)',
+		'wizard.surveyLanguageLabel': 'Survey language',
+		'wizard.surveyLanguageGerman': 'German',
+		'wizard.surveyLanguageEnglish': 'English',
+		'wizard.surveyLanguageHint':
+			'German by default: the downstream tools (qwac, the question bank) are German-first, so English makes the handover a bit rougher.',
 		'wizard.demographicsLabel': 'Demographic Variables',
 		'wizard.generateBtn': 'Generate survey with AI',
 		'wizard.generateNew': 'Generate new',
@@ -213,6 +218,11 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.languageLabel': 'Sprache & Tonalität',
 		'wizard.formal': 'Förmlich (Sie)',
 		'wizard.informal': 'Informell (Du)',
+		'wizard.surveyLanguageLabel': 'Sprache der Umfrage',
+		'wizard.surveyLanguageGerman': 'Deutsch',
+		'wizard.surveyLanguageEnglish': 'Englisch',
+		'wizard.surveyLanguageHint':
+			'Standard ist Deutsch: Die nachgelagerten Werkzeuge (qwac, Fragendatenbank) sind auf Deutsch ausgelegt – bei Englisch ist die Übergabe etwas holpriger.',
 		'wizard.demographicsLabel': 'Demografische Merkmale',
 		'wizard.generateBtn': 'Umfrage mit KI generieren',
 		'wizard.generateNew': 'Neu generieren',

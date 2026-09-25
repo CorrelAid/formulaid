@@ -12,6 +12,7 @@ vi.mock('./qwacback.js', () => ({
 const input: AgentInput = {
 	researchQuestions: ['Wie zufrieden sind Ehrenamtliche?'],
 	language: 'formal',
+	surveyLanguage: 'de',
 	selectedDemographics: [],
 	demographicQuestions: [
 		{ id: 'd1', name: 'age', label: 'Alter?', type: 'integer', required: true }
@@ -180,6 +181,42 @@ describe('LeadAgent.run', () => {
 		await new LeadAgent(ai).run({ ...input, furtherNotes: 'Avoid double-barrelled questions.' });
 		// Both prompts see the user's note, in addition to the standard instructions.
 		expect(seen.some((s) => s.includes('furtherNotes'))).toBe(true);
+	});
+
+	it('passes surveyLanguage through to the generator prompt (#39)', async () => {
+		const rendered: string[] = [];
+		const ai = new AxMockAIService<string>({
+			features: { functions: true, streaming: false },
+			chatResponse: async (req: Readonly<AxChatRequest<unknown>>) => {
+				const first = req.chatPrompt[0];
+				const system = first && 'content' in first ? String(first.content) : '';
+				rendered.push(system);
+				if (system.includes('You pick search terms')) {
+					return {
+						results: [
+							{
+								index: 0,
+								content: 'Keywords: ["satisfaction"]',
+								finishReason: 'stop' as const
+							}
+						]
+					};
+				}
+				return {
+					results: [
+						{
+							index: 0,
+							content: `Title: Test\nReasoning: ok\nGenerated Questions: ${JSON.stringify(good)}`,
+							finishReason: 'stop' as const
+						}
+					]
+				};
+			}
+		});
+		await new LeadAgent(ai).run({ ...input, surveyLanguage: 'en' });
+		// The generator step is the one that needs the language, so it sees it
+		// in its rendered prompt (system or user message).
+		expect(rendered.some((s) => s.includes('Survey Language'))).toBe(true);
 	});
 });
 
