@@ -231,6 +231,7 @@ export class LeadAgent {
 		const base = {
 			title: generated.title,
 			formId: formIdFor(generated.title),
+			language: input.surveyLanguage,
 			researchQuestions,
 			reasoning: generated.reasoning
 		};

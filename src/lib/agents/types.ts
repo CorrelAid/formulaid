@@ -49,6 +49,9 @@ export interface Survey {
 	 *  don't collide (#22). */
 	formId?: string;
 	questions: Question[];
+	/** Language of the questions. Written to settings `default_language`:
+	 *  without it formtransform treats the form as English. */
+	language?: 'de' | 'en';
 	/** The research questions the survey was generated for, numbered from 1. */
 	researchQuestions?: string[];
 	/** The generator's own account of how it arrived at this set of questions. */

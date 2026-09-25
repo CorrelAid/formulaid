@@ -43,6 +43,8 @@ interface Fixture {
 	source: string;
 	title?: string;
 	researchQuestions: string[];
+	/** Survey language; the fixtures so far are German. */
+	language?: 'de' | 'en';
 	/** Demographic question names, or "all". */
 	demographics?: string[] | 'all';
 	/** `generatedQuestions` as the model returned it. */
@@ -90,6 +92,7 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 			title: fixture.title ?? name,
 			// Fixed, so outputs are comparable between runs.
 			formId: `e2e_${name.replace(/[^a-z0-9]+/g, '_')}`,
+			language: fixture.language ?? 'de',
 			researchQuestions: fixture.researchQuestions
 		},
 		extractQuestions(fixture.generated),
@@ -143,6 +146,9 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 	it('converts to a LimeSurvey TSV without losing questions, answers or logic', async () => {
 		const rows = parseLstsv(await convert());
 		expect(validateLstsvSubset(rows)).toEqual([]);
+		// The survey's base language comes from settings default_language.
+		const language = rows.find((r) => r.class === 'S' && r.name === 'language');
+		expect(language?.text).toBe(fixture.language ?? 'de');
 
 		const converted = questionsOf(rows);
 		// formtransform turns these two notes into LimeSurvey's welcome and end
@@ -175,6 +181,20 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 			if (q.relevant) {
 				expect(target!.row.relevance, `relevance of ${q.name}`).not.toMatch(/^1?$/);
 			}
+		}
+	});
+
+	const otherPairs = survey.questions.filter(
+		(q) => q.name.endsWith('_other') && survey.questions.some((p) => `${p.name}_other` === q.name)
+	);
+	// Known gap: formtransform still emits the companion as its own question
+	// (sanitized, e.g. `fehltother`) with a relevance that never holds, so it is
+	// always hidden (CorrelAid/formtransform#79). When that is fixed this test
+	// passes and it.fails turns red: switch it to it().
+	it.runIf(otherPairs.length > 0).fails('folds <q>_other companions away completely', async () => {
+		const converted = questionsOf(parseLstsv(await convert()));
+		for (const q of otherPairs) {
+			expect(converted.has(q.name.replace('_other', 'other')), `${q.name} emitted`).toBe(false);
 		}
 	});
 

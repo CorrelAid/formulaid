@@ -3,6 +3,8 @@ import * as XLSX from 'xlsx';
 
 const FALLBACK_SLUG = 'questionnaire';
 
+const LANGUAGE_NAMES = { de: 'German (de)', en: 'English (en)' } as const;
+
 /** The questionnaires are German, so the workbook note is too. */
 export const DRAFT_NOTE =
 	'Automatisch generierter Entwurf (FormulAid): ein Ausgangspunkt, kein fertiges Ergebnis. Vor dem Einsatz jede Frage prüfen, an die Zielgruppe anpassen und mit einigen Personen aus der Zielgruppe testen (Pretest, siehe https://umfragen.civic-data.de/pretesting).';
@@ -82,9 +84,16 @@ export class XLSFormGenerator {
 		const wb = XLSX.utils.book_new();
 		const wsSurvey = XLSX.utils.aoa_to_sheet(surveyData);
 		const wsChoices = XLSX.utils.aoa_to_sheet(choicesData);
+		const settings: [string, string][] = [
+			['form_title', survey.title || 'Questionnaire'],
+			['form_id', survey.formId ?? formIdFor(survey.title)]
+		];
+		// XLSForm's "Name (code)" form. formtransform takes the LimeSurvey base
+		// language from it and otherwise assumes English; Kobo shows the name.
+		if (survey.language) settings.push(['default_language', LANGUAGE_NAMES[survey.language]]);
 		const wsSettings = XLSX.utils.aoa_to_sheet([
-			['form_title', 'form_id'],
-			[survey.title || 'Questionnaire', survey.formId ?? formIdFor(survey.title)]
+			settings.map(([key]) => key),
+			settings.map(([, value]) => value)
 		]);
 		// Why each question is here, and where it came from (#5). Converters read
 		// only survey/choices/settings, so an extra sheet travels along harmlessly.
