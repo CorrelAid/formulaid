@@ -5,7 +5,8 @@ import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js
 import type { AgentInput, Question } from './types.js';
 
 vi.mock('./qwacback.js', () => ({
-	getQwacbackFunctions: async () => ({ functions: [], available: false })
+	searchQuestionBank: async () => ({ hits: [], available: false }),
+	renderBankHits: () => ''
 }));
 
 const input: AgentInput = {
@@ -41,7 +42,8 @@ function rejectFirst(n: number) {
 	});
 }
 
-/** Answers as the generator or the repair agent, depending on the prompt. */
+/** Answers as the keyword step, the generator or the repair agent, depending
+ *  on the prompt. Keyword calls aren't counted. */
 function mockAI(generated: Partial<Question>[], repaired: Partial<Question>[]) {
 	const calls = { generate: 0, repair: 0 };
 	const ai = new AxMockAIService<string>({
@@ -49,6 +51,10 @@ function mockAI(generated: Partial<Question>[], repaired: Partial<Question>[]) {
 		chatResponse: async (req: Readonly<AxChatRequest<unknown>>) => {
 			const first = req.chatPrompt[0];
 			const system = first && 'content' in first ? String(first.content) : '';
+			if (system.includes('You pick search terms')) {
+				const content = 'Keywords: ["Zufriedenheit", "Engagement"]';
+				return { results: [{ index: 0, content, finishReason: 'stop' as const }] };
+			}
 			const isRepair = system.includes('You repair');
 			if (isRepair) calls.repair++;
 			else calls.generate++;

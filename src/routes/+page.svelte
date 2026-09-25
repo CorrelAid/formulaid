@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import {
-		demographicVariables,
-		CHAT_MODEL,
-		getProvider,
-		type DemographicVariable
-	} from '$lib/constants';
+	import { demographicVariables, getProvider } from '$lib/constants';
 	import { appSettings } from '$lib/settings.svelte';
 	import { loadWizardInputs, saveWizardInputs } from '$lib/wizard_storage';
 	import { locale, t } from '$lib/i18n';
@@ -21,8 +16,7 @@
 		type RunPhase,
 		type Survey,
 		type Trace,
-		type Choice,
-		type QuestionType
+		demographicQuestions
 	} from '$lib/agents/index.js';
 
 	// Form state
@@ -58,21 +52,8 @@
 		selectedDemographics = [];
 		resetResult();
 	}
-	let model = $state(CHAT_MODEL);
 	let activeProvider = $derived(getProvider(appSettings.provider));
-
 	const displayUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
-	// Model names are provider-specific, so following the provider is the right
-	// default — but never overwrite a name the user typed themselves.
-	let lastProviderId = $state(appSettings.provider);
-	$effect(() => {
-		if (appSettings.provider !== lastProviderId) {
-			if (model === getProvider(lastProviderId).defaultModel) {
-				model = getProvider(appSettings.provider).defaultModel;
-			}
-			lastProviderId = appSettings.provider;
-		}
-	});
 
 	// Generation state
 	let aiLoading = $state(false);
@@ -100,7 +81,10 @@
 	 *  instead of jumping to the end, and it never reaches 100 before done. */
 	function showPhase(p: RunPhase) {
 		const tr = get(t);
-		if (p.phase === 'generating') {
+		if (p.phase === 'searching') {
+			aiStatus = tr('wizard.statusSearching');
+			runProgress = 10;
+		} else if (p.phase === 'generating') {
 			aiStatus = tr('wizard.statusGenerating');
 			runProgress = 15;
 		} else if (p.phase === 'validating') {
@@ -132,31 +116,6 @@
 		return { kind: 'message', text: msg };
 	}
 
-	function getDemographicQuestions(selected: string[]): DemographicVariable[] {
-		return demographicVariables.filter((v) => selected.includes(v.question_name));
-	}
-
-	function mapToQuestionType(type: string): QuestionType {
-		if (!type) return 'text';
-		const t = type.toLowerCase();
-		if (t.includes('single') || t.includes('one') || t === 'select_one') return 'select_one';
-		if (t.includes('multiple')) return 'select_multiple';
-		if (t.includes('number') || t.includes('integer')) return 'integer';
-		if (t.includes('date')) return 'date';
-		return 'text';
-	}
-
-	function parseChoices(optionsText: string): Choice[] {
-		if (!optionsText) return [];
-		return optionsText
-			.split('\n')
-			.filter((line) => line.trim())
-			.map((line, i) => ({
-				label: line.trim(),
-				name: `choice_${i}`
-			}));
-	}
-
 	function resetResult() {
 		generatedFile = null;
 		generatedSurvey = null;
@@ -181,20 +140,7 @@
 		const controller = new AbortController();
 		abortController = controller;
 		try {
-			const demoQuestions = getDemographicQuestions(selectedDemographics).map((r) => ({
-				id: r.question_id,
-				name: r.question_name,
-				label: r.question_text,
-				type: mapToQuestionType(r.question_type),
-				choices: parseChoices(r.answer_options_text),
-				required: true
-			}));
-
-			const ai = createModel(
-				appSettings.apiKey,
-				model || activeProvider.defaultModel,
-				appSettings.baseUrl
-			);
+			const ai = createModel(appSettings.apiKey, appSettings.model, appSettings.baseUrl);
 			const result = await new LeadAgent(ai).run(
 				{
 					researchQuestion,
@@ -202,7 +148,7 @@
 					useOfResults,
 					language: language || 'formal',
 					selectedDemographics,
-					demographicQuestions: demoQuestions
+					demographicQuestions: demographicQuestions(selectedDemographics)
 				},
 				{
 					signal: controller.signal,
@@ -384,17 +330,19 @@
 					>{$t('wizard.modelInfoPrivacyLink')}</a
 				>.
 			</p>
+		{:else if activeProvider.id === 'eurouter'}
+			<p class="model-info">{$t('wizard.modelInfoEurouterRelay')}</p>
 		{/if}
-		<p class="model-tool-note">
-			{$t('wizard.modelToolNote')}
-			{#if activeProvider.id === 'openrouter'}{$t('wizard.modelToolNoteFree')}{/if}
-		</p>
 		<div class="input-group">
 			<label for="model-select">{$t('wizard.modelLabel')}</label>
 			<input
 				id="model-select"
 				type="text"
-				bind:value={model}
+				bind:value={
+					() => appSettings.modelInput,
+					// Each provider keeps its own model name (#29).
+					(v) => appSettings.setModel(v)
+				}
 				placeholder={activeProvider.defaultModel}
 			/>
 		</div>
@@ -787,16 +735,6 @@
 	.model-info {
 		font-size: 0.9rem;
 		opacity: 0.75;
-		margin-bottom: var(--spacing-base);
-	}
-
-	.model-tool-note {
-		font-size: 0.85rem;
-		padding: var(--spacing-xs) var(--spacing-sm);
-		background: #fff8f0;
-		border-left: 3px solid #e09100;
-		border-radius: var(--radius-sm);
-		color: #8a5700;
 		margin-bottom: var(--spacing-base);
 	}
 

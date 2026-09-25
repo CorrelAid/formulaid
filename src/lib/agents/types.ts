@@ -24,7 +24,6 @@ export interface Question {
 	hint?: string;
 	required: boolean;
 	choices?: Choice[];
-	logic?: string; // For relevant column in XLSForm
 	/** XPath condition for the `relevant` column. */
 	relevant?: string;
 	/** Why this question is in the questionnaire — surfaced in the UI and in the
@@ -64,6 +63,7 @@ export interface AgentInput {
  *  progress (#20). `attempt` is 0 for the first generation and counts repair
  *  attempts after that. */
 export type RunPhase =
+	| { phase: 'searching' }
 	| { phase: 'generating' }
 	| { phase: 'validating'; attempt: number }
 	| { phase: 'repairing'; attempt: number };

@@ -3,6 +3,9 @@ import { DEFAULT_PROVIDER, getProvider, type ProviderId } from './constants';
 
 const PROVIDER_KEY = 'formulaid_provider';
 const CUSTOM_URL_KEY = 'formulaid_custom_base_url';
+/** Model names differ per provider (OpenRouter prefixes the vendor), so each
+ *  provider remembers its own (#29). */
+const modelKey = (provider: ProviderId) => `formulaid_model_${provider}`;
 
 class AppSettings {
 	apiKey = $state('');
@@ -33,6 +36,33 @@ class AppSettings {
 		localStorage.setItem(CUSTOM_URL_KEY, customBaseUrl);
 	}
 
+	/** Model name per provider, as typed; missing or empty means the default. */
+	models = $state<Partial<Record<ProviderId, string>>>({});
+
+	/** What the model field shows for the active provider. */
+	get modelInput(): string {
+		return this.models[this.provider] ?? getProvider(this.provider).defaultModel;
+	}
+
+	/** The model to call: the one last used with the active provider, or its default. */
+	get model(): string {
+		return this.models[this.provider]?.trim() || getProvider(this.provider).defaultModel;
+	}
+
+	/** Remember `model` for the active provider. The default is stored as "no
+	 *  choice", so a later change of the default reaches everyone who never
+	 *  picked one. */
+	setModel(model: string) {
+		const name = model.trim();
+		const key = modelKey(this.provider);
+		this.models[this.provider] = model;
+		if (!name || name === getProvider(this.provider).defaultModel) {
+			localStorage.removeItem(key);
+		} else {
+			localStorage.setItem(key, name);
+		}
+	}
+
 	/** Base URL for the OpenAI-compatible client, resolved for the active provider. */
 	get baseUrl(): string {
 		return this.provider === 'custom'
@@ -52,6 +82,10 @@ class AppSettings {
 			this.provider = provider;
 		}
 		this.customBaseUrl = localStorage.getItem(CUSTOM_URL_KEY) ?? '';
+		for (const id of ['openrouter', 'eurouter', 'custom'] as const) {
+			const saved = localStorage.getItem(modelKey(id));
+			if (saved) this.models[id] = saved;
+		}
 	}
 
 	clear() {

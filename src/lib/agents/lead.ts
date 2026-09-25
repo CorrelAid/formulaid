@@ -1,6 +1,8 @@
 import type { AxAIService } from '@ax-llm/ax';
 import { SurveyGeneratorAgent, formOfAddress } from './survey_generator.js';
 import { RepairAgent } from './repair_agent.js';
+import { KeywordAgent } from './keyword_agent.js';
+import { searchQuestionBank } from './qwacback.js';
 import { sanitizeSurvey } from './sanitize.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
@@ -79,12 +81,13 @@ export interface RunResult {
 }
 
 /**
- * Runs one questionnaire generation end to end: generate → sanitize → build
- * the workbook → validate → repair, capped at MAX_REPAIR_ATTEMPTS. Whatever
+ * Runs one questionnaire generation end to end: search the question bank →
+ * generate → sanitize → build the workbook → validate → repair, capped at MAX_REPAIR_ATTEMPTS. Whatever
  * the last attempt produced is returned together with the remaining findings,
  * so the caller never ships an invalid form silently.
  */
 export class LeadAgent {
+	private keywordAgent = new KeywordAgent();
 	private surveyGenerator = new SurveyGeneratorAgent();
 	private repairAgent = new RepairAgent();
 	private workbookGenerator = new XLSFormGenerator();
@@ -93,8 +96,14 @@ export class LeadAgent {
 	constructor(private ai: AxAIService) {}
 
 	async run(input: AgentInput, { signal, onPhase, onTrace }: RunOptions = {}): Promise<RunResult> {
+		// Search the bank as a fixed step, not a tool the model may skip (#33).
+		onPhase?.({ phase: 'searching' });
+		const keywords = await this.keywordAgent.keywords(this.ai, input, signal);
+		this.reportTrace(this.keywordAgent, onTrace);
+		const bank = await searchQuestionBank(keywords, signal);
+
 		onPhase?.({ phase: 'generating' });
-		const generated = await this.surveyGenerator.generateSurvey(this.ai, input, signal);
+		const generated = await this.surveyGenerator.generateSurvey(this.ai, input, bank.hits, signal);
 		this.reportTrace(this.surveyGenerator, onTrace);
 
 		const base = {
@@ -148,16 +157,20 @@ export class LeadAgent {
 			workbook: current.workbook,
 			findings: current.findings,
 			repairAttempts: attempt,
-			qwacAvailable: generated.qwacAvailable
+			qwacAvailable: bank.available
 		};
 	}
 
-	/** Tokens used by all runs of this agent so far, summed over both
-	 *  generators (used by scripts/test_workflow.ts to compare prompts). */
+	/** Tokens used by all runs of this agent so far, summed over every step
+	 *  (used by scripts/test_workflow.ts to compare prompts). */
 	usage(): { promptTokens: number; completionTokens: number } {
 		let promptTokens = 0;
 		let completionTokens = 0;
-		for (const u of [...this.surveyGenerator.getUsage(), ...this.repairAgent.getUsage()]) {
+		for (const u of [
+			...this.keywordAgent.getUsage(),
+			...this.surveyGenerator.getUsage(),
+			...this.repairAgent.getUsage()
+		]) {
 			promptTokens += u.tokens?.promptTokens ?? 0;
 			completionTokens += u.tokens?.completionTokens ?? 0;
 		}

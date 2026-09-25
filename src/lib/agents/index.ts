@@ -7,3 +7,5 @@ export * from './config.js';
 export * from './qwacback.js';
 export * from './question_parser.js';
 export * from './sanitize.js';
+export * from './demographics.js';
+export * from './keyword_agent.js';

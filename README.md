@@ -26,8 +26,6 @@ cp .env.example .env
 | -------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `OPENROUTER_API_KEY` | Yes (scripts only) | Used by `scripts/initialize_agents.ts` for agent optimization. The web app takes the key from the user at runtime. |
 | `GITHUB_TOKEN`       | No                 | Avoids GitHub API rate limits (60 req/h unauthenticated) when fetching CDL content snippets during build.          |
-| `QWACBACK_MCP_URL`   | No                 | qwacback MCP endpoint. Defaults to `https://qwacback.correlaid.org/mcp`.                                           |
-| `QWACBACK_MCP_TOKEN` | No                 | Bearer token for qwacback MCP authentication, if required.                                                         |
 
 ## Developing
 
@@ -92,15 +90,15 @@ FormulAid ships in two forms — web app and Claude Code skill — that share th
 | `generate-instructions.md`            | read in Step 3 | `?raw` import → AxGen system description            |
 | `references/demographic-templates.md` | read in Step 0 | not used (demographics hardcoded in `constants.ts`) |
 
-### MCP tools
+### Question bank
 
-Both the skill and the web app call the same **qwacback MCP server** to search for validated survey instruments before generating questions from scratch.
+Both look for validated instruments in the **qwac question bank** before writing questions from scratch, but differently.
 
-|           | Claude Code skill                                                      | Web app                                                       |
-| --------- | ---------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Transport | native `qwacback:*` tools via Claude Code MCP config                   | `src/lib/agents/qwacback.ts` — custom stateful HTTP transport |
-| Tools     | `search_questions`, `search_studies`, `get_question`, `list_questions` | same 4, auto-discovered via `AxMCPClient.toFunction()`        |
-| When      | Step 2, explicit                                                       | during `AxGen.forward()`, LLM decides                         |
+|        | Claude Code skill                                                      | Web app                                                                                                                            |
+| ------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Access | native `qwacback:*` tools via the MCP connector                        | qwac's REST API (`/api/questions`), `src/lib/agents/qwacback.ts`                                                                   |
+| Search | `search_questions`, `search_studies`, `get_question`, `list_questions` | a short model call proposes keywords (`keyword_agent.ts`); the search runs in code, without the demographic standards, top 30 hits |
+| When   | Step 2, explicit                                                       | a fixed step before generation; the hits go into the generator prompt as `questionBank`                                            |
 
 ### What is not shared
 

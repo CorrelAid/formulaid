@@ -25,8 +25,6 @@ const translations: Record<Locale, Record<string, string>> = {
 
 		// Form
 		'wizard.modelHeading': '4. AI Model',
-		'wizard.modelToolNote':
-			'The model must support tool/function calling: the agent uses it to search the question bank. If generation fails, try a different model.',
 		'wizard.modelInfoPrivacyLink': 'OpenRouter privacy settings',
 		'wizard.modelPrivacyError':
 			'OpenRouter blocked the request due to your privacy settings. Allow third-party model access at',
@@ -101,6 +99,8 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Credit limit must be $5 or less. Please lower it in your OpenRouter key settings.',
 		'page.footer': 'This tool is open source and available on',
 		'wizard.modelInfoActive': 'Requests currently go to',
+		'wizard.modelInfoEurouterRelay':
+			'EUrouter does not accept requests straight from the browser, so they are relayed through the FormulAid server. Your API key, the research goal and the generated questions pass through it. FormulAid neither stores nor logs them.',
 		'wizard.modelInfoKeys': 'Create an API key at',
 		'wizard.modelInfoModels': 'and find available model names at',
 		'wizard.modelInfoCustom':
@@ -108,8 +108,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelInfoSwitch': 'You can switch provider with the API key button at the top.',
 		'wizard.modelInfoOpenRouterFree':
 			'Free models (name ends in :free) work well for most surveys. If you get a “No endpoints available” error, allow third-party model access in your',
-		'wizard.modelToolNoteFree':
-			'Many free models do not support tool calling. A known working free model is qwen/qwen3.6-plus-preview:free.',
+		'wizard.statusSearching': 'Searching the question bank…',
 		'wizard.statusGenerating': 'Building the questionnaire from your research goal…',
 		'wizard.statusValidating': 'Checking the questionnaire…',
 		'wizard.cancel': 'Cancel',
@@ -151,8 +150,6 @@ const translations: Record<Locale, Record<string, string>> = {
 
 		// Form
 		'wizard.modelHeading': '4. KI-Modell',
-		'wizard.modelToolNote':
-			'Das Modell muss Tool/Function Calling unterstützen: Der Agent nutzt es, um die Fragendatenbank zu durchsuchen. Schlägt die Generierung fehl, versuche ein anderes Modell.',
 		'wizard.modelInfoPrivacyLink': 'OpenRouter-Datenschutzeinstellungen',
 		'wizard.modelPrivacyError':
 			'OpenRouter hat die Anfrage wegen deiner Datenschutzeinstellungen blockiert. Erlaube den Zugang zu Drittanbieter-Modellen unter',
@@ -227,6 +224,8 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Das Ausgabenlimit darf höchstens 5 $ betragen. Passe es in den Einstellungen deines OpenRouter-Keys an.',
 		'page.footer': 'Dieses Tool ist Open Source und verfügbar auf',
 		'wizard.modelInfoActive': 'Anfragen gehen aktuell an',
+		'wizard.modelInfoEurouterRelay':
+			'EUrouter nimmt keine Anfragen direkt aus dem Browser an, deshalb werden sie über den FormulAid-Server weitergeleitet. Dein API-Key, das Forschungsziel und die generierten Fragen laufen darüber. FormulAid speichert und protokolliert davon nichts.',
 		'wizard.modelInfoKeys': 'Einen API-Key erstellst du unter',
 		'wizard.modelInfoModels': 'verfügbare Modellnamen findest du unter',
 		'wizard.modelInfoCustom':
@@ -234,8 +233,7 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.modelInfoSwitch': 'Den Anbieter wechselst du über den API-Key-Button oben.',
 		'wizard.modelInfoOpenRouterFree':
 			'Kostenlose Modelle (Name endet auf :free) eignen sich für die meisten Umfragen. Bei einem „No endpoints available“-Fehler erlaube den Zugang zu Drittanbieter-Modellen in den',
-		'wizard.modelToolNoteFree':
-			'Viele kostenlose Modelle können das nicht. Ein bekannt funktionierendes kostenloses Modell ist qwen/qwen3.6-plus-preview:free.',
+		'wizard.statusSearching': 'Durchsuche die Fragendatenbank…',
 		'wizard.statusGenerating': 'Erstelle Fragebogen aus dem Forschungsziel…',
 		'wizard.statusValidating': 'Prüfe den Fragebogen…',
 		'wizard.cancel': 'Abbrechen',
