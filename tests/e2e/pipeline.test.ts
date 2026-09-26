@@ -181,14 +181,15 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 	const otherPairs = survey.questions.filter(
 		(q) => q.name.endsWith('_other') && survey.questions.some((p) => `${p.name}_other` === q.name)
 	);
-	// Known gap: formtransform still emits the companion as its own question
-	// (sanitized, e.g. `fehltother`) with a relevance that never holds, so it is
-	// always hidden (CorrelAid/formtransform#79). When that is fixed this test
-	// passes and it.fails turns red: switch it to it().
-	it.runIf(otherPairs.length > 0).fails('folds <q>_other companions away completely', async () => {
+	// The companion folds into LimeSurvey's own "other" field: no separate
+	// question, and its label becomes the parent's other_replace_text, the label
+	// of LimeSurvey's "other" text box (CorrelAid/formtransform#79, v0.2.1).
+	it.runIf(otherPairs.length > 0)('folds <q>_other companions into the other field', async () => {
 		const converted = questionsOf(parseLstsv(await convert()));
 		for (const q of otherPairs) {
 			expect(converted.has(q.name.replace('_other', 'other')), `${q.name} emitted`).toBe(false);
+			const parent = converted.get(q.name.slice(0, -'_other'.length));
+			expect(parent?.row.other_replace_text, `label of ${q.name}`).toBe(q.label);
 		}
 	});
 
