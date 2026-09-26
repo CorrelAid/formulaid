@@ -1,6 +1,15 @@
-import { XLSLoader, XLSValidator, type SubsetViolation } from '@correlaid/formtransform';
+import {
+	XLSLoader,
+	XLSValidator,
+	type DiagnosticCode,
+	type SubsetViolation
+} from '@correlaid/formtransform';
 
-export type ValidationFinding = SubsetViolation;
+/** formtransform's findings, each with a stable `code` (branch on that, not on
+ *  the message). `validator-failed` is formulaid's own: the check itself threw. */
+export type ValidationFinding = Omit<SubsetViolation, 'code'> & {
+	code: DiagnosticCode | 'validator-failed';
+};
 
 /**
  * Re-parse a generated XLSForm workbook and run it through the registry subset

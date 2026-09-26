@@ -11,11 +11,10 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import {
-	XLSFormToTSVConverter,
-	XLSLoader,
 	lstsvToXlsform,
 	parseLstsv,
-	validateLstsvSubset
+	validateLstsvSubset,
+	xlsformToLstsv
 } from '@correlaid/formtransform';
 import {
 	XLSFormGenerator,
@@ -104,14 +103,9 @@ describe.each(fixtures)('$name', ({ name, fixture }) => {
 		workbook.byteOffset,
 		workbook.byteOffset + workbook.byteLength
 	) as ArrayBuffer;
-	const convert = async () => {
-		const parsed = XLSLoader.parseXLSData(buffer);
-		return new XLSFormToTSVConverter().convert(
-			parsed.surveyData,
-			parsed.choicesData,
-			parsed.settingsData
-		);
-	};
+	// With validation on: a form outside the subset is rejected here, as it
+	// would be in any other converter.
+	const convert = () => xlsformToLstsv(buffer);
 	const withChoices = survey.questions.filter((q) => q.choices?.length);
 
 	it('writes the workbook for the pyxform check', () => {

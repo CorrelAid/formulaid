@@ -34,7 +34,11 @@ const good: Partial<Question>[] = Array.from({ length: 8 }, (_, i) => ({
 	choices: scale,
 	rationale: 'Kern'
 }));
-const rejected: ValidationFinding = { severity: 'error', message: 'rejected for the test' };
+const rejected: ValidationFinding = {
+	code: 'validator-failed',
+	severity: 'error',
+	message: 'rejected for the test'
+};
 
 /** After parsing and sanitizing, hardly anything still fails the validator,
  *  so the repair tests make it reject the first `n` workbooks. */
@@ -292,6 +296,37 @@ describe('LeadAgent.run', () => {
 		expect(repairPrompts[0]).not.toContain('bereich_sonstiges');
 		const followup = result.survey.questions.find((q) => q.name === 'bereichsonstiges');
 		expect(followup?.relevant).toBeUndefined();
+	});
+
+	it('repairs a condition that can never be true (literal-invalid)', async () => {
+		const art: Partial<Question> = {
+			name: 'art',
+			label: 'Art?',
+			type: 'select_one',
+			rationale: 'r',
+			choices: [
+				{ name: 'lokal', label: 'Lokal' },
+				{ name: 'sonst', label: 'Sonstiges' }
+			]
+		};
+		const detail = (relevant: string): Partial<Question> => ({
+			name: 'artdetail',
+			label: 'Welche genau?',
+			type: 'text',
+			rationale: 'r',
+			relevant
+		});
+		const { ai, calls } = mockAI(
+			[art, detail("${art} = 'Sonstiges'"), ...good.slice(0, 7)],
+			[art, detail("${art} = 'sonst'"), ...good.slice(0, 7)]
+		);
+		const result = await new LeadAgent(ai).run(input);
+
+		expect(calls.repair).toBe(1);
+		expect(result.survey.questions.find((q) => q.name === 'artdetail')?.relevant).toBe(
+			"${art} = 'sonst'"
+		);
+		expect(result.findings.map((f) => f.code)).not.toContain('literal-invalid');
 	});
 
 	it('shows the repair the closing note and no demographic (#56)', async () => {

@@ -7,7 +7,7 @@
       "dependencies": {
         "@ax-llm/ax": "^19.0.38",
         "@correlaid/cdl-design": "github:CorrelAid/cdl-design",
-        "@correlaid/formtransform": "https://github.com/CorrelAid/formtransform/releases/download/v0.1.7/correlaid-formtransform-0.1.7.tgz",
+        "@correlaid/formtransform": "https://github.com/CorrelAid/formtransform/releases/download/v0.2.0/correlaid-formtransform-0.2.0.tgz",
         "xlsx": "^0.18.5",
       },
       "devDependencies": {
@@ -43,7 +43,7 @@
 
     "@correlaid/cdl-design": ["@correlaid/cdl-design@github:CorrelAid/cdl-design#a5a8162", { "dependencies": { "@sveltejs/kit": "^2.50.2", "@sveltejs/package": "^2.5.7", "@sveltejs/vite-plugin-svelte": "^6.2.4", "@terrazzo/parser": "^0.5.0", "@terrazzo/plugin-css": "^0.5.0", "svelte": "^5.0.0", "typescript": "^5.9.3", "vite": "^7.3.1" }, "peerDependencies": { "shiki": "^3.0.0", "svelte": "^5.0.0" } }, "CorrelAid-cdl-design-a5a8162", "sha512-f1zW30ETkKex7fWhT3MPslb85AQNbycz83M7P3wy+QRg+qCZRQyRwOu6g3qcJ6EjPuGfluFbsuNUcxscVlSiJQ=="],
 
-    "@correlaid/formtransform": ["@correlaid/formtransform@https://github.com/CorrelAid/formtransform/releases/download/v0.1.7/correlaid-formtransform-0.1.7.tgz", { "dependencies": { "marked": "^17.0.5", "xlsx": "^0.18.5" }, "bin": { "formtransform": "dist/cli.js" } }, "sha512-9Yg9mwNZKhNuJJDBHn+30YXq0K2TKpOdiAInm2MBZKNXc+aRyAaUcGmKnuT7+YQrzB4twtAXLVaOislm98uO7w=="],
+    "@correlaid/formtransform": ["@correlaid/formtransform@https://github.com/CorrelAid/formtransform/releases/download/v0.2.0/correlaid-formtransform-0.2.0.tgz", { "dependencies": { "marked": "^17.0.5", "xlsx": "^0.18.5" }, "bin": { "formtransform": "dist/cli.js" } }, "sha512-z+a2QOYJVt1plPCZKHgP4/86P7uM5ZskckioLFxgoJDrb4PTc+z/+fU+T08dF3En/32Mpxh0Ts1f4mKzg93FwA=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.3", "", { "os": "aix", "cpu": "ppc64" }, "sha512-9fJMTNFTWZMh5qwrBItuziu834eOCUcEqymSH7pY+zoMVEZg3gcPuBNxH1EvfVYe9h0x/Ptw8KBzv7qxb7l8dg=="],
 

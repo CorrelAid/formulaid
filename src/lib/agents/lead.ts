@@ -19,6 +19,11 @@ import type { AgentInput, Question, RunPhase, Survey, Trace } from './types.js';
  *  delivered with the remaining findings shown (#11). */
 export const MAX_REPAIR_ATTEMPTS = 2;
 
+/** Validator warnings that are real bugs in a generated form and get repaired
+ *  like errors: a comparison that can never be true (`${art} = 'Sonstiges'`
+ *  when the code is `sonst`) hides the question from everyone. */
+const REPAIR_WARNINGS = new Set<ValidationFinding['code']>(['literal-invalid']);
+
 /** The prompt asks for 8–15 answerable questions; small models often stop
  *  short, or write everything as open text. */
 const MIN_QUESTIONS = 8;
@@ -257,7 +262,7 @@ export class LeadAgent {
 			const questions = survey.questions.filter((q) => !demographicIds.has(q.id));
 			const workbook = this.workbookGenerator.generate(survey);
 			const findings = this.validate(workbook);
-			const errors = findings.filter((f) => f.severity === 'error');
+			const errors = findings.filter((f) => f.severity === 'error' || REPAIR_WARNINGS.has(f.code));
 			return {
 				questions,
 				survey,
@@ -327,7 +332,13 @@ export class LeadAgent {
 		try {
 			return this.validator.validate(workbook);
 		} catch (e) {
-			return [{ severity: 'error', message: `Validation failed to run: ${(e as Error).message}` }];
+			return [
+				{
+					code: 'validator-failed',
+					severity: 'error',
+					message: `Validation failed to run: ${(e as Error).message}`
+				}
+			];
 		}
 	}
 
