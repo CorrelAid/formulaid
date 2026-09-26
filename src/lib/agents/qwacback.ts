@@ -16,6 +16,9 @@ export interface BankQuestion {
 	concept: string;
 	question: string;
 	answerType: string;
+	/** The concept in other languages, e.g. `{ de: ['Vertrauen', 'Nachbarn'] }`
+	 *  for an English item (qwac tags, #59). */
+	tags?: Record<string, string[]>;
 }
 
 export interface BankSearch {
@@ -31,6 +34,19 @@ interface RawQuestion {
 	concept?: string;
 	question_text?: string;
 	answer_type?: string;
+	tags?: { lang?: string; text?: string }[] | null;
+}
+
+/** qwac's `[{lang, text}]` tags grouped by language; empty ones dropped. */
+function groupTags(tags: RawQuestion['tags']): Record<string, string[]> | undefined {
+	const grouped: Record<string, string[]> = {};
+	for (const t of tags ?? []) {
+		const text = t.text?.trim();
+		if (!text) continue;
+		const texts = (grouped[t.lang?.trim() || '?'] ??= []);
+		if (!texts.includes(text)) texts.push(text);
+	}
+	return Object.keys(grouped).length ? grouped : undefined;
 }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -86,7 +102,8 @@ export async function searchQuestionBank(
 				study: titles.get(q.study_id) ?? '',
 				concept: q.concept ?? '',
 				question: q.question_text ?? '',
-				answerType: q.answer_type ?? ''
+				answerType: q.answer_type ?? '',
+				tags: groupTags(q.tags)
 			}));
 		return { hits, available: true };
 	} catch (e) {
@@ -99,6 +116,13 @@ export async function searchQuestionBank(
 /** One line per hit, the format the generator prompt describes. */
 export function renderBankHits(hits: BankQuestion[]): string {
 	return hits
-		.map((q) => `${q.id} | ${q.study} | ${q.concept} | ${q.question} | ${q.answerType}`)
+		.map((q) => `${q.id} | ${q.study} | ${withTags(q)} | ${q.question} | ${q.answerType}`)
 		.join('\n');
+}
+
+/** The concept plus its other-language tags, so the generator sees why an
+ *  English item matched a German goal: `Interpersonal trust (de: Vertrauen)`. */
+function withTags(q: BankQuestion): string {
+	const tags = Object.entries(q.tags ?? {}).map(([lang, texts]) => `${lang}: ${texts.join(', ')}`);
+	return tags.length ? `${q.concept} (${tags.join('; ')})` : q.concept;
 }

@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DEMOGRAPHIC_STUDY_ID, MAX_BANK_HITS, searchQuestionBank } from './qwacback.js';
+import {
+	DEMOGRAPHIC_STUDY_ID,
+	MAX_BANK_HITS,
+	renderBankHits,
+	searchQuestionBank
+} from './qwacback.js';
 
 const studies = { items: [{ id: 'cdl', title: 'Ausgewählte CDL Instrumente' }] };
 const hit = (id: string, study_id = 'cdl') => ({
@@ -58,5 +63,28 @@ describe('searchQuestionBank (#57)', () => {
 	it('reports qwac as unavailable when the search fails', async () => {
 		mockQwac([], 503);
 		expect(await searchQuestionBank(['Zufriedenheit'])).toEqual({ hits: [], available: false });
+	});
+
+	it('keeps qwac tags grouped by language, and shows them in the prompt (#59)', async () => {
+		mockQwac([
+			{
+				...hit('trust'),
+				concept: 'Interpersonal trust',
+				tags: [
+					{ lang: 'de', text: 'Vertrauen' },
+					{ lang: 'de', text: 'Nachbarn' },
+					{ lang: 'de', text: 'Vertrauen' },
+					{ lang: 'fr', text: ' ' }
+				]
+			},
+			{ ...hit('sat'), tags: null }
+		]);
+		const { hits } = await searchQuestionBank(['Vertrauen']);
+		expect(hits[0].tags).toEqual({ de: ['Vertrauen', 'Nachbarn'] });
+		expect(hits[1].tags).toBeUndefined();
+		expect(renderBankHits(hits).split('\n')).toEqual([
+			'trust | Ausgewählte CDL Instrumente | Interpersonal trust (de: Vertrauen, Nachbarn) | Frage trust? | single_choice',
+			'sat | Ausgewählte CDL Instrumente | Konzept sat | Frage sat? | single_choice'
+		]);
 	});
 });
