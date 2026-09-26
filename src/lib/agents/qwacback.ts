@@ -28,108 +28,72 @@ export interface BankSearch {
 interface RawQuestion {
 	id: string;
 	study_id: string;
-	name?: string;
 	concept?: string;
 	question_text?: string;
 	answer_type?: string;
 }
 
-/** A bank question plus the folded text it is searched by. */
-interface Indexed {
-	question: BankQuestion;
-	text: string;
+async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+	const res = await fetch(`${QWAC_API}${path}`, { signal });
+	if (!res.ok) throw new Error(`qwac ${path}: HTTP ${res.status}`);
+	return res.json() as Promise<T>;
 }
 
-async function fetchBank(signal?: AbortSignal): Promise<Indexed[]> {
-	const get = async <T>(path: string): Promise<T> => {
-		const res = await fetch(`${QWAC_API}${path}`, { signal });
-		if (!res.ok) throw new Error(`qwac ${path}: HTTP ${res.status}`);
-		return res.json() as Promise<T>;
-	};
-	const [studies, questions] = await Promise.all([
-		get<{ items: { id: string; title: string }[] }>(
-			'/collections/studies/records?perPage=200&fields=id,title'
-		),
-		get<RawQuestion[]>('/questions')
-	]);
-	const titles = new Map(studies.items.map((s) => [s.id, s.title]));
-	return questions
-		.filter((q) => q.study_id !== DEMOGRAPHIC_STUDY_ID)
-		.map((q) => ({
-			question: {
-				id: q.id,
-				study: titles.get(q.study_id) ?? '',
-				concept: q.concept ?? '',
-				question: q.question_text ?? '',
-				answerType: q.answer_type ?? ''
-			},
-			// Variable names often carry the construct too ("weiterempfehlung").
-			text: fold(`${q.concept ?? ''} ${q.question_text ?? ''} ${q.name ?? ''}`)
-		}));
-}
+/** Study titles for the prompt; a handful of records, cached for a while. */
+let studies: { at: number; titles: Promise<Map<string, string>> } | null = null;
 
-let cached: { at: number; bank: Promise<Indexed[]> } | null = null;
-
-async function getBank(signal?: AbortSignal): Promise<Indexed[]> {
-	if (!cached || Date.now() - cached.at > CACHE_MS) {
-		cached = { at: Date.now(), bank: fetchBank(signal) };
+function studyTitles(signal?: AbortSignal): Promise<Map<string, string>> {
+	if (!studies || Date.now() - studies.at > CACHE_MS) {
+		const titles = get<{ items: { id: string; title: string }[] }>(
+			'/collections/studies/records?perPage=200&fields=id,title',
+			signal
+		).then((r) => new Map(r.items.map((s) => [s.id, s.title])));
+		// Not cached on failure: the next generation tries again.
+		titles.catch(() => (studies = null));
+		studies = { at: Date.now(), titles };
 	}
-	try {
-		return await cached.bank;
-	} catch (e) {
-		// Not cached: the next generation tries again.
-		cached = null;
-		throw e;
-	}
-}
-
-/** Lowercase, umlauts spelled out, other accents dropped: "Qualität",
- *  "qualitaet" and "Qualitat" all match. */
-function fold(text: string): string {
-	return text
-		.toLowerCase()
-		.replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[c] ?? c)
-		.normalize('NFKD')
-		.replace(/[̀-ͯ]/g, '');
-}
-
-/** A crude stem, so a noun finds its verb and adjective forms:
- *  "Zufriedenheit" → "zufriede" matches "zufrieden",
- *  "Weiterempfehlung" → "weiterempfe" matches "weiterempfehlen". */
-function stem(keyword: string): string {
-	const k = fold(keyword.trim());
-	return k.length > 8 ? k.slice(0, Math.max(6, k.length - 5)) : k;
+	return studies.titles;
 }
 
 /**
  * The bank questions that match any of `keywords`, best first (#33). The model
- * proposes the keywords, but the search runs here: in test runs one model
- * never called the search tool and another searched with phrases that a
- * substring search can't match. qwac's own /api/search/questions only
- * matches the whole query as one substring; once CorrelAid/qwacback#5 lands,
- * this can call it instead of downloading every question.
+ * proposes the keywords; qwac's search does the rest (#57): several terms
+ * OR-matched and ranked by how many match, umlauts folded, German and English
+ * stemming, compounds, and the demographic standards left out.
  */
 export async function searchQuestionBank(
 	keywords: string[],
 	signal?: AbortSignal
 ): Promise<BankSearch> {
-	let bank: Indexed[];
+	const terms = [...new Set(keywords.map((k) => k.trim()).filter((k) => k.length >= 3))];
+	if (terms.length === 0) return { hits: [], available: true };
+	const query = new URLSearchParams({
+		q: terms.join(' '),
+		exclude_study: DEMOGRAPHIC_STUDY_ID,
+		perPage: String(MAX_BANK_HITS)
+	});
 	try {
-		bank = await getBank(signal);
+		const [result, titles] = await Promise.all([
+			get<{ items: RawQuestion[] | null }>(`/search/questions?${query}`, signal),
+			studyTitles(signal)
+		]);
+		const hits = (result.items ?? [])
+			// Belt and braces: the filter is the server's, the rule is ours.
+			.filter((q) => q.study_id !== DEMOGRAPHIC_STUDY_ID)
+			.slice(0, MAX_BANK_HITS)
+			.map((q) => ({
+				id: q.id,
+				study: titles.get(q.study_id) ?? '',
+				concept: q.concept ?? '',
+				question: q.question_text ?? '',
+				answerType: q.answer_type ?? ''
+			}));
+		return { hits, available: true };
 	} catch (e) {
 		if (signal?.aborted) throw e;
 		console.warn('qwac question bank unavailable, skipping:', (e as Error).message);
 		return { hits: [], available: false };
 	}
-	const stems = [...new Set(keywords.map(stem).filter((s) => s.length >= 3))];
-	const scored = bank
-		.map(({ question, text }) => ({
-			question,
-			score: stems.filter((s) => text.includes(s)).length
-		}))
-		.filter((s) => s.score > 0)
-		.sort((a, b) => b.score - a.score);
-	return { hits: scored.slice(0, MAX_BANK_HITS).map((s) => s.question), available: true };
 }
 
 /** One line per hit, the format the generator prompt describes. */

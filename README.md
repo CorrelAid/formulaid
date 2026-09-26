@@ -124,7 +124,7 @@ flowchart TD
     W["Wizard input<br/>research questions, target group, use of results,<br/>du/Sie, selected demographics"] --> K
 
     K["KeywordAgent<br/>6–14 keywords, German + English"]:::llm --> S
-    S["searchQuestionBank<br/>qwac REST API, top 30 hits"] --> G
+    S["searchQuestionBank<br/>qwac search API, top 30 hits"] --> G
     Q[("qwac question bank")] -.-> S
     G["SurveyGeneratorAgent<br/>generate-instructions.md + bank hits"]:::llm --> E
 
@@ -149,19 +149,19 @@ flowchart TD
 
 Purple steps call the model; everything else is deterministic code.
 
-| Step        | Model call | Progress shown as | File                                                  | What it does                                                                                                                      |
-| ----------- | ---------- | ----------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Keywords    | yes, short | `searching`       | `keyword_agent.ts`                                    | proposes the constructs to search for, in German and English                                                                      |
-| Bank search | no         | `searching`       | `qwacback.ts`                                         | stems the keywords, scores every bank question except the demographic standards, keeps the top 30; skipped if qwac is unreachable |
-| Generate    | yes        | `generating`      | `survey_generator.ts`                                 | writes the questions from the methodology prompt and the bank hits, tags each with the research questions it serves               |
-| Assemble    | no         | `validating`      | `lead.ts` (`assembleSurvey`), `sanitize.ts`           | adds demographics before the closing note, names the opening/closing notes, sanitizes names and codes                             |
-| Build       | no         | `validating`      | `xlsform_generator.ts`                                | writes the survey, choices, settings and explanations sheets                                                                      |
-| Validate    | no         | `validating`      | `xlsform_validator.ts`, `lead.ts` (`qualityFeedback`) | formtransform subset check plus the quality targets                                                                               |
-| Repair      | yes, ≤ 2×  | `repairing`       | `repair_agent.ts`                                     | fixes the listed problems, keeps everything else                                                                                  |
+| Step        | Model call | Progress shown as | File                                                  | What it does                                                                                                                                                               |
+| ----------- | ---------- | ----------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keywords    | yes, short | `searching`       | `keyword_agent.ts`                                    | proposes the constructs to search for, in German and English                                                                                                               |
+| Bank search | no         | `searching`       | `qwacback.ts`                                         | one request to qwac's `/api/search/questions` with all keywords (multi-term, stemming, umlauts), without the demographic standards, top 30; skipped if qwac is unreachable |
+| Generate    | yes        | `generating`      | `survey_generator.ts`                                 | writes the questions from the methodology prompt and the bank hits, tags each with the research questions it serves                                                        |
+| Assemble    | no         | `validating`      | `lead.ts` (`assembleSurvey`), `sanitize.ts`           | adds demographics before the closing note, names the opening/closing notes, sanitizes names and codes                                                                      |
+| Build       | no         | `validating`      | `xlsform_generator.ts`                                | writes the survey, choices, settings and explanations sheets                                                                                                               |
+| Validate    | no         | `validating`      | `xlsform_validator.ts`, `lead.ts` (`qualityFeedback`) | formtransform subset check plus the quality targets                                                                                                                        |
+| Repair      | yes, ≤ 2×  | `repairing`       | `repair_agent.ts`                                     | fixes the listed problems, keeps everything else                                                                                                                           |
 
 Why it works this way:
 
-- **The bank search is a fixed step**, not a tool the model may skip. The model only proposes keywords; the search runs in code ([#33](https://github.com/CorrelAid/formulaid/issues/33)).
+- **The bank search is a fixed step**, not a tool the model may skip. The model only proposes keywords; qwac's search endpoint runs them ([#33](https://github.com/CorrelAid/formulaid/issues/33), [#57](https://github.com/CorrelAid/formulaid/issues/57)).
 - **Mechanical problems are fixed in code** before validation (names, choice codes, duplicates, references in skip logic), so only real problems reach the model ([#17](https://github.com/CorrelAid/formulaid/issues/17)).
 - **Validator errors and quality gaps both trigger a repair.** The gaps are fewer than 8 answerable questions, more than 3 open ones, and a research question no question serves ([#34](https://github.com/CorrelAid/formulaid/issues/34)).
 - **A repair fixes the previous attempt** instead of generating anew ([#16](https://github.com/CorrelAid/formulaid/issues/16)), at most `MAX_REPAIR_ATTEMPTS` = 2 times. A repaired version replaces the current one only if it is strictly better: fewer errors, or as many errors and a smaller quality gap.
@@ -193,11 +193,11 @@ FormulAid ships in two forms — web app and Claude Code skill — that share th
 
 Both look for validated instruments in the **qwac question bank** before writing questions from scratch, but differently.
 
-|        | Claude Code skill                                                      | Web app                                                                                                                            |
-| ------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Access | native `qwacback:*` tools via the MCP connector                        | qwac's REST API (`/api/questions`), `src/lib/agents/qwacback.ts`                                                                   |
-| Search | `search_questions`, `search_studies`, `get_question`, `list_questions` | a short model call proposes keywords (`keyword_agent.ts`); the search runs in code, without the demographic standards, top 30 hits |
-| When   | Step 2, explicit                                                       | a fixed step before generation; the hits go into the generator prompt as `questionBank`                                            |
+|        | Claude Code skill                                                      | Web app                                                                                                                                        |
+| ------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Access | native `qwacback:*` tools via the MCP connector                        | qwac's REST API (`/api/search/questions`), `src/lib/agents/qwacback.ts`                                                                        |
+| Search | `search_questions`, `search_studies`, `get_question`, `list_questions` | a short model call proposes keywords (`keyword_agent.ts`); one search request with all of them, without the demographic standards, top 30 hits |
+| When   | Step 2, explicit                                                       | a fixed step before generation; the hits go into the generator prompt as `questionBank`                                                        |
 
 ### What is not shared
 
