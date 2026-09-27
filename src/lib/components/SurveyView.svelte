@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { t } from '$lib/i18n';
+	import { locale, t } from '$lib/i18n';
 	import type { Question, Survey } from '$lib/agents/types';
-	import { detectDemographicsStart } from './surveyView';
+	import { detectDemographicsStart, typeLabel } from './surveyView';
 
 	let {
 		survey,
@@ -84,7 +84,9 @@
 				{/if}
 				<div class="card-header">
 					<span class="question-number">{i + 1}</span>
-					<span class="type-badge type-{typeGroup(q.type)}" title={q.type}>{q.type}</span>
+					<span class="type-badge type-{typeGroup(q.type)}" title={q.type}
+						>{typeLabel(q.type, $locale)}</span
+					>
 				</div>
 				<h3 class="question-label">{q.label}</h3>
 				{#if q.hint}
@@ -281,11 +283,9 @@
 		display: inline-block;
 		padding: 0.1rem 0.55rem;
 		border-radius: 99px;
-		font-family: var(--font-family-mono, monospace);
-		font-size: 0.7rem;
+		/* A readable type name, not code: the XLSForm type is in the tooltip. */
+		font-size: 0.75rem;
 		font-weight: var(--font-weight-semibold);
-		text-transform: lowercase;
-		letter-spacing: 0.02em;
 	}
 
 	/* The badge alone isn't enough to read for colour-blind users; the family

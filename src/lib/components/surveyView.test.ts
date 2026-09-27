@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectDemographicsStart } from './surveyView';
+import { detectDemographicsStart, typeLabel } from './surveyView';
 import type { Question } from '$lib/agents/types';
 
 const qwac = (id: string, name: string): Question => ({
@@ -76,5 +76,21 @@ describe('detectDemographicsStart (#47)', () => {
 			{ ...qwac('synthetic_id', 'age'), id: 'synthetic_id' }
 		];
 		expect(detectDemographicsStart(questions, new Set([AGE_ID]))).toBe(-1);
+	});
+});
+
+describe('typeLabel', () => {
+	it("uses the registry's name in the interface language", () => {
+		expect(typeLabel('select_one', 'de')).toBe('Einfachauswahl');
+		expect(typeLabel('select_one', 'en')).toBe('Select One');
+		expect(typeLabel('select_multiple', 'de')).toBe('Mehrfachauswahl');
+	});
+
+	it('uses the base type of a type with a list name', () => {
+		expect(typeLabel('select_one skala5', 'de')).toBe('Einfachauswahl');
+	});
+
+	it('shows an unknown type as written', () => {
+		expect(typeLabel('likert', 'de')).toBe('likert');
 	});
 });
