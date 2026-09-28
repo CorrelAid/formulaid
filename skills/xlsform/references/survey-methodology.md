@@ -5,7 +5,8 @@
 > It covers the complete survey lifecycle: conception, questionnaire design, data collection,
 > data preparation & analysis, and translating results into action.
 > The content is primarily in German.
-> Examples include XLSForm tables only (DDI Codebook excluded).
+> No examples included.
+> Methodology only: the XLSForm specification is left out.
 >
 > Source: https://umfragen.civic-data.de/
 
@@ -25,9 +26,8 @@
    - Operationalisierung
    - Fragebogenaufbau
    - Fragen formulieren
-   - Antworttypen
+   - Fragetypen
    - Pretesting
-   - XLSForm Standard
 
 ---
 
@@ -106,7 +106,7 @@ Euer Studiendesign sollte sich direkt aus euren [Forschungsfragen](/forschungsfr
 
 Seid realistisch: Wählt ein Design, das ihr mit euren Ressourcen auch umsetzen könnt. Eine sorgfältig durchgeführte Querschnittsbefragung ist besser als eine ambitionierte Längsschnittstudie, die an der Umsetzung scheitert.
 
-**Zum Abschluss**: Studiendesign ist eine Dimension der [Belastbarkeit](/handeln-einleitung#wie-belastbar-sind-eure-daten) eurer Erkenntnisse. Je nach Design könnt ihr unterschiedliche Arten von Aussagen treffen (vgl. auch World Health Organization (2021)):
+**Zum Abschluss**: Studiendesign ist eine Dimension der [Belastbarkeit](/handeln-einleitung#belastbarkeit-von-evidenz) eurer Erkenntnisse. Je nach Design könnt ihr unterschiedliche Arten von Aussagen treffen (vgl. auch World Health Organization (2021)):
 
 | Design | Mögliche Aussage |
 |---|---|
@@ -186,7 +186,7 @@ Die Forschungsfragen bilden die Brücke zwischen eurem Informationsbedarf und de
 
 - Welche **Konzepte und Konstrukte** stecken dahinter? → [Messtheorie & Konstrukte](/konzepte-konstrukte)
 - Wie lassen sich diese Konstrukte in **messbare Items** übersetzen? → [Operationalisierung](/operationalisierung)
-- Welche **Antwortformate** eignen sich? → [Antworttypen](/fragetypen)
+- Welche **Antwortformate** eignen sich? → [Fragetypen](/fragetypen)
 
 Wenn ihr bei der Operationalisierung merkt, dass eine Forschungsfrage nicht sinnvoll in Fragebogenfragen übersetzbar ist, geht zurück und überarbeitet die Forschungsfrage. Das ist kein Scheitern, sondern Teil des Prozesses.
 
@@ -237,7 +237,7 @@ Die Konstruktdefinition ist die direkte Vorstufe zur [Operationalisierung](/oper
 
 ## Gütekriterien: Validität und Reliabilität
 
-Validität und Reliabilität sind eine Dimension der [**Belastbarkeit**](/handeln-einleitung#wie-belastbar-sind-eure-daten) eurer Erkenntnisse. Zwei zentrale Fragen solltet ihr im Hinterkopf behalten:
+Validität und Reliabilität sind eine Dimension der [**Belastbarkeit**](/handeln-einleitung#belastbarkeit-von-evidenz) eurer Erkenntnisse. Zwei zentrale Fragen solltet ihr im Hinterkopf behalten:
 
 ### Validität: Messen wir das Richtige?
 
@@ -304,7 +304,7 @@ Auch bei größeren Stichproben gilt: Untergruppenvergleiche (*„Frauen sind zu
 
 ## Was bedeutet das für die Aussagekraft der Umfrage?
 
-Repräsentativität und Stichprobengröße sind eine Dimension der [Belastbarkeit](/handeln-einleitung#wie-belastbar-sind-eure-daten) eurer Erkenntnisse: Sie bestimmen, für wen die Ergebnisse gelten und wie sicher Aussagen sein können.
+Repräsentativität und Stichprobengröße sind eine Dimension der [Belastbarkeit](/handeln-einleitung#belastbarkeit-von-evidenz) eurer Erkenntnisse: Sie bestimmen, für wen die Ergebnisse gelten und wie sicher Aussagen sein können.
 
 Durch diese Verzerrungen gelten die Ergebnisse der Umfrage streng genommen nur für die Personen, die tatsächlich geantwortet haben. Trotzdem kann man versuchen Schlüsse auf die gesamte Zielgruppe zu schließen. Es ist dabei allerdings wichtig, die Einschränkungen bei der Stichprobenzusammensetzung ehrlich zu kommunizieren. Auch statistische Auswertungen, wie sie im Abschnitt zur [schließenden Statistik](/schliessende-statistik) beschrieben werden, gehen von einer Zufallsstichprobe aus. Wenn diese nicht gegeben ist, solltet ihr statistische Schlüsse mit besonderer Vorsicht interpretieren.
 
@@ -471,7 +471,7 @@ Ein Item ist die konkrete einzelne Interaktion der Teilnehmer:innen mit eurem Fr
 2. **Dimensionen identifizieren**: Aus welchen Teilaspekten besteht das Konstrukt? Zufriedenheit kann z.B. die Dimensionen Inhalt, Organisation und Atmosphäre umfassen.
 3. **Indikatoren festlegen**: Welche beobachtbaren Merkmale zeigen an, ob eine Dimension hoch oder niedrig ausgeprägt ist?
 4. **Items und Fragen formulieren**: Wie fragt ihr nach den Indikatoren, z.B. als Bewertung, als Häufigkeit, als Zustimmung zu einer Aussage? (→ [Fragen formulieren](/fragen-formulieren))
-5. **Antwortformat wählen**: Welche Skala oder welches Format passt? (→ [Antworttypen](/fragetypen))
+5. **Antwortformat wählen**: Welche Skala oder welches Format passt? (→ [Fragetypen](/fragetypen))
 
 > **Praxisbeispiel:**
 > Konstrukt: *Wahrgenommene Wirksamkeit eines Beratungsangebots*
@@ -637,44 +637,19 @@ Single Choice eignet sich, wenn die Antwortkategorien **erschöpfend und trennsc
 
 Bei Fragen mit einer einzigen Antwortmöglichkeit sollten in den meisten Fällen vertikale Radio Buttons verwendet werden. In Kobo Toolbox und in Lime Survey ist die vertikale Darstellung Standard. 
 
-**XLSForm survey:**
-```
-type                    | name         | label                                  
------------------------ | ------------ | ---------------------------------------
-select_one bildungsgrad | bildungsgrad | Was ist Ihr höchster Bildungsabschluss?
-```
-
-**XLSForm choices:**
-```
-list_name    | name | label                          
------------- | ---- | -------------------------------
-bildungsgrad | 1    | Kein Abschluss                 
-bildungsgrad | 2    | Haupt- oder Realschulabschluss 
-bildungsgrad | 3    | Fachhochschulreife / Abitur    
-bildungsgrad | 4    | Abgeschlossene Berufsausbildung
-bildungsgrad | 5    | Hochschulabschluss             
-```
-
 #### Layout für viele Antwortoptionen (Single Choice)
 
 Das Layout für lange Auswahllisten sollte anders sein als bei kurzen Listen: 100 Radio Buttons überladen das gesamte Umfrage-Layout.
 
-Eine Option sind **Dropdowns**, durch die die Nutzer:in zu der Antwortoption scrollen kann. Bei langen Listen im Web/auf dem Desktop (wie z. B. Ländern oder Berufen) kann ein Dropdown geeignet sein, um Platz auf dem Bildschirm zu sparen. Dropdowns können jedoch bei sehr langen Listen (z. B. 100+ Optionen) ebenfalls unübersichtlich sein. Experimentelle Studien zeigen, dass ein Autocomplete-Feld (bei dem Befragte die ersten Buchstaben eingeben und passende Optionen gefiltert angezeigt werden) bei langen Listen mehr verwertbare Antworten liefert als ein einfaches Textfeld und schneller ist als ein klassisches Dropdown [Citation].
+Eine Option sind **Dropdowns**, durch die die Nutzer:in zu der Antwortoption scrollen kann. Bei langen Listen im Web/auf dem Desktop (wie z. B. Ländern oder Berufen) kann ein Dropdown geeignet sein, um Platz auf dem Bildschirm zu sparen. Dropdowns können jedoch bei sehr langen Listen (z. B. 100+ Optionen) ebenfalls unübersichtlich sein. Experimentelle Studien zeigen, dass ein Autocomplete-Feld (bei dem Befragte die ersten Buchstaben eingeben und passende Optionen gefiltert angezeigt werden) bei langen Listen mehr verwertbare Antworten liefert als ein einfaches Textfeld und schneller ist als ein klassisches Dropdown (Couper & Zhang, 2016).
 
-Bei Autocomplete ist jedoch zu beachten, dass sich die kognitive Aufgabe verändert: Während geschlossene Fragen mit sichtbarer Optionsliste einer Wiedererkennungsaufgabe (Recognition) ähneln, funktionieren offene Eingabeformate eher wie Aufgaben des freien Abrufs (Recall), die auf kontrollierten Gedächtnisprozessen basieren. Empirische Befunde legen nahe, dass offene und geschlossene Antwortformate auf unterschiedlichen kognitiven und mnestischen Prozessen beruhen und daher zu unterschiedlichen Ergebnissen führen können [Citation]. Autocomplete eignet sich daher vor allem für Fragen, bei denen die Befragten die Antwort bereits kennen (z. B. das eigene Herkunftsland oder eingenommene Medikamente), weniger für Fragen, bei denen Optionen erst durch Ansehen der Liste erkannt werden (z. B. „Welche dieser Marken kennen Sie?").
+Bei Autocomplete ist jedoch zu beachten, dass sich die kognitive Aufgabe verändert: Während geschlossene Fragen mit sichtbarer Optionsliste einer Wiedererkennungsaufgabe (Recognition) ähneln, funktionieren offene Eingabeformate eher wie Aufgaben des freien Abrufs (Recall), die auf kontrollierten Gedächtnisprozessen basieren. Empirische Befunde legen nahe, dass offene und geschlossene Antwortformate auf unterschiedlichen kognitiven und mnestischen Prozessen beruhen und daher zu unterschiedlichen Ergebnissen führen können (Connor Desai & Reimers, 2019). Autocomplete eignet sich daher vor allem für Fragen, bei denen die Befragten die Antwort bereits kennen (z. B. das eigene Herkunftsland oder eingenommene Medikamente), weniger für Fragen, bei denen Optionen erst durch Ansehen der Liste erkannt werden (z. B. „Welche dieser Marken kennen Sie?").
 
 Kobo Toolbox erlaubt für Single Choice eine Autocomplete-Option, während bei LimeSurvey nur ein Dropdown möglich ist. Über die `appearance`-Spalte in XLSForm kann die Darstellung über den Wert `minimal` zu einem Dropdown geändert werden. 
 
 Beim Fragebogendesign bietet es sich an viele Antwortoptionen über eine seperate Datei oder in einem separaten Sheet, dass dann über eine Formel eingebunden wird, abzubilden. 
 
 In DDI Codebook führen wir die Konvention ein, über den `concept`tag ein vocabular zu referenzieren.
-
-**XLSForm survey:**
-```
-type                                | name        | label                              
------------------------------------ | ----------- | -----------------------------------
-select_one_from_file iso_3166_1.csv | geburtsland | In welchem Land wurden Sie geboren?
-```
 
 ### 2. Multiple-Choice
 
@@ -683,26 +658,11 @@ Bei Multiple-Choice-Fragen können Befragte alle zutreffenden Optionen auswähle
 
 #### Wann sollte Multiple Choice verwendet werden?
 
-Single Choice ist das methodisch robustere Antwortformat [Citation]. Multiple Choice sollte nur verwendet werden, wenn Antwortoptionen sich **nicht** gegenseitig ausschließen (z.B. genutzte Medien, gesprochene Sprachen oder berufliche Tätigkeitsfelder).
+Single Choice ist das methodisch robustere Antwortformat (Smyth et al., 2006). Multiple Choice sollte nur verwendet werden, wenn Antwortoptionen sich **nicht** gegenseitig ausschließen (z.B. genutzte Medien, gesprochene Sprachen oder berufliche Tätigkeitsfelder).
 
 #### Layout für wenige Antwortoptionen
 
 Hier gilt das gleiche wie bei Single Choice.
-
-**XLSForm survey:**
-```
-type                          | name       | label                                                
------------------------------ | ---------- | -----------------------------------------------------
-select_multiple wochenendtage | wochenende | An welchen Tagen des Wochenendes sind Sie erreichbar?
-```
-
-**XLSForm choices:**
-```
-list_name     | name | label  
-------------- | ---- | -------
-wochenendtage | sa   | Samstag
-wochenendtage | so   | Sonntag
-```
 
 #### Layout für viele Antwortoptionen
 
@@ -710,22 +670,15 @@ Die Probleme von Dropdowns und vielen Radio Buttons sind ähnlich zu Single Choi
 
 In Limesurvey gibt es die option das dropdown fpr multiple chocie zu nehmen, oder ein repoeat vom autocompomplet zu nutzen. Leider ist letzteres eher führ mehrer fragen in einer sich wiederholdenden Gruppe gedacht, sodass die Wiederholungen bei vielen ausgewählten Optionen schnell zu viel Platz wegnehmen.
 
-**XLSForm survey:**
-```
-type                                     | name             | label                                                                     
----------------------------------------- | ---------------- | --------------------------------------------------------------------------
-select_multiple_from_file iso_3166_1.csv | besuchte_laender | Welche dieser Länder haben Sie bereits besucht? Mehrere Antworten möglich.
-```
-
 ## Halb-Offene Antwortformate
 
-Halb-offene Antwortformate nehmen eine Zwischenposition zwischen vollständig geschlossenen und vollständig offenen Frageformaten ein [Citation]. Sie stellen eine vordefinierte, geschlossene Antwortliste bereit (Single oder Multiple Choice) und ergänzen diese um ein optionales Freitextfeld — typischerweise gelabeled als „Sonstiges (bitte angeben)". Dadurch entstehen zwei verschiedene Datentypen innerhalb einer Frage: kategoriale, quantitativ auswertbare Antworten aus der geschlossenen Liste sowie Freitexteingaben, die qualitativ aufbereitet und gesondert analysiert werden müssen.
+Halb-offene Antwortformate nehmen eine Zwischenposition zwischen vollständig geschlossenen und vollständig offenen Frageformaten ein (Soliman, 2024). Sie stellen eine vordefinierte, geschlossene Antwortliste bereit (Single oder Multiple Choice) und ergänzen diese um ein optionales Freitextfeld — typischerweise gelabeled als „Sonstiges (bitte angeben)". Dadurch entstehen zwei verschiedene Datentypen innerhalb einer Frage: kategoriale, quantitativ auswertbare Antworten aus der geschlossenen Liste sowie Freitexteingaben, die qualitativ aufbereitet und gesondert analysiert werden müssen.
 
-Der konzeptionelle Vorteil dieses Formats — Erschöpfungsgrad ohne vollständige Offenheit — ist in der Praxis jedoch begrenzt: Befragte nutzen die „Sonstiges"-Option selten und interpretieren die vorgelegte Liste als vollständig, selbst wenn ihre tatsächliche Antwort außerhalb der Kategorien läge [Citation].
+Der konzeptionelle Vorteil dieses Formats — Erschöpfungsgrad ohne vollständige Offenheit — ist in der Praxis jedoch begrenzt: Befragte nutzen die „Sonstiges"-Option selten und interpretieren die vorgelegte Liste als vollständig, selbst wenn ihre tatsächliche Antwort außerhalb der Kategorien läge (Krosnick et al., 2018).
 
 Das „Sonstiges"-Feld sollte stets am Ende der Antwortkategorien platziert werden, um Primacy-Effekte zu vermeiden. 
 
-Themen, die wiederholt genannt werden, deuten auf eine Lücke im Kategoriensystem hin und sollten in künftigen Erhebungen als eigenständige Kategorien aufgenommen werden [Citation].
+Themen, die wiederholt genannt werden, deuten auf eine Lücke im Kategoriensystem hin und sollten in künftigen Erhebungen als eigenständige Kategorien aufgenommen werden (O'Cathain & Thomas, 2004).
 
 ### 1. Single Choice mit „Sonstiges"-Antwortmöglichkeit
 
@@ -733,47 +686,11 @@ Bei Single-Choice-Fragen ist ein „Sonstiges (bitte angeben)"-Feld nur dann ger
 
 #### Layout
 
-**XLSForm survey:**
-```
-type              | name             | label                                               | relevant               
------------------ | ---------------- | --------------------------------------------------- | -----------------------
-select_one quelle | aufmerksam       | Wie sind Sie auf unser Angebot aufmerksam geworden? |                        
-text              | aufmerksam_other | Sonstiges (bitte angeben)                           | $ = 'other'
-```
-
-**XLSForm choices:**
-```
-list_name | name           | label                 
---------- | -------------- | ----------------------
-quelle    | suchmaschine   | Suchmaschine          
-quelle    | empfehlung     | Persönliche Empfehlung
-quelle    | soziale_medien | Soziale Medien        
-quelle    | other          | Sonstiges             
-```
-
 ### 2. Multiple Choice mit „Sonstiges"-Antwortmöglichkeit
 
 Bei Multiple-Choice-Fragen ist ein „Sonstiges"-Feld häufiger gerechtfertigt, weil der Antwortraum — also die Menge aller möglichen Auswahlen — im Voraus schwerer vollständig zu antizipieren ist als bei Single-Choice-Fragen.
 
 #### Layout
-
-**XLSForm survey:**
-```
-type                    | name                | label                              | relevant                  
------------------------ | ------------------- | ---------------------------------- | --------------------------
-select_multiple geraete | geraetebesitz       | Welche dieser Geräte besitzen Sie? |                           
-text                    | geraetebesitz_other | Sonstiges (bitte angeben)          | $ = 'other'
-```
-
-**XLSForm choices:**
-```
-list_name | name       | label     
---------- | ---------- | ----------
-geraete   | smartphone | Smartphone
-geraete   | laptop     | Laptop    
-geraete   | tablet     | Tablet    
-geraete   | other      | Sonstiges 
-```
 
 ## Geschlossene, gruppierte Antwortformate
 
@@ -782,27 +699,6 @@ geraete   | other      | Sonstiges
 Matrix-Fragen fassen mehrere Items zusammen, die dieselbe Antwortskala und denselben 
 Einleitungstext teilen. In DDI 2.5 müssen die Antwortkategorien bei jedem Item wiederholt 
 werden.
-
-**XLSForm survey:**
-```
-type              | name                  | label                      | appearance
------------------ | --------------------- | -------------------------- | ----------
-begin_group       | institutionsvertrauen | Vertrauen in Institutionen | table-list
-select_one skala5 | vertrauen_parlament   | Das Parlament              |           
-select_one skala5 | vertrauen_polizei     | Die Polizei                |           
-end_group         |                       |                            |           
-```
-
-**XLSForm choices:**
-```
-list_name | name | label      
---------- | ---- | -----------
-skala5    | 1    | Gar nicht  
-skala5    | 2    | 2          
-skala5    | 3    | 3          
-skala5    | 4    | 4          
-skala5    | 5    | Vollständig
-```
 
 ## Offene Antwortformate
 
@@ -815,13 +711,6 @@ Einfachauswahl mit vorgegebene Antwortkategorien (z.B. Intervalle) sind
 bei numerischen Fragen problematisch, weil Befragte die mittlere Kategorie als implizite 
 Norm interpretieren und ihre Antwort entsprechend anpassen — ein Effekt, der in 
 Online-Befragungen auch außerhalb sensitiver Themen nachweisbar ist (Baur et al., 2014).  Weiterhin: Vage Quantoren wie „manchmal", „häufig" oder „selten" werden von verschiedenen Befragten sehr unterschiedlich interpretiert und erzeugen dadurch systematische Messfehler.(Krosnick et al., 2018).  Für numerische Fragen — etwa zur Häufigkeit eines Verhaltens — empfiehlt sich daher grundsätzlich die direkte Abfrage eines konkreten Wertes anstelle vorgegebener Kategorien. 
-
-**XLSForm survey:**
-```
-type    | name  | label            
-------- | ----- | -----------------
-integer | alter | Wie alt sind Sie?
-```
 
 ### 2. Offener Text
 
@@ -841,13 +730,6 @@ Nach Züll et al. (2019) eignen sich die offene Texteingabe:
 - Wenn Wissen abgefragt wird — offene Fragen minimieren die Wahrscheinlichkeit, 
   durch Raten eine richtige Antwort zu erzielen, und führen häufig zu reliableren 
   und valideren Angaben als geschlossene Fragen
-
-**XLSForm survey:**
-```
-type | name        | label                         
----- | ----------- | ------------------------------
-text | anmerkungen | Haben Sie weitere Anmerkungen?
-```
 
 ## Weitere Empfehlungen für Antwortformate
 
@@ -902,7 +784,7 @@ Beim kognitiven Pretest füllt eine Person aus der Zielgruppe den Fragebogen aus
 
 Stark/Schwach/Aufwand zusammengefasst:
 
-- **Stark bei**: Verständnisproblemen, Mehrdeutigkeiten, unklaren Antwortoptionen, ungewohnten Frageformaten (→ [Antworttypen](/fragetypen)), Akzeptanz und unbewussten Schwierigkeiten.
+- **Stark bei**: Verständnisproblemen, Mehrdeutigkeiten, unklaren Antwortoptionen, ungewohnten Frageformaten (→ [Fragetypen](/fragetypen)), Akzeptanz und unbewussten Schwierigkeiten.
 - **Schwach bei**: sensiblen Themen (laut über Einkommen sprechen ist unangenehm). Die Situation ist außerdem künstlich.
 - **Aufwand**: höher. Pro Person intensiver plus eine Person, die durchs Interview führt.
 
@@ -958,8 +840,3 @@ Zwei pragmatische Anwendungen:
 - **Personas**: Sprachmodelle können realistische Profile eurer Zielgruppe generieren („ehrenamtlicher Kassenwart, 64 Jahre, städtischer Sportverein") und den Fragebogen aus deren Perspektive durchgehen. Hilft, blinde Flecken zu finden, ersetzt aber keine echten Stimmen.
 
 Wichtig: KI-Antworten sind systematisch zu positiv und zu homogen. Studien zeigen, dass persona-basierte LLM-Antworten zwar Mittelwerte von menschlichen Antworten brauchbar approximieren, aber einen deutlichen Positivitäts-Bias und eine zu geringe Varianz aufweisen (Kaiser et al., 2025)(Bisbee et al., 2024). Sie taugen, um *grobe* Probleme zu finden, nicht, um die Zustimmung in der echten Zielgruppe abzuschätzen.
-
----
-
-> Hinweis: Diese Seite wurde (abgesehen von einigen Beispielen) maschinell aus dem Englischen übersetzt und gekürzt. Die Originalversion findet ihr unter [xlsform.org/en/](https://xlsform.org/en/). Wegen der Kürzung sollten für forgeschrittene Vorhaben immer diese Website zu Rate gezogen werden.
-
