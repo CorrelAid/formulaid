@@ -96,6 +96,11 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Each box adds one standard demographic question to the questionnaire, taken verbatim from the CDL question bank. The demographic questions are added at the end of the questionnaire.',
 		'wizard.statusRepairing': 'Fixing validation errors…',
 		'wizard.validationRepaired': 'Automatic repair attempts were made.',
+		'wizard.usageTokens': 'Tokens',
+		'wizard.usageInput': 'input',
+		'wizard.usageOutput': 'output',
+		'wizard.usageCost': 'Cost',
+		'wizard.usageCostUnknown': 'not reported by this provider',
 		'wizard.reasoningHeading': 'Why these questions?',
 		'wizard.reasoningIntro':
 			'The generator’s own account of its selection. It is also written to the “explanations” sheet of the downloaded file.',
@@ -262,6 +267,11 @@ const translations: Record<Locale, Record<string, string>> = {
 			'Jede Checkbox fügt eine soziodemografische Standardfrage wörtlich aus der CDL-Fragendatenbank hinzu. Fragen zu den demografischen Merkmalen werden am Ende hinzugefügt.',
 		'wizard.statusRepairing': 'Behebe Validierungsfehler…',
 		'wizard.validationRepaired': 'Es wurden automatische Korrekturversuche unternommen.',
+		'wizard.usageTokens': 'Tokens',
+		'wizard.usageInput': 'Eingabe',
+		'wizard.usageOutput': 'Ausgabe',
+		'wizard.usageCost': 'Kosten',
+		'wizard.usageCostUnknown': 'vom Anbieter nicht gemeldet',
 		'wizard.reasoningHeading': 'Warum diese Fragen?',
 		'wizard.reasoningIntro':
 			'Die Begründung des Generators für seine Auswahl. Sie steht auch im Blatt „explanations“ der heruntergeladenen Datei.',

@@ -1,13 +1,15 @@
 <script lang="ts">
 	import TraceList from './TraceList.svelte';
-	import { t } from '$lib/i18n';
+	import { locale, t } from '$lib/i18n';
 	import type { Trace } from '$lib/agents/types';
+	import type { RunUsage } from '$lib/agents/usage_meter';
 
 	let {
 		aiLoading,
 		aiStatus,
 		progress,
 		traces,
+		usage,
 		onGenerate,
 		onCancel,
 		onDownload,
@@ -19,6 +21,7 @@
 		aiStatus: string;
 		progress: number;
 		traces: Trace[];
+		usage: RunUsage;
 		onGenerate: () => void;
 		onCancel: () => void;
 		onDownload: () => void;
@@ -26,6 +29,17 @@
 		onResetInputs: () => void;
 		hasFile: boolean;
 	}>();
+
+	let numbers = $derived(new Intl.NumberFormat($locale));
+	// OpenRouter bills fractions of a cent per request, so show four decimals.
+	let money = $derived(
+		new Intl.NumberFormat($locale, {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 4,
+			maximumFractionDigits: 4
+		})
+	);
 </script>
 
 <section class="results-section">
@@ -90,6 +104,18 @@
 		</div>
 	{/if}
 
+	{#if usage.requests > 0}
+		<p class="usage">
+			{$t('wizard.usageTokens')}: {numbers.format(usage.promptTokens + usage.completionTokens)}
+			({numbers.format(usage.promptTokens)}
+			{$t('wizard.usageInput')}, {numbers.format(usage.completionTokens)}
+			{$t('wizard.usageOutput')}) ·
+			{$t('wizard.usageCost')}: {usage.cost === null
+				? $t('wizard.usageCostUnknown')
+				: money.format(usage.cost)}
+		</p>
+	{/if}
+
 	<TraceList {traces} />
 </section>
 
@@ -99,6 +125,12 @@
 		border: var(--dimension-border-width) solid var(--color-text-primary);
 		border-radius: var(--radius-lg);
 		padding: var(--spacing-lg);
+	}
+
+	.usage {
+		margin: var(--spacing-sm) 0 0;
+		font-size: 0.85rem;
+		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
 	}
 
 	.actions {

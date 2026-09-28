@@ -299,7 +299,7 @@ Die Forschungsfragen bilden die Brücke zwischen eurem Informationsbedarf und de
 
 - Welche **Konzepte und Konstrukte** stecken dahinter? → [Messtheorie & Konstrukte](/konzepte-konstrukte)
 - Wie lassen sich diese Konstrukte in **messbare Items** übersetzen? → [Operationalisierung](/operationalisierung)
-- Welche **Antwortformate** eignen sich? → [Fragetypen](/fragetypen)
+- Welche **Fragetypen** eignen sich? → [Fragetypen](/fragetypen)
 
 Wenn ihr bei der Operationalisierung merkt, dass eine Forschungsfrage nicht sinnvoll in Fragebogenfragen übersetzbar ist, geht zurück und überarbeitet die Forschungsfrage. Das ist kein Scheitern, sondern Teil des Prozesses.
 
@@ -392,7 +392,7 @@ Ein Item ist die konkrete einzelne Interaktion der Teilnehmer:innen mit eurem Fr
 2. **Dimensionen identifizieren**: Aus welchen Teilaspekten besteht das Konstrukt? Zufriedenheit kann z.B. die Dimensionen Inhalt, Organisation und Atmosphäre umfassen.
 3. **Indikatoren festlegen**: Welche beobachtbaren Merkmale zeigen an, ob eine Dimension hoch oder niedrig ausgeprägt ist?
 4. **Items und Fragen formulieren**: Wie fragt ihr nach den Indikatoren, z.B. als Bewertung, als Häufigkeit, als Zustimmung zu einer Aussage? (→ [Fragen formulieren](/fragen-formulieren))
-5. **Antwortformat wählen**: Welche Skala oder welches Format passt? (→ [Fragetypen](/fragetypen))
+5. **Fragetyp wählen**: Welche Skala oder welches Format passt? (→ [Fragetypen](/fragetypen))
 
 > **Praxisbeispiel:**
 > Konstrukt: *Wahrgenommene Wirksamkeit eines Beratungsangebots*
@@ -514,7 +514,7 @@ Als generelle Regeln gelten bei der Formulierung von Fragebogenfragen nach Porst
 9. **Kontexteffekte kontrollieren.** Vorherige Fragen können die Beantwortung späterer Fragen beeinflussen. Dies lässt sich am besten durch Pretests prüfen.
 10. **Unklare Begriffe definieren.** Wenn Vereinfachung nicht möglich ist, sollten Fachbegriffe erklärt werden.
 
-Bei der Frageformulierung spielt auch das [Antwortformat](/fragetypen) eine Rolle: Offene Fragen ohne vorgegebene Antworten müssen möglicherweise genauer formuliert werden als geschlossene Fragen, da vorgegebene Antwortoptionen zum Kontext beitragen und somit das Verständnis erleichern (Porst, 2014).
+Bei der Frageformulierung spielt auch der [Fragetyp](/fragetypen) eine Rolle: Offene Fragen ohne vorgegebene Antworten müssen möglicherweise genauer formuliert werden als geschlossene Fragen, da vorgegebene Antwortoptionen zum Kontext beitragen und somit das Verständnis erleichern (Porst, 2014).
 
 > **Praxisbeispiel:**
 > Die Frage *„Wie gut arbeitet Ihre Organisation im Moment mit der Stadt oder dem Landkreis zusammen?"* ist ein klassischer **doppelter Stimulus** (Regel 4): Sie fragt gleichzeitig, *ob* eine Zusammenarbeit stattfindet, und *wie gut* diese läuft. Das Problem zeigt sich an den Antwortoptionen — neben einer Bewertungsskala (z.B. „eher gut") bräuchte man zusätzlich die Option „es gibt keine Zusammenarbeit", was die Skala sprengt.

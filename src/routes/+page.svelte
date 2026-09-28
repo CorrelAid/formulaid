@@ -18,7 +18,10 @@
 		type Survey,
 		type Trace,
 		demographicQuestions,
-		MAX_RESEARCH_QUESTIONS
+		MAX_RESEARCH_QUESTIONS,
+		EMPTY_USAGE,
+		UsageMeter,
+		type RunUsage
 	} from '$lib/agents/index.js';
 
 	// Form state
@@ -103,6 +106,8 @@
 	let generatedSurvey = $state<Survey | null>(null);
 	let validationFindings = $state<ValidationFinding[]>([]);
 	let repairAttempts = $state(0);
+	// Tokens and cost of the current run, updated as responses arrive.
+	let usage = $state<RunUsage>({ ...EMPTY_USAGE });
 	let qwacAvailable = $state(true);
 	let abortController: AbortController | null = null;
 
@@ -160,6 +165,7 @@
 		generatedSurvey = null;
 		validationFindings = [];
 		repairAttempts = 0;
+		usage = { ...EMPTY_USAGE };
 		qwacAvailable = true;
 		traces = [];
 		aiStatus = '';
@@ -183,7 +189,8 @@
 		const controller = new AbortController();
 		abortController = controller;
 		try {
-			const ai = createModel(appSettings.apiKey, appSettings.model, appSettings.baseUrl);
+			const meter = new UsageMeter((u) => (usage = u));
+			const ai = createModel(appSettings.apiKey, appSettings.model, appSettings.baseUrl, meter);
 			const result = await new LeadAgent(ai).run(
 				{
 					researchQuestions,
@@ -511,6 +518,7 @@
 		{aiStatus}
 		{progress}
 		{traces}
+		{usage}
 		hasFile={generatedFile !== null}
 		onGenerate={generateWithAI}
 		onCancel={() => abortController?.abort()}

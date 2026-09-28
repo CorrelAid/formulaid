@@ -4,6 +4,7 @@ export * from './survey_generator.js';
 export * from './xlsform_generator.js';
 export * from './xlsform_validator.js';
 export * from './config.js';
+export * from './usage_meter.js';
 export * from './qwacback.js';
 export * from './question_parser.js';
 export * from './sanitize.js';

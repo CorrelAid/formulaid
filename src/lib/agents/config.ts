@@ -1,5 +1,6 @@
 import { AxAIOpenAI, AxAIOpenRouter, type AxAIOpenAIModel, type AxAIService } from '@ax-llm/ax';
 import { CHAT_MODEL, OPENROUTER_API_URL } from '../constants';
+import { meteredFetch, type UsageMeter } from './usage_meter.js';
 
 /** How the app shows up in OpenRouter's app rankings and the user's activity log. */
 const OPENROUTER_APP_TITLE = 'formulaid';
@@ -19,20 +20,23 @@ const corsSafeFetch: typeof fetch = (input, init) => {
  * Build the OpenAI-compatible client.
  *
  * `baseUrl` is an absolute URL, called directly from the browser: OpenRouter,
- * or an endpoint the user supplies.
+ * or an endpoint the user supplies. With a `meter`, every response's token
+ * counts and cost are recorded on it.
  */
 export function createModel(
 	apiKey: string,
 	model: string = CHAT_MODEL,
-	baseUrl: string = OPENROUTER_API_URL
+	baseUrl: string = OPENROUTER_API_URL,
+	meter?: UsageMeter
 ): AxAIService {
+	const fetch = meter ? meteredFetch(corsSafeFetch, meter) : corsSafeFetch;
 	const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
 
 	if (baseUrl === OPENROUTER_API_URL) {
 		return new AxAIOpenRouter({
 			apiKey,
 			config: { model },
-			options: { debug: false, fetch: corsSafeFetch },
+			options: { debug: false, fetch },
 			referer: origin,
 			title: OPENROUTER_APP_TITLE
 		}) as AxAIService;
@@ -51,7 +55,7 @@ export function createModel(
 		},
 		options: {
 			debug: false,
-			fetch: corsSafeFetch
+			fetch
 		}
 	}) as AxAIService;
 }
