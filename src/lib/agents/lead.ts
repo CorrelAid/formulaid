@@ -24,16 +24,28 @@ export const MAX_REPAIR_ATTEMPTS = 2;
  *  when the code is `sonst`) hides the question from everyone. */
 const REPAIR_WARNINGS = new Set<ValidationFinding['code']>(['literal-invalid']);
 
-/** The prompt asks for 8–15 answerable questions; small models often stop
- *  short, or write everything as open text. */
+/** The prompt asks for 8–15 answerable questions (fewer when the user sets
+ *  maxQuestions); small models often stop short, or write everything as open
+ *  text. */
 const MIN_QUESTIONS = 8;
 const MAX_OPEN_QUESTIONS = 3;
 
 /** Problems the validator doesn't see but a repair can fix. They trigger a
  *  repair like validator errors do, but aren't reported as findings: the form
  *  is valid, just weaker. */
-export function qualityFeedback(questions: Question[], researchQuestionCount = 0): string[] {
+/** The fewest answerable questions to ask for: MIN_QUESTIONS, unless the user
+ *  capped the questionnaire below that. */
+function minQuestions(maxQuestions?: number): number {
+	return maxQuestions ? Math.min(MIN_QUESTIONS, maxQuestions) : MIN_QUESTIONS;
+}
+
+export function qualityFeedback(
+	questions: Question[],
+	researchQuestionCount = 0,
+	maxQuestions?: number
+): string[] {
 	const answerable = questions.filter((q) => q.type !== 'note');
+	const min = minQuestions(maxQuestions);
 	const open = openQuestions(answerable);
 	const feedback: string[] = [];
 	for (const n of uncovered(questions, researchQuestionCount)) {
@@ -41,9 +53,14 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
 			`Research question ${n} is not covered by any question. Add at least one that serves it and list ${n} in its researchQuestions.`
 		);
 	}
-	if (answerable.length < MIN_QUESTIONS) {
+	if (answerable.length < min) {
 		feedback.push(
-			`Only ${answerable.length} answerable questions (notes don't count). Add ${MIN_QUESTIONS - answerable.length} more that serve the research goal, preferably closed questions with choices.`
+			`Only ${answerable.length} answerable questions (notes don't count). Add ${min - answerable.length} more that serve the research goal, preferably closed questions with choices.`
+		);
+	}
+	if (maxQuestions && answerable.length > maxQuestions) {
+		feedback.push(
+			`${answerable.length} answerable questions, but the user asked for at most ${maxQuestions}. Remove ${answerable.length - maxQuestions}, keeping the ones that serve the research questions most directly.`
 		);
 	}
 	if (open.length > MAX_OPEN_QUESTIONS) {
@@ -81,10 +98,15 @@ export function qualityFeedback(questions: Question[], researchQuestionCount = 0
  *  surplus open ones, uncovered research questions, questions that should be
  *  conditional but aren't, and double-barrelled ratings. 0 means nothing to
  *  fix. */
-export function qualityGap(questions: Question[], researchQuestionCount = 0): number {
+export function qualityGap(
+	questions: Question[],
+	researchQuestionCount = 0,
+	maxQuestions?: number
+): number {
 	const answerable = questions.filter((q) => q.type !== 'note');
 	return (
-		Math.max(0, MIN_QUESTIONS - answerable.length) +
+		Math.max(0, minQuestions(maxQuestions) - answerable.length) +
+		(maxQuestions ? Math.max(0, answerable.length - maxQuestions) : 0) +
 		Math.max(0, openQuestions(answerable).length - MAX_OPEN_QUESTIONS) +
 		uncovered(questions, researchQuestionCount).length +
 		orphanedFollowUps(answerable).length +
@@ -269,7 +291,7 @@ export class LeadAgent {
 				workbook,
 				findings,
 				errors,
-				gap: qualityGap(questions, rqCount)
+				gap: qualityGap(questions, rqCount, input.maxQuestions)
 			};
 		};
 
@@ -287,11 +309,13 @@ export class LeadAgent {
 					researchQuestions,
 					validationFeedback: [
 						...current.errors.map((e) => e.message),
-						...qualityFeedback(current.questions, rqCount)
+						...qualityFeedback(current.questions, rqCount, input.maxQuestions)
 					]
 						.map((m) => `- ${m}`)
 						.join('\n'),
-					formOfAddress: formOfAddress(input.language, input.surveyLanguage)
+					formOfAddress: formOfAddress(input.language, input.surveyLanguage),
+					furtherNotes: input.furtherNotes,
+					maxQuestions: input.maxQuestions
 				},
 				signal
 			);

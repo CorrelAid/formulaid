@@ -5,7 +5,8 @@ import {
 	MAX_REPAIR_ATTEMPTS,
 	assembleSurvey,
 	dedupAgainstDemographics,
-	qualityFeedback
+	qualityFeedback,
+	qualityGap
 } from './lead.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
 import type { AgentInput, Question } from './types.js';
@@ -439,6 +440,22 @@ describe('qualityFeedback', () => {
 		expect(feedback).toHaveLength(2);
 		expect(feedback[0]).toContain('Only 5 answerable');
 		expect(feedback[1]).toContain('open0');
+	});
+
+	it('accepts fewer than 8 questions when the user capped them', () => {
+		const closed = Array.from({ length: 3 }, (_, i) => ({
+			id: String(i),
+			name: `q${i}`,
+			label: `Frage ${i}?`,
+			type: 'select_one' as const,
+			required: true,
+			choices: [],
+			researchQuestions: [1]
+		}));
+		expect(qualityFeedback(closed, 1, 3)).toEqual([]);
+		expect(qualityGap(closed, 1, 3)).toBe(0);
+		expect(qualityFeedback(closed, 1, 2)[0]).toContain('at most 2');
+		expect(qualityGap(closed, 1, 2)).toBe(1);
 	});
 
 	it('names research questions no question serves', () => {

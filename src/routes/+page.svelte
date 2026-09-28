@@ -2,7 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import { demographicVariables, getProvider } from '$lib/constants';
 	import { appSettings } from '$lib/settings.svelte';
-	import { loadWizardInputs, saveWizardInputs } from '$lib/wizard_storage';
+	import { isQuestionCount, loadWizardInputs, saveWizardInputs } from '$lib/wizard_storage';
 	import { locale, t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import StepResults from '$lib/components/StepResults.svelte';
@@ -55,12 +55,16 @@
 	// Free-form guidance for the generator (#40): length limits, terms to avoid,
 	// topics to focus on. Optional and persisted across reloads.
 	let furtherNotes = $state(saved?.furtherNotes ?? '');
+	// Optional cap on answerable questions; empty means the usual 8–15. A bound
+	// number input yields null (or undefined) when cleared.
+	let maxQuestions = $state<number | null>(saved?.maxQuestions ?? null);
 	$effect(() => {
 		saveWizardInputs({
 			researchQuestions: [...researchQuestions],
 			targetGroup,
 			useOfResults,
 			furtherNotes,
+			maxQuestions: isQuestionCount(maxQuestions) ? maxQuestions : null,
 			language,
 			surveyLanguage,
 			selectedDemographics: [...selectedDemographics]
@@ -81,6 +85,7 @@
 		targetGroup = '';
 		useOfResults = '';
 		furtherNotes = '';
+		maxQuestions = null;
 		language = 'formal';
 		surveyLanguage = 'de';
 		selectedDemographics = [];
@@ -188,7 +193,8 @@
 					surveyLanguage,
 					selectedDemographics,
 					demographicQuestions: demographicQuestions(selectedDemographics),
-					furtherNotes: furtherNotes.trim() || undefined
+					furtherNotes: furtherNotes.trim() || undefined,
+					maxQuestions: isQuestionCount(maxQuestions) ? maxQuestions : undefined
 				},
 				{
 					signal: controller.signal,
@@ -329,6 +335,18 @@
 				placeholder={$t('wizard.furtherNotesPlaceholder')}
 			></textarea>
 			<p class="field-hint">{$t('wizard.furtherNotesHint')}</p>
+		</div>
+		<div class="input-group">
+			<label for="max-questions">{$t('wizard.maxQuestionsLabel')}</label>
+			<input
+				id="max-questions"
+				type="number"
+				min="1"
+				step="1"
+				bind:value={maxQuestions}
+				placeholder={$t('wizard.maxQuestionsPlaceholder')}
+			/>
+			<p class="field-hint">{$t('wizard.maxQuestionsHint')}</p>
 		</div>
 	</section>
 

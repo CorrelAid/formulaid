@@ -9,6 +9,8 @@ export interface WizardInputs {
 	/** Free-form extra guidance for the generator (#40): things to keep short,
 	 *  terms to avoid, topics to focus on. Persisted so reloads keep it. */
 	furtherNotes: string;
+	/** Upper bound on answerable questions; null for the usual 8–15. */
+	maxQuestions: number | null;
 	/** Language of the generated questions and labels (#39). The form of
 	 *  address (Sie/Du) is a separate choice; a survey can be in English with
 	 *  either form, or — for now — in German with Sie. */
@@ -41,6 +43,9 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 		if (data.surveyLanguage === 'de' || data.surveyLanguage === 'en') {
 			inputs.surveyLanguage = data.surveyLanguage;
 		}
+		if (data.maxQuestions === null || isQuestionCount(data.maxQuestions)) {
+			inputs.maxQuestions = data.maxQuestions;
+		}
 		if (isStringList(data.selectedDemographics)) {
 			inputs.selectedDemographics = data.selectedDemographics;
 		}
@@ -48,6 +53,10 @@ export function loadWizardInputs(): Partial<WizardInputs> | null {
 	} catch {
 		return null;
 	}
+}
+
+export function isQuestionCount(v: unknown): v is number {
+	return typeof v === 'number' && Number.isInteger(v) && v >= 1;
 }
 
 function isStringList(v: unknown): v is string[] {

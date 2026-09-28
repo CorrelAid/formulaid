@@ -21,7 +21,7 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 
 ## Rules
 
-- Write **8–15 answerable questions**; `note` rows don't count. Cover **every research question** with at least one question, and spread the questions sensibly over them
+- Write **8–15 answerable questions**; `note` rows don't count. If `maxQuestions` is given, write at most that many instead, even if it is below 8. A question count in `furtherNotes` counts the same way. Cover **every research question** with at least one question, and spread the questions sensibly over them
 - Every question must serve the research goal for this target group and the stated use of the results. Leave out anything that doesn't
 - **Notes:** at most one short introduction at the start (purpose, duration, anonymity) and one thank-you at the end. No notes as section headings or dividers
 - `text` is an input field respondents type into. Never use it for introductions, thanks or other text nobody answers; that is a `note`

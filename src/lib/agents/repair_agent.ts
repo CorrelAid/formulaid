@@ -5,7 +5,7 @@ import { numberResearchQuestions, type Question } from './types.js';
 import { extractQuestions } from './question_parser.js';
 
 const SIGNATURE =
-	'researchQuestions:string "numbered", previousQuestions:json, validationFeedback:string, formOfAddress:string "du, Sie (German) or you (English); keep it" -> generatedQuestions:json';
+	'researchQuestions:string "numbered", previousQuestions:json, validationFeedback:string, formOfAddress:string "du, Sie (German) or you (English); keep it", furtherNotes?:string "free-form guidance from the user; it takes precedence over the feedback", maxQuestions?:number "at most this many answerable questions (notes do not count)" -> generatedQuestions:json';
 
 /** Built from the registry, so the repair prompt can never drift from what the
  *  validator accepts. */
@@ -26,6 +26,7 @@ function buildInstructions(): string {
 		'Return the questions as JSON, changing only what the feedback asks for.',
 		'Keep every question, its wording, its rationale, its source and its researchQuestions unless the feedback says otherwise.',
 		'Add questions only when the feedback asks for more; new ones must serve a research question and get source "generated", a rationale and researchQuestions (the numbers of the research questions they serve).',
+		"The user's furtherNotes and maxQuestions win over the feedback: never go above maxQuestions, and never add or change anything the notes rule out.",
 		`Allowed question types: ${types.join(', ')}.`,
 		'select_one and select_multiple need a "choices" array of {name, label}.',
 		'select_one_from_file / select_multiple_from_file take a registered vocabulary file (e.g. "select_one_from_file iso_3166_1.csv") and no choices.',
@@ -54,6 +55,8 @@ export class RepairAgent {
 			previousQuestions: Question[];
 			validationFeedback: string;
 			formOfAddress: string;
+			furtherNotes?: string;
+			maxQuestions?: number;
 		},
 		signal?: AbortSignal
 	): Promise<Question[]> {
@@ -63,7 +66,9 @@ export class RepairAgent {
 				researchQuestions: numberResearchQuestions(input.researchQuestions),
 				previousQuestions: input.previousQuestions,
 				validationFeedback: input.validationFeedback,
-				formOfAddress: input.formOfAddress
+				formOfAddress: input.formOfAddress,
+				furtherNotes: input.furtherNotes,
+				maxQuestions: input.maxQuestions
 			},
 			{ abortSignal: signal }
 		);

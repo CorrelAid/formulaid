@@ -79,6 +79,10 @@ export interface AgentInput {
 	 *  terms to avoid, topics to focus on. Forwarded to the keyword and
 	 *  generator prompts. */
 	furtherNotes?: string;
+	/** Upper bound on answerable questions (notes and demographics don't
+	 *  count). Overrides the usual 8–15: without it the quality check asked the
+	 *  repair for more questions than the user wanted. */
+	maxQuestions?: number;
 }
 
 /** What a run is doing right now; the page turns it into status text and
