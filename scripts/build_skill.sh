@@ -155,6 +155,13 @@ for f in SKILL.md references/question-types.md references/xlsform-syntax.md; do
   fi
 done
 
+# A skill upload may hold only one SKILL.md: claude.ai rejects the zip
+# otherwise. The sub-skill's overview becomes a plain reference file, without
+# the frontmatter that would make it look like a skill of its own.
+awk 'NR == 1 && /^---$/ { fm = 1; next } fm && /^---$/ { fm = 0; next } !fm' \
+  "$SUB_SKILL_DST/SKILL.md" > "$SUB_SKILL_DST/overview.md"
+rm "$SUB_SKILL_DST/SKILL.md"
+
 ok "vendored formtransform v$FORMTRANSFORM_VERSION (sha256 verified)"
 ok "$(find "$SUB_SKILL_DST" -type f | wc -l) files → $SUB_SKILL_DST"
 
