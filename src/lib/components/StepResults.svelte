@@ -2,7 +2,7 @@
 	import TraceList from './TraceList.svelte';
 	import { locale, t } from '$lib/i18n';
 	import type { Trace } from '$lib/agents/types';
-	import type { RunUsage } from '$lib/agents/usage_meter';
+	import type { RunUsage, StreamProgress } from '$lib/agents/usage_meter';
 
 	let {
 		aiLoading,
@@ -10,6 +10,8 @@
 		progress,
 		traces,
 		usage,
+		streaming,
+		elapsedSeconds,
 		onGenerate,
 		onCancel,
 		onDownload,
@@ -22,6 +24,8 @@
 		progress: number;
 		traces: Trace[];
 		usage: RunUsage;
+		streaming: StreamProgress | null;
+		elapsedSeconds: number;
 		onGenerate: () => void;
 		onCancel: () => void;
 		onDownload: () => void;
@@ -39,6 +43,14 @@
 			minimumFractionDigits: 4,
 			maximumFractionDigits: 4
 		})
+	);
+
+	let elapsed = $derived(
+		`${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, '0')}`
+	);
+	// Roughly four characters per token; only an indication that text arrives.
+	let streamedTokens = $derived(
+		streaming ? Math.round((streaming.chars + streaming.reasoningChars) / 4) : 0
 	);
 </script>
 
@@ -98,6 +110,21 @@
 		</div>
 	{/if}
 
+	{#if aiLoading}
+		<p class="activity" aria-live="polite">
+			{#if !streaming}
+				{$t('wizard.activityWaiting')}
+			{:else if streaming.chars === 0 && streaming.reasoningChars > 0}
+				{$t('wizard.activityReasoning')} · ≈ {numbers.format(streamedTokens)} Tokens
+			{:else if streaming.chars > 0}
+				{$t('wizard.activityWriting')} · ≈ {numbers.format(streamedTokens)} Tokens
+			{:else}
+				{$t('wizard.activityWaiting')}
+			{/if}
+			· {elapsed}
+		</p>
+	{/if}
+
 	{#if hasFile}
 		<div class="success-alert">
 			<p>{$t('wizard.generated')}</p>
@@ -127,6 +154,7 @@
 		padding: var(--spacing-lg);
 	}
 
+	.activity,
 	.usage {
 		margin: var(--spacing-sm) 0 0;
 		font-size: 0.85rem;

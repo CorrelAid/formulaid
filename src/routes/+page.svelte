@@ -21,7 +21,8 @@
 		MAX_RESEARCH_QUESTIONS,
 		EMPTY_USAGE,
 		UsageMeter,
-		type RunUsage
+		type RunUsage,
+		type StreamProgress
 	} from '$lib/agents/index.js';
 
 	// Form state
@@ -108,6 +109,17 @@
 	let repairAttempts = $state(0);
 	// Tokens and cost of the current run, updated as responses arrive.
 	let usage = $state<RunUsage>({ ...EMPTY_USAGE });
+	// The response in flight, so a long step visibly moves (null between
+	// requests), and when the run started, for the elapsed time.
+	let streaming = $state<StreamProgress | null>(null);
+	let startedAt = $state(0);
+	let now = $state(0);
+	$effect(() => {
+		if (!aiLoading) return;
+		const id = setInterval(() => (now = Date.now()), 1000);
+		return () => clearInterval(id);
+	});
+	let elapsedSeconds = $derived(aiLoading ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0);
 	let qwacAvailable = $state(true);
 	let abortController: AbortController | null = null;
 
@@ -121,24 +133,45 @@
 
 	let progress = $derived(generatedFile ? 100 : aiLoading ? runProgress : 0);
 
+	/** Where the bar may go during the current phase: it starts at `from` and
+	 *  creeps towards `to` as the model's answer streams in. */
+	let phaseRange = { from: 0, to: 0 };
+
 	/** Status text and progress per phase (#20). Repairs move the bar in steps
 	 *  instead of jumping to the end, and it never reaches 100 before done. */
 	function showPhase(p: RunPhase) {
 		const tr = get(t);
 		if (p.phase === 'searching') {
 			aiStatus = tr('wizard.statusSearching');
-			runProgress = 10;
+			phaseRange = { from: 10, to: 15 };
 		} else if (p.phase === 'generating') {
 			aiStatus = tr('wizard.statusGenerating');
-			runProgress = 15;
+			phaseRange = { from: 15, to: 60 };
 		} else if (p.phase === 'validating') {
 			aiStatus = tr('wizard.statusValidating');
-			runProgress = p.attempt === 0 ? 60 : 66 + p.attempt * 12;
+			const at = p.attempt === 0 ? 60 : 66 + p.attempt * 12;
+			phaseRange = { from: at, to: at };
 		} else {
 			aiStatus = `${tr('wizard.statusRepairing')} (${p.attempt}/${MAX_REPAIR_ATTEMPTS})`;
-			runProgress = 60 + p.attempt * 12;
+			phaseRange = { from: 60 + p.attempt * 12, to: 66 + p.attempt * 12 };
 			repairAttempts = p.attempt;
 		}
+		runProgress = phaseRange.from;
+	}
+
+	/** How long a streamed answer is expected to get, in characters. The bar
+	 *  approaches the end of the phase but never reaches it, whatever the
+	 *  length: a questionnaire runs to roughly 5–20k characters of JSON,
+	 *  reasoning models write several times that before answering. */
+	const TYPICAL_ANSWER_CHARS = 8000;
+
+	function showStream(progress: StreamProgress | null) {
+		streaming = progress;
+		if (!progress) return;
+		const written = progress.chars + progress.reasoningChars / 4;
+		const share = 1 - Math.exp(-written / TYPICAL_ANSWER_CHARS);
+		const { from, to } = phaseRange;
+		runProgress = Math.max(runProgress, Math.round(from + (to - from) * share));
 	}
 
 	/** Map provider errors to something actionable (#21). The privacy hint is
@@ -166,6 +199,7 @@
 		validationFindings = [];
 		repairAttempts = 0;
 		usage = { ...EMPTY_USAGE };
+		streaming = null;
 		qwacAvailable = true;
 		traces = [];
 		aiStatus = '';
@@ -189,7 +223,8 @@
 		const controller = new AbortController();
 		abortController = controller;
 		try {
-			const meter = new UsageMeter((u) => (usage = u));
+			startedAt = now = Date.now();
+			const meter = new UsageMeter((u) => (usage = u), showStream);
 			const ai = createModel(appSettings.apiKey, appSettings.model, appSettings.baseUrl, meter);
 			const result = await new LeadAgent(ai).run(
 				{
@@ -519,6 +554,8 @@
 		{progress}
 		{traces}
 		{usage}
+		{streaming}
+		{elapsedSeconds}
 		hasFile={generatedFile !== null}
 		onGenerate={generateWithAI}
 		onCancel={() => abortController?.abort()}
