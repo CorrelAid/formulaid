@@ -20,6 +20,7 @@
 		demographicQuestions,
 		MAX_RESEARCH_QUESTIONS,
 		EMPTY_USAGE,
+		RETRY_DELAYS_MS,
 		UsageMeter,
 		type RunUsage,
 		type StreamProgress
@@ -121,6 +122,7 @@
 	});
 	let elapsedSeconds = $derived(aiLoading ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0);
 	let qwacAvailable = $state(true);
+	let qwacError = $state<string | undefined>(undefined);
 	let abortController: AbortController | null = null;
 
 	type WizardError =
@@ -142,7 +144,9 @@
 	function showPhase(p: RunPhase) {
 		const tr = get(t);
 		if (p.phase === 'searching') {
-			aiStatus = tr('wizard.statusSearching');
+			aiStatus = p.retry
+				? `${tr('wizard.statusSearching')} (${tr('wizard.statusRetry')} ${p.retry}/${RETRY_DELAYS_MS.length})`
+				: tr('wizard.statusSearching');
 			phaseRange = { from: 10, to: 15 };
 		} else if (p.phase === 'generating') {
 			aiStatus = tr('wizard.statusGenerating');
@@ -201,6 +205,7 @@
 		usage = { ...EMPTY_USAGE };
 		streaming = null;
 		qwacAvailable = true;
+		qwacError = undefined;
 		traces = [];
 		aiStatus = '';
 		runProgress = 0;
@@ -249,6 +254,7 @@
 			validationFindings = result.findings;
 			repairAttempts = result.repairAttempts;
 			qwacAvailable = result.qwacAvailable;
+			qwacError = result.qwacError;
 			generatedFile = new Blob([result.workbook as BlobPart], {
 				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 			});
@@ -544,7 +550,10 @@
 
 	{#if generatedFile && !qwacAvailable}
 		<div class="warning-box" in:fade>
-			<p>{$t('wizard.qwacUnavailable')}</p>
+			<p>
+				{$t('wizard.qwacUnavailable')}
+				{#if qwacError}({$t('wizard.qwacReason')}: {qwacError}){/if}
+			</p>
 		</div>
 	{/if}
 

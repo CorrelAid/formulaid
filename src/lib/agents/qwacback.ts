@@ -7,6 +7,11 @@ export const DEMOGRAPHIC_STUDY_ID = '2z4e5jfgc6s6mwy';
 /** How many hits reach the generator prompt, however large the bank grows. */
 export const MAX_BANK_HITS = 30;
 
+/** Waits before each retry of a failed qwac request. qwac restarts and
+ *  re-seeds on every deploy, and limits guests to 60 requests per 10 s; both
+ *  pass within this. */
+export const RETRY_DELAYS_MS = [2000, 5000, 10000];
+
 /** The bank changes over time; a page left open picks up edits after this. */
 const CACHE_MS = 10 * 60 * 1000;
 
@@ -26,6 +31,26 @@ export interface BankSearch {
 	/** False when qwac could not be reached. Generation still runs, but every
 	 *  question is then written by the model (#19). */
 	available: boolean;
+	/** Why qwac could not be reached, e.g. "HTTP 429"; only when unavailable. */
+	error?: string;
+}
+
+export interface SearchOptions {
+	signal?: AbortSignal;
+	/** Called before each retry, with its number (1-based). */
+	onRetry?: (attempt: number) => void;
+	retryDelays?: number[];
+}
+
+/** A failed qwac request; `retry` for failures that may pass (rate limit,
+ *  server error, network), not for ones that won't (404, bad query). */
+class QwacError extends Error {
+	constructor(
+		message: string,
+		readonly retry: boolean
+	) {
+		super(message);
+	}
 }
 
 interface RawQuestion {
@@ -50,9 +75,45 @@ function groupTags(tags: RawQuestion['tags']): Record<string, string[]> | undefi
 }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
-	const res = await fetch(`${QWAC_API}${path}`, { signal });
-	if (!res.ok) throw new Error(`qwac ${path}: HTTP ${res.status}`);
+	let res: Response;
+	try {
+		res = await fetch(`${QWAC_API}${path}`, { signal });
+	} catch (e) {
+		if (signal?.aborted) throw e;
+		throw new QwacError(`network error (${(e as Error).message})`, true);
+	}
+	if (!res.ok) throw new QwacError(`HTTP ${res.status}`, res.status === 429 || res.status >= 500);
 	return res.json() as Promise<T>;
+}
+
+/** `get`, retried after each of `delays` while the failure may pass. */
+async function getWithRetry<T>(path: string, options: SearchOptions): Promise<T> {
+	const { signal, onRetry, retryDelays = RETRY_DELAYS_MS } = options;
+	for (let attempt = 0; ; attempt++) {
+		try {
+			return await get<T>(path, signal);
+		} catch (e) {
+			if (!(e instanceof QwacError) || !e.retry || attempt >= retryDelays.length) throw e;
+			onRetry?.(attempt + 1);
+			await wait(retryDelays[attempt], signal);
+		}
+	}
+}
+
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+	return new Promise((resolve, reject) => {
+		if (signal?.aborted) return reject(signal.reason);
+		const id = setTimeout(done, ms);
+		function done() {
+			signal?.removeEventListener('abort', abort);
+			resolve();
+		}
+		function abort() {
+			clearTimeout(id);
+			reject(signal?.reason);
+		}
+		signal?.addEventListener('abort', abort, { once: true });
+	});
 }
 
 /** Study titles for the prompt; a handful of records, cached for a while. */
@@ -65,7 +126,9 @@ function studyTitles(signal?: AbortSignal): Promise<Map<string, string>> {
 			signal
 		).then((r) => new Map(r.items.map((s) => [s.id, s.title])));
 		// Not cached on failure: the next generation tries again.
-		titles.catch(() => (studies = null));
+		titles.catch(() => {
+			studies = null;
+		});
 		studies = { at: Date.now(), titles };
 	}
 	return studies.titles;
@@ -79,8 +142,9 @@ function studyTitles(signal?: AbortSignal): Promise<Map<string, string>> {
  */
 export async function searchQuestionBank(
 	keywords: string[],
-	signal?: AbortSignal
+	options: SearchOptions = {}
 ): Promise<BankSearch> {
+	const { signal } = options;
 	const terms = [...new Set(keywords.map((k) => k.trim()).filter((k) => k.length >= 3))];
 	if (terms.length === 0) return { hits: [], available: true };
 	const query = new URLSearchParams({
@@ -90,8 +154,9 @@ export async function searchQuestionBank(
 	});
 	try {
 		const [result, titles] = await Promise.all([
-			get<{ items: RawQuestion[] | null }>(`/search/questions?${query}`, signal),
-			studyTitles(signal)
+			getWithRetry<{ items: RawQuestion[] | null }>(`/search/questions?${query}`, options),
+			// Study names only label the hits; without them the hits still help.
+			studyTitles(signal).catch(() => new Map<string, string>())
 		]);
 		const hits = (result.items ?? [])
 			// Belt and braces: the filter is the server's, the rule is ours.
@@ -108,8 +173,9 @@ export async function searchQuestionBank(
 		return { hits, available: true };
 	} catch (e) {
 		if (signal?.aborted) throw e;
-		console.warn('qwac question bank unavailable, skipping:', (e as Error).message);
-		return { hits: [], available: false };
+		const error = (e as Error).message;
+		console.warn('qwac question bank unavailable, skipping:', error);
+		return { hits: [], available: false, error };
 	}
 }
 

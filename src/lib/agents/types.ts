@@ -89,7 +89,7 @@ export interface AgentInput {
  *  progress (#20). `attempt` is 0 for the first generation and counts repair
  *  attempts after that. */
 export type RunPhase =
-	| { phase: 'searching' }
+	| { phase: 'searching'; retry?: number }
 	| { phase: 'generating' }
 	| { phase: 'validating'; attempt: number }
 	| { phase: 'repairing'; attempt: number };

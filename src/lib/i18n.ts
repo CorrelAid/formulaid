@@ -165,6 +165,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.resetInputs': 'Clear form',
 		'wizard.modelNotFound':
 			'The model was not found. Check the model name in section 4 and the provider’s model list.',
+		'wizard.qwacReason': 'reason',
+		'wizard.statusRetry': 'retry',
 		'wizard.qwacUnavailable':
 			'The qwac question bank could not be reached, so all questions were written by the model and none come from validated instruments. Generate again later to use the question bank.',
 		'traces.step': 'Step',
@@ -339,6 +341,8 @@ const translations: Record<Locale, Record<string, string>> = {
 		'wizard.resetInputs': 'Formular leeren',
 		'wizard.modelNotFound':
 			'Das Modell wurde nicht gefunden. Prüfe den Modellnamen in Abschnitt 4 und die Modellliste des Anbieters.',
+		'wizard.qwacReason': 'Grund',
+		'wizard.statusRetry': 'erneuter Versuch',
 		'wizard.qwacUnavailable':
 			'Die Fragendatenbank qwac war nicht erreichbar. Alle Fragen wurden deshalb vom Modell formuliert, keine stammt aus validierten Instrumenten. Generiere später erneut, um die Fragendatenbank zu nutzen.',
 		'traces.step': 'Schritt',

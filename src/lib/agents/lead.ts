@@ -218,6 +218,8 @@ export interface RunResult {
 	repairAttempts: number;
 	/** False when qwac was unreachable and every question is model-written. */
 	qwacAvailable: boolean;
+	/** Why qwac could not be reached, e.g. "HTTP 429". */
+	qwacError?: string;
 	/** The first generation as the model returned it (see GeneratedSurvey.raw). */
 	generatedRaw: unknown;
 	/** What the bank was searched for, and what the generator was offered. */
@@ -249,7 +251,10 @@ export class LeadAgent {
 		onPhase?.({ phase: 'searching' });
 		const keywords = await this.keywordAgent.keywords(this.ai, input, signal);
 		this.reportTrace(this.keywordAgent, onTrace);
-		const bank = await searchQuestionBank(keywords, signal);
+		const bank = await searchQuestionBank(keywords, {
+			signal,
+			onRetry: (retry) => onPhase?.({ phase: 'searching', retry })
+		});
 
 		onPhase?.({ phase: 'generating' });
 		const generated = await this.surveyGenerator.generateSurvey(this.ai, input, bank.hits, signal);
@@ -331,6 +336,7 @@ export class LeadAgent {
 			findings: current.findings,
 			repairAttempts: attempt,
 			qwacAvailable: bank.available,
+			qwacError: bank.error,
 			bankSearch: { keywords, hits: bank.hits },
 			generatedRaw: generated.raw
 		};

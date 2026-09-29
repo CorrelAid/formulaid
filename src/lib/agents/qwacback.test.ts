@@ -60,9 +60,54 @@ describe('searchQuestionBank (#57)', () => {
 		expect(await searchQuestionBank(['Mobilität'])).toEqual({ hits: [], available: true });
 	});
 
-	it('reports qwac as unavailable when the search fails', async () => {
-		mockQwac([], 503);
-		expect(await searchQuestionBank(['Zufriedenheit'])).toEqual({ hits: [], available: false });
+	it('reports qwac as unavailable, with the cause, when retries run out', async () => {
+		const searches = mockQwac([], 503);
+		const retries: number[] = [];
+		const result = await searchQuestionBank(['Zufriedenheit'], {
+			retryDelays: [0, 0],
+			onRetry: (n) => retries.push(n)
+		});
+		expect(result).toEqual({ hits: [], available: false, error: 'HTTP 503' });
+		expect(searches).toHaveLength(3);
+		expect(retries).toEqual([1, 2]);
+	});
+
+	it('retries a rate-limited search and uses the answer that follows', async () => {
+		let calls = 0;
+		vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+			if (String(input).includes('/collections/studies/records')) {
+				return new Response(JSON.stringify(studies));
+			}
+			calls++;
+			return calls === 1
+				? new Response('Too Many Requests.', { status: 429 })
+				: new Response(JSON.stringify({ items: [hit('sat')] }));
+		});
+		const result = await searchQuestionBank(['Zufriedenheit'], { retryDelays: [0] });
+		expect(result.available).toBe(true);
+		expect(result.hits.map((h) => h.id)).toEqual(['sat']);
+	});
+
+	it('does not retry a request that cannot pass', async () => {
+		const searches = mockQwac([], 400);
+		const result = await searchQuestionBank(['Zufriedenheit'], { retryDelays: [0, 0] });
+		expect(result.error).toBe('HTTP 400');
+		expect(searches).toHaveLength(1);
+	});
+
+	it('keeps the hits when only the study titles fail', async () => {
+		vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+			if (String(input).includes('/collections/studies/records')) {
+				throw new TypeError('Failed to fetch');
+			}
+			return new Response(JSON.stringify({ items: [hit('sat')] }));
+		});
+		// A fresh module, so no earlier test's cached titles hide the failure.
+		vi.resetModules();
+		const fresh = await import('./qwacback.js');
+		const result = await fresh.searchQuestionBank(['Zufriedenheit'], { retryDelays: [] });
+		expect(result.available).toBe(true);
+		expect(result.hits[0]).toMatchObject({ id: 'sat', study: '' });
 	});
 
 	it('keeps qwac tags grouped by language, and shows them in the prompt (#59)', async () => {
