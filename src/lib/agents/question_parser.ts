@@ -101,6 +101,9 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 			: inferType(label, choices.length > 0)
 	) as QuestionType;
 	const relevant = str(obj.relevant) ?? str(obj.relevance);
+	const defaultValue = firstOf(obj, 'default', 'default_value')?.trim();
+	// Respondents never see a hidden field, so it can't be required (#69).
+	const hidden = baseType === 'hidden';
 	// The model is asked for a justification per question (#5). It uses whichever
 	// of these key names it feels like, so accept all of them.
 	const rationale = firstOf(obj, 'rationale', 'reasoning', 'justification', 'why');
@@ -113,9 +116,10 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 		name,
 		label,
 		type,
-		required: typeof obj.required === 'boolean' ? obj.required : true,
+		required: hidden ? false : typeof obj.required === 'boolean' ? obj.required : true,
 		choices,
 		...(relevant ? { relevant } : {}),
+		...(defaultValue ? { default: defaultValue } : {}),
 		...(rationale ? { rationale } : {}),
 		...(source ? { source } : {}),
 		...(researchQuestions.length ? { researchQuestions } : {})

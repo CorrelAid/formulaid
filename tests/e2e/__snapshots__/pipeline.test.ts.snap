@@ -35,6 +35,17 @@ exports[`'exclusive-answer' > links follow-ups and records what the quality chec
 
 exports[`'exclusive-answer' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'hidden-partner' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "doubleBarrelled": [],
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
+exports[`'hidden-partner' > passes the formtransform validator 1`] = `[]`;
+
 exports[`'messy-names-and-logic' > links follow-ups and records what the quality checks still find 1`] = `
 {
   "doubleBarrelled": [],

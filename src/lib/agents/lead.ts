@@ -13,7 +13,14 @@ import {
 import { doubleBarrelled } from './wording.js';
 import { XLSFormGenerator, formIdFor } from './xlsform_generator.js';
 import { XLSFormValidator, type ValidationFinding } from './xlsform_validator.js';
-import type { AgentInput, Question, RunPhase, Survey, Trace } from './types.js';
+import {
+	isAnswerable,
+	type AgentInput,
+	type Question,
+	type RunPhase,
+	type Survey,
+	type Trace
+} from './types.js';
 
 /** How often the repair agent may fix the questionnaire before it is
  *  delivered with the remaining findings shown (#11). */
@@ -44,7 +51,7 @@ export function qualityFeedback(
 	researchQuestionCount = 0,
 	maxQuestions?: number
 ): string[] {
-	const answerable = questions.filter((q) => q.type !== 'note');
+	const answerable = questions.filter((q) => isAnswerable(q));
 	const min = minQuestions(maxQuestions);
 	const open = openQuestions(answerable);
 	const feedback: string[] = [];
@@ -103,7 +110,7 @@ export function qualityGap(
 	researchQuestionCount = 0,
 	maxQuestions?: number
 ): number {
-	const answerable = questions.filter((q) => q.type !== 'note');
+	const answerable = questions.filter((q) => isAnswerable(q));
 	return (
 		Math.max(0, minQuestions(maxQuestions) - answerable.length) +
 		(maxQuestions ? Math.max(0, answerable.length - maxQuestions) : 0) +
@@ -117,9 +124,7 @@ export function qualityGap(
 
 /** Research question numbers (1-based) that no answerable question serves (#34). */
 function uncovered(questions: Question[], count: number): number[] {
-	const served = new Set(
-		questions.filter((q) => q.type !== 'note').flatMap((q) => q.researchQuestions ?? [])
-	);
+	const served = new Set(questions.filter(isAnswerable).flatMap((q) => q.researchQuestions ?? []));
 	return Array.from({ length: count }, (_, i) => i + 1).filter((n) => !served.has(n));
 }
 
@@ -141,7 +146,7 @@ export function dedupAgainstDemographics(
 function withResearchQuestions(questions: Question[], count: number): Question[] {
 	return questions.map((q) => {
 		const valid = (q.researchQuestions ?? []).filter((n) => n <= count);
-		const researchQuestions = valid.length === 0 && count === 1 && q.type !== 'note' ? [1] : valid;
+		const researchQuestions = valid.length === 0 && count === 1 && isAnswerable(q) ? [1] : valid;
 		const rest = { ...q };
 		delete rest.researchQuestions;
 		return researchQuestions.length ? { ...rest, researchQuestions } : rest;

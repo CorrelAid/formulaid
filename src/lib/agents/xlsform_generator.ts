@@ -39,7 +39,12 @@ export function fileNameFor(survey: Survey): string {
 
 export class XLSFormGenerator {
 	generate(survey: Survey): Uint8Array {
-		const surveyData = [['type', 'name', 'label', 'hint', 'required', 'relevant']];
+		// The `default` column only when a question has one, so forms without
+		// defaults keep their layout.
+		const withDefault = survey.questions.some((q) => q.default);
+		const surveyData = [
+			['type', 'name', 'label', 'hint', 'required', 'relevant', ...(withDefault ? ['default'] : [])]
+		];
 		const choicesData = [['list_name', 'name', 'label', 'exclusive']];
 		// Each list is written once, keyed by its choices. The prompt encourages
 		// reusing a scale ("select_one skala5"), but the model sometimes gives two
@@ -76,8 +81,10 @@ export class XLSFormGenerator {
 				q.name,
 				q.label,
 				q.hint || '',
-				q.required ? 'yes' : 'no',
-				q.relevant ?? ''
+				// Respondents never see a hidden field: required means nothing there (#69).
+				q.type === 'hidden' ? '' : q.required ? 'yes' : 'no',
+				q.relevant ?? '',
+				...(withDefault ? [q.default ?? ''] : [])
 			]);
 		}
 
