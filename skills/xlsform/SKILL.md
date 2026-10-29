@@ -5,7 +5,7 @@ description: "Generates XLSForm survey files for survey tools such as Kobo Toolb
 
 # XLSForm Generator
 
-Skill version: c1cd67ef (formtransform v0.7.1)
+Skill version: 9e43435f (formtransform v0.10.0)
 
 Output language: match the language the user writes in. Variable names always in English snake_case.
 
@@ -93,6 +93,7 @@ Follow [generate-instructions.md](generate-instructions.md) for the full output 
 Additional essentials (full XLSForm syntax in [cdl-survey-types/references/xlsform-syntax.md](cdl-survey-types/references/xlsform-syntax.md); methodology in [references/survey-methodology.md](references/survey-methodology.md)):
 
 - Always include `start`, `end`, `today`, `deviceid` metadata rows
+- To record a distribution channel (partner, module, wave) that comes from the survey link, add a `hidden` question rather than asking respondents; give it a `default` when a link may leave it out. KoboCollect only gets the `default` (Kobo web forms take `?d[/<root>/<name>]=…`); in LimeSurvey the link parameter is the question code (`?<code>=…`)
 - Group with `begin_group` / `end_group`; skip logic in `relevant` column
 - All labels, hints, constraint messages in the survey language
 

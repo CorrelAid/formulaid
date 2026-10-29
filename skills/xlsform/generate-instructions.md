@@ -60,6 +60,18 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 
 **Constraints:** variable `name` ≤ 20 chars, `^[a-zA-Z0-9]+$`
 
+## `hidden` — Hidden (Prefilled Value)
+
+**Use when:** When a value comes from the survey link rather than the respondent, such as a partner, channel or module code, so that responses can be split by it.
+
+**Constraints:** variable `name` ≤ 20 chars, `^[a-zA-Z0-9]+$`
+
+> ⚠️ Respondents never see it: the value comes from the survey link (convention:linkPrefill) or the `default`; without either it stays empty.
+>
+> ⚠️ Kobo fills it from the link only in web forms (Enketo); KoboCollect gets the `default` alone.
+>
+> ⚠️ In LimeSurvey the link parameter is the question code, which differs from the XLSForm name when it is sanitized or over 20 characters: take it from the mapping (--mapping).
+
 ## `integer` — Integer
 
 **Use when:** When collecting open integer values without predefined categories, where respondents provide a raw number (e.g. age, household size).
@@ -153,7 +165,7 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 
 error — the registry is an allowlist; any survey-sheet type that is neither registered nor a metadata row MUST abort the transformation with a clear message
 
-Metadata rows (`start`, `end`, `today`, `deviceid`, `username`, `hidden`, `audit`) are accepted and carried but produce no authored question. Every other `type` must be one of the registered question / structural types.
+Metadata rows (`start`, `end`, `today`, `deviceid`, `username`, `audit`) are accepted and carried but produce no authored question. Every other `type` must be one of the registered question / structural types.
 
 ## Names & choice codes
 
@@ -173,7 +185,7 @@ Applies to: `select_one`, `select_multiple`. Add a choice with code `other`, the
 
 ## Exclusive answers (`exclusive` column)
 
-Applies to: `select_multiple`. For an answer that rules out all others (“Keine Angabe”, “Nichts davon”, “Weiß nicht”), add the `exclusive` column to the `choices` sheet and set it to `yes` on that choice. Leave it empty on every other row. Don't write a `count-selected()` constraint for this; it isn't converted.
+Applies to: `select_multiple`. For an answer that rules out all others (“Keine Angabe”, “Nichts davon”, “Weiß nicht”), add the `exclusive` column to the `choices` sheet and set it to `yes` on that choice. Leave it empty on every other row. Don't write a `count-selected()` constraint for this: LimeSurvey only gets it as a validation equation.
 
 ## Long lists from a file (`select_*_from_file`)
 
@@ -187,19 +199,22 @@ Type pattern: `^select_(one|multiple)_from_file (?P<filename>[^ ]+\.csv)$` — e
 
 Written in the XLSForm XPath subset. `${name}` references another answer; `.` (in `constraint`) refers to this answer; `selected(${q}, 'code')` tests a choice. `constraint_message` holds the plain-text error.
 
+To limit how many answers a `select_multiple` takes, write `count-selected(.) <= 3` (or `>= 1`, or both joined with `and`) as its `constraint`: LimeSurvey gets `max_answers` / `min_answers`. `count-selected(${q}) > 1` in a `relevant` counts the ticked answers of an earlier question.
+
 **Only these functions are supported** (anything else is rejected):
 
-`and`, `or`, `not`, `if`, `selected`, `contains`, `starts-with`, `ends-with`, `regex`, `string`, `number`, `concat`, `substring`, `string-length`, `normalize-space`, `count`, `sum`, `round`, `floor`, `ceiling`, `div`, `mod`, `today`, `now`
+`and`, `or`, `not`, `if`, `selected`, `contains`, `starts-with`, `ends-with`, `regex`, `string`, `number`, `concat`, `substring`, `string-length`, `normalize-space`, `count`, `count-selected`, `sum`, `round`, `floor`, `ceiling`, `div`, `mod`, `today`, `now`
 
 ## Appearances (`appearance` column)
 
 | `appearance` | Meaning | Valid on |
 |---|---|---|
+| `autocomplete` | Dropdown with search (autocomplete) | `select_one`, `select_one_from_file` |
 | `field-list` | Field list group | `begin_group` |
 | `label` | Matrix header row | `begin_group`, `select_one` |
 | `likert` | Likert appearance hint | `select_one` |
 | `list-nolabel` | Matrix body row | `select_one` |
-| `minimal` | Dropdown / minimal display | `select_one` |
+| `minimal` | Dropdown / minimal display | `select_one`, `select_one_from_file` |
 | `multiline` | Multi-line text | `text` |
 | `table-list` | Table list (matrix) | `begin_group` |
 
