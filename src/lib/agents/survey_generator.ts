@@ -8,7 +8,7 @@ import generateInstructions from '../../../skills/xlsform/generate-instructions.
 // runs "language: informal" still produced "Sie", and "demographics: age"
 // made the model write its own age question.
 const SIGNATURE =
-	'researchQuestions:string "numbered; cover every one and tag each question with the numbers it serves", targetGroup?:string, useOfResults?:string, furtherNotes?:string "free-form guidance from the user: things to keep short, terms to avoid, topics to focus on", maxQuestions?:number "at most this many answerable questions (notes and demographics do not count); overrides the usual 8–15", formOfAddress:string "du, Sie (German) or you (English): how every question addresses respondents", surveyLanguage:string "de or en: language of every question, label, hint, title and reasoning", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept (other-language tags) | question | answer type" -> title:string "short questionnaire title in the language of the questions", reasoning:string, generatedQuestions:json';
+	'researchQuestions:string "numbered; cover every one and tag each question with the numbers it serves", targetGroup?:string, useOfResults?:string, furtherNotes?:string "free-form guidance from the user: things to keep short, terms to avoid, topics to focus on", maxQuestions?:number "at most this many answerable questions (notes and demographics do not count); overrides the usual 8–15", formOfAddress:string "du, Sie (German) or you (English): how every question addresses respondents", surveyLanguage:string "de or en: language of every question, label, hint, title and reasoning", demographicsAddedSeparately?:string "already in the questionnaire; do not ask about these", questionBank?:string "qwac bank questions that matched a keyword search, one per line: id | study | concept (other-language tags) | question | answer type" -> title:string "short questionnaire title in the language of the questions", titleShort?:string "optional abbreviated title, only when the title is long", subtitle?:string "optional subtitle: the organisation, wave or year", reasoning:string, generatedQuestions:json';
 
 /** "du" or "Sie" for German, "you" for English (no formal/informal split in
  *  English), as the prompt and the model expect it. */
@@ -20,8 +20,16 @@ export function formOfAddress(
 	return language === 'informal' ? 'du' : 'Sie';
 }
 
+/** A trimmed string, or undefined when empty or not a string. */
+function optionalText(value: unknown): string | undefined {
+	return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
 export interface GeneratedSurvey {
 	title: string;
+	/** Optional short title and subtitle (#70); undefined when the model gives none. */
+	titleShort?: string;
+	subtitle?: string;
 	questions: Question[];
 	/** Free-text account of why these questions, in the requested UI language. */
 	reasoning: string;
@@ -61,6 +69,8 @@ export class SurveyGeneratorAgent {
 
 		return {
 			title: typeof result.title === 'string' ? result.title.trim() : '',
+			titleShort: optionalText(result.titleShort),
+			subtitle: optionalText(result.subtitle),
 			questions: result.generatedQuestions ? extractQuestions(result.generatedQuestions) : [],
 			reasoning: typeof result.reasoning === 'string' ? result.reasoning : '',
 			raw: result.generatedQuestions

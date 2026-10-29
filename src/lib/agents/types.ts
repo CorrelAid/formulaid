@@ -29,6 +29,13 @@ export interface Question {
 	/** Written to the `default` column. For a `hidden` question it is the value
 	 *  used when the survey link doesn't carry one (#69). */
 	default?: string;
+	/** The construct the question measures, written to the `concept` column:
+	 *  the only source of the DDI `<concept>` (#70). */
+	concept?: string;
+	/** Short printed name of a select_multiple or of a question with a
+	 *  Sonstiges follow-up, written to `label_short`: the DDI `varGrp/labl`
+	 *  (#70). */
+	labelShort?: string;
 	/** Why this question is in the questionnaire — surfaced in the UI and in the
 	 *  workbook's `explanations` sheet so the result is auditable (#5). */
 	rationale?: string;
@@ -54,6 +61,10 @@ export interface Trace {
 
 export interface Survey {
 	title: string;
+	/** Settings `form_title_short` (DDI `altTitl`), optional (#70). */
+	titleShort?: string;
+	/** Settings `form_subtitle` (DDI `subTitl`), optional (#70). */
+	subtitle?: string;
 	/** XLSForm settings `form_id`; derived from the title so imported forms
 	 *  don't collide (#22). */
 	formId?: string;

@@ -124,6 +124,9 @@ const translations: Record<Locale, Record<string, string>> = {
 		'surveyView.name': 'Variable name',
 		'surveyView.rationale': 'Rationale',
 		'surveyView.source': 'Source',
+		'surveyView.concept': 'Concept',
+		'surveyView.labelShort': 'Short label',
+		'surveyView.titleShort': 'Short title',
 		'wizard.apiKeyMissing': 'Please enter an API key at the top first.',
 		'wizard.apiKeyWarning':
 			'API key missing: enter an API key at the top to generate questionnaires.',
@@ -303,6 +306,9 @@ const translations: Record<Locale, Record<string, string>> = {
 		'surveyView.name': 'Variablenname',
 		'surveyView.rationale': 'Begründung',
 		'surveyView.source': 'Quelle',
+		'surveyView.concept': 'Konzept',
+		'surveyView.labelShort': 'Kurzbezeichnung',
+		'surveyView.titleShort': 'Kurztitel',
 		'wizard.apiKeyMissing': 'Bitte trage zuerst oben einen API-Key ein.',
 		'wizard.apiKeyWarning':
 			'API-Key fehlt: Trage oben einen API-Key ein, um Fragebögen zu generieren.',

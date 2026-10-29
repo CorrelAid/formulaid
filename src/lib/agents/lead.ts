@@ -267,6 +267,8 @@ export class LeadAgent {
 
 		const base = {
 			title: generated.title,
+			...(generated.titleShort ? { titleShort: generated.titleShort } : {}),
+			...(generated.subtitle ? { subtitle: generated.subtitle } : {}),
 			formId: formIdFor(generated.title),
 			language: input.surveyLanguage,
 			researchQuestions,

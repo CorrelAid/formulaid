@@ -19,6 +19,8 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 | `researchQuestions` | Array of the numbers of the research questions this question serves, e.g. `[1]` or `[1, 3]`. Research questions are numbered from 1 in the order given.                                                                                                                                      |
 | `relevant`          | Only for questions that not everyone should see: the condition on an earlier answer, e.g. `${usage} = 'yes'` or `selected(${areas}, 'other')`. Omit it otherwise.                                                                                                                            |
 | `default`           | Only for `hidden`: the value used when the survey link leaves it out, e.g. `direkt`. Omit it otherwise.                                                                                                                                                                                      |
+| `concept`           | Optional: the construct the question measures, in a few words in the language of the questions, e.g. `Arbeitszufriedenheit`. Fill it when the question measures a named construct; for a question-bank item take its concept. Never copy the label. Omit it for notes and `hidden`.          |
+| `label_short`       | Optional, only for a `select_multiple` or a question with a Sonstiges follow-up: a short printed name for its answers as a group, e.g. „Genutzte Angebote". Omit it otherwise.                                                                                                               |
 
 ## Rules
 
@@ -41,4 +43,5 @@ Output `generatedQuestions` as a **flat JSON array**. Each element must have:
 - **Yes/no follow-ups** („Falls ja, …"): directly after the yes/no question, with `relevant` `${<question>} = '<yes code>'`
 - Fill `reasoning` with a short German account of how the set of questions was arrived at: which research question and construct is covered by which block, what was taken from the question bank and what was written from scratch. The user sees this text — it is the questionnaire's audit trail. If a research question is too broad, leading, or can't be answered with a survey, say so briefly here as a hint (don't refuse)
 - Fill `title` with a short questionnaire title (a few words) in the language of the questions; it becomes the form title and the file name
+- `titleShort` and `subtitle` are optional: a `titleShort` only when the title is too long to print in a table, a `subtitle` only when the input names the organisation, wave or year. Leave them out otherwise
 - Output `generatedQuestions` as **plain JSON only** — no markdown code fences, no ```json blocks, no backticks around the value
