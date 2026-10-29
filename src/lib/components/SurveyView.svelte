@@ -26,6 +26,7 @@
 		if (t === 'integer' || t === 'decimal' || t === 'range') return 'number';
 		if (t === 'date' || t === 'time') return 'date';
 		if (t === 'note') return 'note';
+		if (t === 'hidden') return 'hidden';
 		return 'other';
 	}
 
@@ -89,10 +90,24 @@
 					>
 				</div>
 				<h3 class="question-label">{q.label}</h3>
+				{#if q.type === 'hidden'}
+					<!-- Filled from the survey link, never by the respondent (#69). -->
+					<div class="link-filled">
+						<p>{$t('surveyView.hidden')}</p>
+						{#if q.default}
+							<p>
+								<span class="meta-label">{$t('surveyView.hiddenDefault')}:</span>
+								<code>{q.default}</code>
+							</p>
+						{:else}
+							<p class="no-default">{$t('surveyView.hiddenNoDefault')}</p>
+						{/if}
+					</div>
+				{/if}
 				{#if q.hint}
 					<p class="question-hint">{q.hint}</p>
 				{/if}
-				{#if q.choices && q.choices.length > 0}
+				{#if q.choices && q.choices.length > 0 && q.type !== 'hidden'}
 					<table class="choices">
 						<thead>
 							<tr>
@@ -319,6 +334,33 @@
 	.type-note {
 		background: #f3f4f6;
 		color: #374151;
+	}
+
+	.type-hidden {
+		background: #ede9fe;
+		color: #5b21b6;
+	}
+
+	.link-filled {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: var(--spacing-xs) var(--spacing-sm);
+		border-left: 3px solid #ddd6fe;
+		font-size: 0.85rem;
+	}
+
+	.link-filled p {
+		margin: 0;
+	}
+
+	.link-filled code {
+		font-family: var(--font-family-mono, monospace);
+		font-size: 0.85em;
+	}
+
+	.no-default {
+		opacity: 0.7;
 	}
 
 	.type-other {

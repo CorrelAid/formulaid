@@ -1,0 +1,26 @@
+{
+	"description": "A distribution channel recorded with a hidden field filled from the survey link, with a default (#69).",
+	"source": "hand-written",
+	"researchQuestions": ["Wie zufrieden sind die Teilnehmenden der Partnerorganisationen?"],
+	"generated": [
+		{
+			"name": "partner",
+			"label": "Partnerorganisation",
+			"type": "hidden",
+			"default": "direkt",
+			"rationale": "Trennt die Antworten nach dem Link der Partnerorganisation."
+		},
+		{
+			"name": "zufrieden",
+			"label": "Wie zufrieden sind Sie mit dem Angebot?",
+			"type": "select_one",
+			"choices": [
+				{ "name": "1", "label": "gar nicht" },
+				{ "name": "2", "label": "wenig" },
+				{ "name": "3", "label": "teils" },
+				{ "name": "4", "label": "ziemlich" },
+				{ "name": "5", "label": "sehr" }
+			]
+		}
+	]
+}

@@ -29,6 +29,7 @@ function buildInstructions(): string {
 		"The user's furtherNotes and maxQuestions win over the feedback: never go above maxQuestions, and never add or change anything the notes rule out.",
 		`Allowed question types: ${types.join(', ')}.`,
 		'select_one and select_multiple need a "choices" array of {name, label}.',
+		'hidden is filled from the survey link, not by respondents: only for a distribution channel (partner, module, wave); no choices, no required, and a "default" when a link may leave it out. Keep existing hidden questions and their default.',
 		'select_one_from_file / select_multiple_from_file take a registered vocabulary file (e.g. "select_one_from_file iso_3166_1.csv") and no choices.',
 		`Allowed appearances: ${appearances.join('; ')}.`,
 		`Names and choice codes: letters and digits only, names up to ${maxName} characters, choice codes up to ${maxCode}.`

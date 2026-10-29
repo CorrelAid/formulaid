@@ -26,6 +26,9 @@ export interface Question {
 	choices?: Choice[];
 	/** XPath condition for the `relevant` column. */
 	relevant?: string;
+	/** Written to the `default` column. For a `hidden` question it is the value
+	 *  used when the survey link doesn't carry one (#69). */
+	default?: string;
 	/** Why this question is in the questionnaire — surfaced in the UI and in the
 	 *  workbook's `explanations` sheet so the result is auditable (#5). */
 	rationale?: string;
@@ -35,6 +38,12 @@ export interface Question {
 	/** Which research questions (1-based, as numbered in the input) this
 	 *  question serves (#34). */
 	researchQuestions?: number[];
+}
+
+/** A `hidden` question is filled from the survey link, never by the
+ *  respondent (#69): like a note, it is not an answerable question. */
+export function isAnswerable(q: Pick<Question, 'type'>): boolean {
+	return q.type !== 'note' && q.type !== 'hidden';
 }
 
 /** One generator step as reported to the UI's trace list. */
