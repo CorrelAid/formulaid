@@ -24,7 +24,7 @@ function buildInstructions(): string {
 	return [
 		'You repair an XLSForm questionnaire that a validator or a quality check rejected.',
 		'Return the questions as JSON, changing only what the feedback asks for.',
-		'Keep every question, its wording, its rationale, its source and its researchQuestions unless the feedback says otherwise.',
+		'Keep every question, its wording, its rationale, its source, its researchQuestions and its concept, label_short and default unless the feedback says otherwise.',
 		'Add questions only when the feedback asks for more; new ones must serve a research question and get source "generated", a rationale and researchQuestions (the numbers of the research questions they serve).',
 		"The user's furtherNotes and maxQuestions win over the feedback: never go above maxQuestions, and never add or change anything the notes rule out.",
 		`Allowed question types: ${types.join(', ')}.`,

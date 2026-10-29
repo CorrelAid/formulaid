@@ -1,0 +1,37 @@
+{
+	"description": "Optional DDI fields: a concept on one question, a label_short on a select_multiple (#70).",
+	"source": "hand-written",
+	"researchQuestions": ["Wie zufrieden sind die Mitglieder mit den Angeboten?"],
+	"generated": [
+		{
+			"name": "zufrieden",
+			"label": "Wie zufrieden sind Sie mit den Angeboten?",
+			"type": "select_one",
+			"concept": "Zufriedenheit mit Angeboten",
+			"choices": [
+				{ "name": "1", "label": "gar nicht" },
+				{ "name": "2", "label": "wenig" },
+				{ "name": "3", "label": "teils" },
+				{ "name": "4", "label": "ziemlich" },
+				{ "name": "5", "label": "sehr" }
+			]
+		},
+		{
+			"name": "angebote",
+			"label": "Welche Angebote nutzen Sie?",
+			"type": "select_multiple",
+			"label_short": "Genutzte Angebote",
+			"choices": [
+				{ "name": "kurs", "label": "Kurse" },
+				{ "name": "treff", "label": "Treffen" },
+				{ "name": "other", "label": "Sonstiges" }
+			]
+		},
+		{
+			"name": "angebote_other",
+			"label": "Welche anderen Angebote?",
+			"type": "text",
+			"required": false
+		}
+	]
+}

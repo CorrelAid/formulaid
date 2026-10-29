@@ -24,6 +24,17 @@ exports[`'choice-shapes' > links follow-ups and records what the quality checks 
 
 exports[`'choice-shapes' > passes the formtransform validator 1`] = `[]`;
 
+exports[`'concept-and-short-label' > links follow-ups and records what the quality checks still find 1`] = `
+{
+  "doubleBarrelled": [],
+  "open": [],
+  "orphanedFollowUps": [],
+  "unconditioned": [],
+}
+`;
+
+exports[`'concept-and-short-label' > passes the formtransform validator 1`] = `[]`;
+
 exports[`'exclusive-answer' > links follow-ups and records what the quality checks still find 1`] = `
 {
   "doubleBarrelled": [],

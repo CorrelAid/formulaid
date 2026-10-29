@@ -42,8 +42,21 @@ export class XLSFormGenerator {
 		// The `default` column only when a question has one, so forms without
 		// defaults keep their layout.
 		const withDefault = survey.questions.some((q) => q.default);
+		// The same for `concept` and `label_short` (#70).
+		const withConcept = survey.questions.some((q) => q.concept);
+		const withLabelShort = survey.questions.some((q) => q.labelShort);
 		const surveyData = [
-			['type', 'name', 'label', 'hint', 'required', 'relevant', ...(withDefault ? ['default'] : [])]
+			[
+				'type',
+				'name',
+				'label',
+				'hint',
+				'required',
+				'relevant',
+				...(withDefault ? ['default'] : []),
+				...(withConcept ? ['concept'] : []),
+				...(withLabelShort ? ['label_short'] : [])
+			]
 		];
 		const choicesData = [['list_name', 'name', 'label', 'exclusive']];
 		// Each list is written once, keyed by its choices. The prompt encourages
@@ -84,7 +97,9 @@ export class XLSFormGenerator {
 				// Respondents never see a hidden field: required means nothing there (#69).
 				q.type === 'hidden' ? '' : q.required ? 'yes' : 'no',
 				q.relevant ?? '',
-				...(withDefault ? [q.default ?? ''] : [])
+				...(withDefault ? [q.default ?? ''] : []),
+				...(withConcept ? [q.concept ?? ''] : []),
+				...(withLabelShort ? [q.labelShort ?? ''] : [])
 			]);
 		}
 
@@ -95,6 +110,9 @@ export class XLSFormGenerator {
 			['form_title', survey.title || 'Questionnaire'],
 			['form_id', survey.formId ?? formIdFor(survey.title)]
 		];
+		// Optional, for the DDI's altTitl and subTitl (#70).
+		if (survey.titleShort) settings.push(['form_title_short', survey.titleShort]);
+		if (survey.subtitle) settings.push(['form_subtitle', survey.subtitle]);
 		// XLSForm's "Name (code)" form. formtransform takes the LimeSurvey base
 		// language from it and otherwise assumes English; Kobo shows the name.
 		if (survey.language) settings.push(['default_language', LANGUAGE_NAMES[survey.language]]);

@@ -102,6 +102,8 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 	) as QuestionType;
 	const relevant = str(obj.relevant) ?? str(obj.relevance);
 	const defaultValue = firstOf(obj, 'default', 'default_value')?.trim();
+	const concept = str(obj.concept)?.trim();
+	const labelShort = (str(obj.label_short) ?? str(obj.labelShort))?.trim();
 	// Respondents never see a hidden field, so it can't be required (#69).
 	const hidden = baseType === 'hidden';
 	// The model is asked for a justification per question (#5). It uses whichever
@@ -120,6 +122,8 @@ function normalizeQuestion(obj: RawQuestion, index: number): Question {
 		choices,
 		...(relevant ? { relevant } : {}),
 		...(defaultValue ? { default: defaultValue } : {}),
+		...(concept ? { concept } : {}),
+		...(labelShort ? { labelShort } : {}),
 		...(rationale ? { rationale } : {}),
 		...(source ? { source } : {}),
 		...(researchQuestions.length ? { researchQuestions } : {})

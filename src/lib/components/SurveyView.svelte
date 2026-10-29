@@ -46,6 +46,10 @@
 <section class="survey-view">
 	<header class="survey-header">
 		<h2>{survey.title}</h2>
+		{#if survey.subtitle}<p class="subtitle">{survey.subtitle}</p>{/if}
+		{#if survey.titleShort}
+			<p class="form-id">{$t('surveyView.titleShort')}: {survey.titleShort}</p>
+		{/if}
 		{#if survey.formId}<p class="form-id">form_id: <code>{survey.formId}</code></p>{/if}
 	</header>
 
@@ -136,12 +140,20 @@
 						<code>{q.relevant}</code>
 					</div>
 				{/if}
-				{#if q.rationale || q.source || (q.researchQuestions && hasMultipleRqs)}
+				{#if q.rationale || q.source || q.concept || q.labelShort || (q.researchQuestions && hasMultipleRqs)}
 					<details class="card-meta">
 						<summary>{$t('surveyView.details')}</summary>
 						<dl>
 							<dt>{$t('surveyView.name')}</dt>
 							<dd><code>{q.name}</code></dd>
+							{#if q.concept}
+								<dt>{$t('surveyView.concept')}</dt>
+								<dd>{q.concept}</dd>
+							{/if}
+							{#if q.labelShort}
+								<dt>{$t('surveyView.labelShort')}</dt>
+								<dd>{q.labelShort}</dd>
+							{/if}
 							{#if q.rationale}
 								<dt>{$t('surveyView.rationale')}</dt>
 								<dd>{q.rationale}</dd>
@@ -185,6 +197,11 @@
 	.survey-header h2 {
 		margin: 0;
 		color: var(--color-text-primary);
+	}
+
+	.subtitle {
+		margin: var(--spacing-xs) 0 0;
+		color: color-mix(in srgb, var(--color-text-primary) 70%, white);
 	}
 
 	.form-id {
