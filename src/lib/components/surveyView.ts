@@ -25,7 +25,7 @@ export function detectDemographicsStart(
 
 /**
  * The registry's name for a question type, in the interface language
- * (formtransform v0.7.1): `select_one` → "Einfachauswahl" / "Select One".
+ * (formtransform v0.7.1+): `select_one` → "Einfachauswahl" / "Select One".
  * A type with a list name (`select_one skala5`) uses its base type; an
  * unknown one is shown as written.
  */

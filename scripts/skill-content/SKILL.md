@@ -91,6 +91,7 @@ Follow [generate-instructions.md](generate-instructions.md) for the full output 
 Additional essentials (full XLSForm syntax in [cdl-survey-types/references/xlsform-syntax.md](cdl-survey-types/references/xlsform-syntax.md); methodology in [references/survey-methodology.md](references/survey-methodology.md)):
 
 - Always include `start`, `end`, `today`, `deviceid` metadata rows
+- To record a distribution channel (partner, module, wave) that comes from the survey link, add a `hidden` question rather than asking respondents; give it a `default` when a link may leave it out. KoboCollect only gets the `default` (Kobo web forms take `?d[/<root>/<name>]=…`); in LimeSurvey the link parameter is the question code (`?<code>=…`)
 - Group with `begin_group` / `end_group`; skip logic in `relevant` column
 - All labels, hints, constraint messages in the survey language
 
