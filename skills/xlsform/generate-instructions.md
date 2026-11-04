@@ -192,6 +192,10 @@ Applies to: `select_one`, `select_multiple`. Add a choice with code `other`, the
 
 Applies to: `select_multiple`. For an answer that rules out all others (“Keine Angabe”, “Nichts davon”, “Weiß nicht”), add the `exclusive` column to the `choices` sheet and set it to `yes` on that choice. Leave it empty on every other row. Don't write a `count-selected()` constraint for this: LimeSurvey only gets it as a validation equation.
 
+## Random answer order (`parameters: randomize=true`)
+
+Applies to: `select_one`, `select_multiple` (also from a file). Write `randomize=true` in the `parameters` column to shuffle the options, e.g. to avoid primacy effects. LimeSurvey shuffles them too, and keeps a `select_multiple`'s `exclusive` answers at their position (LimeSurvey 6.17 or later); ODK and Kobo shuffle every option. To keep another option in place too (“Sonstiges”, “Keine Angabe” at the end), add the `fixed` column to the `choices` sheet and set it to `yes` on that choice, on a `select_one` or a `select_multiple`; it has no effect without `randomize=true`. Don't add a `seed`: LimeSurvey has none and drops it.
+
 ## Long lists from a file (`select_*_from_file`)
 
 Type pattern: `^select_(one|multiple)_from_file (?P<filename>[^ ]+\.csv)$` — e.g. `select_one_from_file iso_3166_1.csv`. Use for long, standardised controlled vocabularies instead of hundreds of inline choices. Registered vocabularies:
@@ -208,7 +212,7 @@ To limit how many answers a `select_multiple` takes, write `count-selected(.) <=
 
 **Only these functions are supported** (anything else is rejected):
 
-`and`, `or`, `not`, `if`, `selected`, `contains`, `starts-with`, `ends-with`, `regex`, `string`, `number`, `concat`, `substring`, `string-length`, `normalize-space`, `count`, `count-selected`, `sum`, `round`, `floor`, `ceiling`, `div`, `mod`, `today`, `now`
+`and`, `or`, `not`, `if`, `coalesce`, `selected`, `contains`, `starts-with`, `ends-with`, `regex`, `string`, `number`, `concat`, `substring`, `string-length`, `normalize-space`, `count`, `count-selected`, `sum`, `round`, `floor`, `ceiling`, `div`, `mod`, `today`, `now`
 
 ## Appearances (`appearance` column)
 
@@ -216,6 +220,8 @@ To limit how many answers a `select_multiple` takes, write `count-selected(.) <=
 |---|---|---|
 | `autocomplete` | Dropdown with search (autocomplete) | `select_one`, `select_one_from_file` |
 | `field-list` | Field list group | `begin_group` |
+| `horizontal` | Horizontal choices (buttons) | `select_one` |
+| `horizontal-compact` | Horizontal choices, compact (buttons) | `select_one` |
 | `label` | Matrix header row | `begin_group`, `select_one` |
 | `likert` | Likert appearance hint | `select_one` |
 | `list-nolabel` | Matrix body row | `select_one` |
@@ -243,6 +249,33 @@ LimeSurvey has a fixed set of language codes. A regional tag it lacks falls back
 
 - type=note + name=welcome → Body text from label promoted to survey-level intro. Convention only; opt-in via tool config.
 - type=note + name=end → End-of-survey thank-you. LS-only.
+
+**LimeSurvey survey settings** (optional `limesurvey_<setting>` columns; ODK and Kobo ignore them, LimeSurvey gets an `S` row each; anything else is dropped with a `setting-invalid` warning):
+
+| Column | Values | Effect |
+|---|---|---|
+| `limesurvey_allowprev` | `Y` `N` | a Previous button |
+| `limesurvey_allowsave` | `Y` `N` | respondents can save and resume later |
+| `limesurvey_showprogress` | `Y` `N` | a progress bar |
+| `limesurvey_showxquestions` | `Y` `N` | 'There are N questions in this survey' (counts hidden and filtered questions too) |
+| `limesurvey_showgroupinfo` | `B` `N` `D` `X` | group name and description: B both, N name, D description, X neither |
+| `limesurvey_showqnumcode` | `B` `N` `C` `X` | question number and code: B both, N number, C code, X neither |
+| `limesurvey_shownoanswer` | `Y` `N` | a 'No answer' option on optional questions (formtransform writes N unless the hideNoAnswer option is false) |
+| `limesurvey_showwelcome` | `Y` `N` | the welcome page |
+| `limesurvey_questionindex` | `0` `1` `2` | a question index: 0 none, 1 incremental, 2 full |
+| `limesurvey_nokeyboard` | `Y` `N` | an on-screen keyboard |
+| `limesurvey_printanswers` | `Y` `N` | respondents can print their answers |
+| `limesurvey_autoredirect` | `Y` `N` | redirect to the end URL when the survey is completed |
+| `limesurvey_navigationdelay` | `^[0-9]+$` | seconds before the navigation buttons are enabled |
+| `limesurvey_anonymized` | `Y` `N` | anonymized responses |
+| `limesurvey_datestamp` | `Y` `N` | store the date and time of each response |
+| `limesurvey_ipaddr` | `Y` `N` | store the respondent's IP address |
+| `limesurvey_ipanonymize` | `Y` `N` | anonymize the stored IP address |
+| `limesurvey_refurl` | `Y` `N` | store the referrer URL |
+| `limesurvey_savetimings` | `Y` `N` | store the time spent on each page and question |
+| `limesurvey_template` | `^[A-Za-z0-9_-]+$` | the theme's name (it must be installed in LimeSurvey) |
+
+Not settable, derived from the form: `language` (`default_language` (else the first language)), `additional_languages` (the form's other languages (`label::<lang>` columns)), `format` (`style: pages` gives G (a page per group), anything else A (all in one)).
 
 
 ---

@@ -34,8 +34,8 @@ QWAC_API="https://qwacback.correlaid.org/api"
 # formtransform dependency in package.json, and update the checksum with it
 # (sha256sum of the downloaded tarball): release assets can be replaced, the
 # checksum makes that fail the build instead of changing the skill silently.
-FORMTRANSFORM_VERSION="0.10.1"
-FORMTRANSFORM_SKILL_SHA256="64266ce77ae4be91c707891bf28ca152ef2c8c73691b50c82ed04323cd776af3"
+FORMTRANSFORM_VERSION="0.12.0"
+FORMTRANSFORM_SKILL_SHA256="e7b9d2d23768b7b78773a91908e9ddd92f8969f84261c90c223d0029b6cfa8c7"
 FORMTRANSFORM_SKILL_URL="https://github.com/CorrelAid/formtransform/releases/download/v$FORMTRANSFORM_VERSION/cdl-survey-types-$FORMTRANSFORM_VERSION.tar.gz"
 
 # Demographic sources (specific question + study)
